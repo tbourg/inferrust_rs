@@ -1,0 +1,10 @@
+[package]
+name = "sophia-test"
+version = "0.1.0"
+authors = ["Thomas Bourg <tbourg07@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+"sophia" = { git = "https://github.com/pchampin/sophia_rs", rev = "ec89442b10cdeee80ea9aa4380d5d04283459803" }
