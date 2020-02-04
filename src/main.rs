@@ -4,8 +4,9 @@ use sophia::graph::{inmem::LightGraph, *};
 use sophia::parser;
 use sophia::serializer;
 use sophia::serializer::TripleStringifier;
-use sophia::term::Term;
+use sophia::term::{BoxTerm, RcTerm, Term};
 use sophia::triple::stream::{TripleSink, TripleSource};
+use sophia::triple::Triple;
 
 fn print_type<T>(_: T) {
     println!("{}", any::type_name::<T>())
@@ -14,6 +15,16 @@ fn print_type<T>(_: T) {
 fn help() {
     println!("Usage");
     process::exit(0);
+}
+
+fn create_term(op: String, iri: bool) -> BoxTerm {
+    let term = if iri {
+        BoxTerm::new_iri(op.into_boxed_str())
+    } else {
+        BoxTerm::new_literal_lang(op.into_boxed_str(), "fr")
+    }
+    .expect("Error creating term");
+    return term;
 }
 
 fn main() {
@@ -35,18 +46,27 @@ fn main() {
         .in_graph(&mut graph)
         .expect("Error loading graph.");
 
-    let operand_term = Term::<Box<str>>::new_iri(operand.into_boxed_str()).unwrap();
+    //let operand_term = match &operand[..] {
+    //    "s" => create_term(operand, true),
+    //    "p" => create_term(operand, true),
+    //    "o" | _ => create_term(operand, false),
+    //};
+    // print_type(operand_term);
+    let operand_term = BoxTerm::new_iri(operand.into_boxed_str()).unwrap();
+    // print_type(op_term);*/
     let results = match &operator[..] {
         "s" => graph.triples_with_s(&operand_term),
+        "p" => graph.triples_with_p(&operand_term),
+        "o" => graph.triples_with_o(&operand_term),
         _ => graph.triples_with_s(&operand_term),
     };
     let result_it = unsafe { boxed::Box::into_raw(results).as_mut().unwrap() };
+
     let mut nt_stringifier = serializer::nt::stringifier();
     for result in result_it {
         let triple = result.unwrap();
         println!("{}", nt_stringifier.stringify_triple(&triple).unwrap());
     }
-
     /*let example = nt_stringifier.stringify_graph(&mut graph).unwrap();
     println!("The resulting graph\n{}", example);*/
 }
