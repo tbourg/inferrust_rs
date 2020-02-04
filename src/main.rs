@@ -1,4 +1,4 @@
-use std::{env, fs, process};
+use std::{any, boxed, env, fs, process};
 
 use sophia::graph::{inmem::LightGraph, *};
 use sophia::parser;
@@ -6,6 +6,10 @@ use sophia::serializer;
 use sophia::serializer::TripleStringifier;
 use sophia::term::Term;
 use sophia::triple::stream::{TripleSink, TripleSource};
+
+fn print_type<T>(_: T) {
+    println!("{}", any::type_name::<T>())
+}
 
 fn help() {
     println!("Usage");
@@ -19,7 +23,7 @@ fn main() {
         _ => help(),
     }
     let operator = &args[1];
-    let operand = &args[2];
+    let operand = std::string::String::from(&args[2]);
     match &operator[..] {
         "o" | "s" | "p" => (),
         _ => help(),
@@ -31,15 +35,18 @@ fn main() {
         .in_graph(&mut graph)
         .expect("Error loading graph.");
 
-    operand.foo();
+    let operand_term = Term::<Box<str>>::new_iri(operand.into_boxed_str()).unwrap();
+    let results = match &operator[..] {
+        "s" => graph.triples_with_s(&operand_term),
+        _ => graph.triples_with_s(&operand_term),
+    };
+    let result_it = unsafe { boxed::Box::into_raw(results).as_mut().unwrap() };
+    let mut nt_stringifier = serializer::nt::stringifier();
+    for result in result_it {
+        let triple = result.unwrap();
+        println!("{}", nt_stringifier.stringify_triple(&triple).unwrap());
+    }
 
-    /*    let operand_term = Term::new_iri(operand).unwrap();
-        let results = match &operator[..] {
-            "s" => graph.triples_with_s(&operand_term)
-        };
-
-        let mut nt_stringifier = serializer::nt::stringifier();
-        let example = nt_stringifier.stringify_graph(&mut graph).unwrap();
-        println!("The resulting graph\n{}", example);
-    */
+    /*let example = nt_stringifier.stringify_graph(&mut graph).unwrap();
+    println!("The resulting graph\n{}", example);*/
 }
