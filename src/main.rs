@@ -46,14 +46,15 @@ fn main() {
         .in_graph(&mut graph)
         .expect("Error loading graph.");
 
-    //let operand_term = match &operand[..] {
-    //    "s" => create_term(operand, true),
-    //    "p" => create_term(operand, true),
-    //    "o" | _ => create_term(operand, false),
-    //};
-    // print_type(operand_term);
-    let operand_term = BoxTerm::new_iri(operand.into_boxed_str()).unwrap();
-    // print_type(op_term);*/
+    let operand_term = match &operand[..] {
+        "s" => BoxTerm::new_iri(operand.into_boxed_str()).unwrap(),
+        "p" => BoxTerm::new_iri(operand.into_boxed_str()).unwrap(),
+        "o" | _ => BoxTerm::new_literal_dt(
+            operand.into_boxed_str(),
+            BoxTerm::new_iri("http://www.w3.org/2001/XMLSchema#string").unwrap(),
+        )
+        .unwrap(),
+    };
     let results = match &operator[..] {
         "s" => graph.triples_with_s(&operand_term),
         "p" => graph.triples_with_p(&operand_term),
