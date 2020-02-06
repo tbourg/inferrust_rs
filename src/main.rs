@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use std::{any, boxed, convert, env, fs, process, rc};
 
 use sophia::graph::{inmem::LightGraph, *};
 use sophia::parser;
+use sophia::query::BindingMap;
 use sophia::query::Query;
 use sophia::serializer;
 use sophia::serializer::TripleStringifier;
@@ -16,13 +18,13 @@ fn print_type<T>(_: T) {
     println!("{}", any::type_name::<T>())
 }
 
-fn create_term(op: &str, iri: bool) -> BoxTerm {
+fn create_term(op: &str, iri: bool) -> RcTerm {
     let term = if iri {
-        BoxTerm::new_iri(op)
+        RcTerm::new_iri(op)
     } else {
-        BoxTerm::new_literal_dt(
+        RcTerm::new_literal_dt(
             op,
-            BoxTerm::new_iri("http://www.w3.org/2001/XMLSchema#string").unwrap(),
+            RcTerm::new_iri("http://www.w3.org/2001/XMLSchema#string").unwrap(),
         )
     }
     .expect("Error creating term");
@@ -38,8 +40,56 @@ fn load_graph(filename: &str) -> LightGraph {
     graph
 }
 
+fn querying_graph(g: LightGraph, queries: Vec<&str>) {
+    let mut q_vec = Vec::new();
+    let mut vars = HashMap::new();
+    for query in queries {
+        let parts: Vec<&str> = query.split(' ').collect();
+        let s: RcTerm = if parts[0].starts_with("?") {
+            vars.entry(&parts[0][1..])
+                .or_insert(RcTerm::new_variable(&parts[0][1..]))
+                .as_ref()
+                .expect("err")
+                .clone()
+        } else {
+            create_term(parts[0], true)
+        };
+        let p: RcTerm = if parts[1].starts_with("?") {
+            vars.entry(&parts[1][1..])
+                .or_insert(RcTerm::new_variable(&parts[1][1..]))
+                .as_ref()
+                .expect("err")
+                .clone()
+        } else {
+            create_term(parts[1], true)
+        };
+        let o: RcTerm = if parts[2].starts_with("?") {
+            vars.entry(&parts[2][1..])
+                .or_insert(RcTerm::new_variable(&parts[2][1..]))
+                .as_ref()
+                .expect("err")
+                .clone()
+        } else {
+            create_term(parts[2], false)
+        };
+        q_vec.push([s, p, o]);
+    }
+    let mut q = Query::Triples(q_vec);
+    let results: Result<Vec<BindingMap>, _> = q.process(&g).collect();
+    let results = results.expect("argh");
+    for result in results {
+        for var in vars.keys() {
+            println!(
+                "{} --> {}",
+                var,
+                result.get(var.to_owned()).expect("ergh").value()
+            );
+        }
+    }
+}
+
 fn display_triples_spo(g: LightGraph, term: &str, s: bool, p: bool, o: bool) {
-    let term: BoxTerm = create_term(term, s || p);
+    let term: RcTerm = create_term(term, s || p);
     let it = if s {
         g.triples_with_s(&term)
     } else if p {
@@ -139,6 +189,13 @@ fn main() {
                 .value_name("OBJECT")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("query")
+                .short("q")
+                .long("query")
+                .value_name("QUERY")
+                .takes_value(true),
+        )
         .get_matches();
 
     let filename = matches.value_of("graph").unwrap_or("res/sample.ttl");
@@ -154,5 +211,9 @@ fn main() {
         matches.value_of("object").unwrap_or("")
     );
 
-    display_triples_spo(graph, &val, by_s, by_p, by_o);
+    if by_s || by_p || by_o {
+        display_triples_spo(graph, &val, by_s, by_p, by_o);
+    } else if matches.is_present("query") {
+        querying_graph(graph, vec![matches.value_of("query").unwrap_or("")]);
+    }
 }
