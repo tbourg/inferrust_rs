@@ -16,10 +16,12 @@ fn main() {
             foaf:mbox <mailto:alice@work.example> .
         :bob foaf:name "Bob".
     "#;
-    let mut graph = MyGraph::new();
+    let mut graph = LightGraph::new();
     parser::turtle::parse_str(example).in_graph(&mut graph);
 
     let mut nt_stringifier = serializer::nt::stringifier();
-    let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();
+    let example2 = nt_stringifier
+        .stringify_graph(&mut MyGraph::from(graph))
+        .unwrap();
     println!("The resulting graph\n{}", example2);
 }
