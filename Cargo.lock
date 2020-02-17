@@ -27,8 +27,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "bimap"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "cfg-if 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "bit-matrix"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "bit-vec 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "bit-vec"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "cfg-if"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -167,6 +193,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "sophia"
 version = "0.3.0"
+source = "git+https://github.com/pchampin/sophia_rs?branch=better_sources#3b55e1b23c50fad78fb82e2a0b4b5324920ad567"
+dependencies = [
+ "language-tag 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 1.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "resiter 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rio_api 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rio_turtle 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "thiserror 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "url 2.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "weak-table 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "sophia"
+version = "0.3.0"
 source = "git+https://github.com/pchampin/sophia_rs?rev=ec89442b10cdeee80ea9aa4380d5d04283459803#ec89442b10cdeee80ea9aa4380d5d04283459803"
 dependencies = [
  "language-tag 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -184,7 +226,10 @@ dependencies = [
 name = "sophia-test"
 version = "0.1.0"
 dependencies = [
+ "bimap 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bit-matrix 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sophia 0.3.0 (git+https://github.com/pchampin/sophia_rs?branch=better_sources)",
  "sophia 0.3.0 (git+https://github.com/pchampin/sophia_rs?rev=ec89442b10cdeee80ea9aa4380d5d04283459803)",
 ]
 
@@ -306,7 +351,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum aho-corasick 0.7.7 (registry+https://github.com/rust-lang/crates.io-index)" = "5f56c476256dc249def911d6f7580b5fc7e875895b5d7ee88f5d602208035744"
 "checksum ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
 "checksum atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)" = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
+"checksum bimap 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "783204f24fd7724ea274d327619cfa6a6018047bb0561a68aadff6f56787591b"
+"checksum bit-matrix 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "18a3373a197a04dc7f6b2e257b6927deec6ac08629ff8c35e524e2bc90c848bb"
+"checksum bit-vec 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "02b4ff8b16e6076c3e14220b39fbc1fabb6737522281a388998046859400895f"
 "checksum bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
+"checksum cfg-if 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)" = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 "checksum clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5067f5bb2d80ef5d68b4c87db81601f0b75bca627bc2ef76b141d7b846a3c6d9"
 "checksum hermit-abi 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "eff2656d88f158ce120947499e971d743c05dbcbed62e5bd2f38f1698bbc3772"
 "checksum idna 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "02e2673c30ee86b5b96a9cb52ad15718aa1f966f5ab9ad54a8b95d5ca33120a9"
@@ -326,6 +375,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rio_api 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "91cc8c591432304a0eea53629131136655dc1365294b4befe056079e37e31968"
 "checksum rio_turtle 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c5d45e698ea1ef0a273055a05a0b563d520bdd5e9b468ee5c012467725d430ef"
 "checksum smallvec 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5c2fb2ec9bcd216a5b0d0ccf31ab17b5ed1d627960edff65bbe95d3ce221cefc"
+"checksum sophia 0.3.0 (git+https://github.com/pchampin/sophia_rs?branch=better_sources)" = "<none>"
 "checksum sophia 0.3.0 (git+https://github.com/pchampin/sophia_rs?rev=ec89442b10cdeee80ea9aa4380d5d04283459803)" = "<none>"
 "checksum strsim 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 "checksum syn 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)" = "af6f3550d8dff9ef7dc34d384ac6f107e5d31c8f57d9f28e0081503f547ac8f5"

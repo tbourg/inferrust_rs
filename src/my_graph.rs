@@ -1,7 +1,7 @@
-use sophia::graph::inmem::*;
+use sophia::graph::inmem::{LightGraph, TermIndexMapU};
 use sophia::graph::GTripleSource;
 use sophia::graph::{Graph, MGResult, MutableGraph};
-use sophia::term::factory::ArcTermFactory;
+use sophia::term::factory::RcTermFactory;
 use sophia::term::{RcTerm, Term, TermData};
 use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
 use sophia::triple::{
@@ -9,37 +9,68 @@ use sophia::triple::{
     Triple,
 };
 
+use bit_matrix::BitMatrix;
+
+use std::clone::Clone;
 use std::convert::Infallible;
 
-struct MySink {
-    triples: Vec<[RcTerm; 3]>,
+pub struct CountSink {
+    size: i32,
 }
 
-impl TripleSink for MySink {
-    type Outcome = Vec<[RcTerm; 3]>;
+impl TripleSink for CountSink {
+    type Outcome = i32;
     type Error = Infallible;
 
     fn feed<T: Triple>(&mut self, t: &T) -> Result<(), Self::Error> {
-        Ok(self
-            .triples
-            .push([t.s().into(), t.p().into(), t.o().into()]))
+        Ok(self.size += 1)
     }
 
     fn finish(&mut self) -> Result<Self::Outcome, Self::Error> {
-        Ok(self.triples.clone())
+        Ok(self.size)
     }
 }
 
-impl MySink {
-    fn new() -> Self {
-        MySink {
-            triples: Vec::new(),
-        }
+impl CountSink {
+    pub fn new() -> Self {
+        CountSink { size: 0 }
     }
 }
 
 pub struct MyGraph {
-    triples: Vec<[RcTerm; 3]>,
+    matrix: BitMatrix,
+    index_map: TermIndexMapU<u16, RcTermFactory>,
+}
+
+impl MutableGraph for MyGraph {
+    type MutationError = Infallible;
+
+    fn insert<T_, U_, V_>(
+        &mut self,
+        s: &Term<T_>,
+        p: &Term<U_>,
+        o: &Term<V_>,
+    ) -> MGResult<Self, bool>
+    where
+        T_: TermData,
+        U_: TermData,
+        V_: TermData,
+    {
+        Ok(true)
+    }
+    fn remove<T_, U_, V_>(
+        &mut self,
+        s: &Term<T_>,
+        p: &Term<U_>,
+        o: &Term<V_>,
+    ) -> MGResult<Self, bool>
+    where
+        T_: TermData,
+        U_: TermData,
+        V_: TermData,
+    {
+        Ok(true)
+    }
 }
 
 impl Graph for MyGraph {
@@ -47,20 +78,13 @@ impl Graph for MyGraph {
     type Error = Infallible;
 
     fn triples(&self) -> GTripleSource<Self> {
-        Box::from(
-            self.triples
-                .iter()
-                .map(move |[s, p, o]| Ok(StreamedTriple::by_term_refs(s, p, o))),
-        )
+        self.triples()
     }
 }
 
 impl MyGraph {
-    pub fn from(g: LightGraph) -> Self {
-        let mut tsk = MySink::new();
-        g.triples().in_sink(&mut tsk);
-        MyGraph {
-            triples: tsk.finish().unwrap(),
-        }
+    pub fn from(g: &LightGraph) -> () {
+        let rows = g.subjects().unwrap().len() + g.objects().unwrap().len();
+        let cols = ();
     }
 }
