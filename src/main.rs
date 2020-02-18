@@ -29,6 +29,8 @@ fn main() {
     println!("{} triples", cols);
 
     let mut nt_stringifier = serializer::nt::stringifier();
-    let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();
+    let example2 = nt_stringifier
+        .stringify_graph(&mut MyGraph::from(&graph))
+        .unwrap();
     println!("The resulting graph\n{}", example2);
 }

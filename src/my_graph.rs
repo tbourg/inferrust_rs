@@ -1,8 +1,10 @@
+#![allow(warnings)]
+
 use sophia::graph::inmem::{LightGraph, TermIndexMapU};
 use sophia::graph::GTripleSource;
 use sophia::graph::{Graph, MGResult, MutableGraph};
 use sophia::term::factory::RcTermFactory;
-use sophia::term::{RcTerm, Term, TermData};
+use sophia::term::{index_map::TermIndexMap, RcTerm, RefTerm, Term, TermData};
 use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
 use sophia::triple::{
     stream::{TripleSink, TripleSource},
@@ -12,6 +14,7 @@ use sophia::triple::{
 use bit_matrix::BitMatrix;
 
 use std::clone::Clone;
+use std::collections::HashMap;
 use std::convert::Infallible;
 
 // pub struct CountSink {
@@ -38,7 +41,8 @@ use std::convert::Infallible;
 // }
 
 pub struct MyGraph {
-    matrix: BitMatrix,
+    // matrix: BitMatrix,
+    store: HashMap<u16, HashMap<u16, [u16; 2]>>,
     index_map: TermIndexMapU<u16, RcTermFactory>,
 }
 impl Graph for MyGraph {
@@ -46,15 +50,46 @@ impl Graph for MyGraph {
     type Error = Infallible;
 
     fn triples(&self) -> GTripleSource<Self> {
-        self.triples()
+        let mut v: Vec<Result<StreamedTriple<ByTermRefs<std::rc::Rc<str>>>, Self::Error>> =
+            Vec::new();
+        eprintln!(":{:?}", self.store);
+        for (p, tso) in &self.store {
+            eprintln!("p: {}", p);
+            let p = self.index_map.get_term(*p).unwrap();
+            for (t, so) in tso {
+                eprintln!("t: {}", t);
+                let s = self.index_map.get_term(so[0]).unwrap();
+                let o = self.index_map.get_term(so[1]).unwrap();
+                v.push(Ok(StreamedTriple::by_term_refs(s, p, o)));
+            }
+        }
+        Box::from(v.into_iter())
     }
 }
 
 impl MyGraph {
-    pub fn from(g: &LightGraph) -> () {
-        let rows = g.subjects().unwrap().len() + g.objects().unwrap().len();
-        let mut cols = 0;
-        g.triples().for_each_triple(|_| cols += 1);
-        let matrix = BitMatrix::new(rows, cols as usize);
+    pub fn from(g: &LightGraph) -> Self {
+        let mut store: HashMap<u16, HashMap<u16, [u16; 2]>> = HashMap::new();
+        let mut index_map: TermIndexMapU<u16, RcTermFactory> = TermIndexMapU::default();
+        let mut c = 1;
+        g.triples().for_each_triple(|t| {
+            let p = t.p();
+            let o = t.o();
+            let s = t.s();
+            let ip = index_map.make_index(&RefTerm::from_with(p, |td| &*td));
+            let is = index_map.make_index(&RefTerm::from_with(s, |td| &*td));
+            let io = index_map.make_index(&RefTerm::from_with(o, |td| &*td));
+            let mut chunk = if store.contains_key(&ip) {
+                store.get(&ip).unwrap().clone()
+            } else {
+                HashMap::new()
+            };
+            chunk.insert(c, [is, io]);
+            store.insert(ip, chunk);
+            c += 1;
+            eprintln!("{:?}", store);
+            // store.insert([is, io], ip);
+        });
+        MyGraph { store, index_map }
     }
 }
