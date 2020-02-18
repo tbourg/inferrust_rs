@@ -6,7 +6,9 @@ use sophia::serializer::TripleStringifier;
 use sophia::triple::stream::{TripleSink, TripleSource};
 
 mod my_graph;
-use my_graph::{CountSink, MyGraph};
+use my_graph::MyGraph;
+
+use std::convert::Infallible;
 
 // mod inferray_graph;
 // use inferray_graph::InfGraph;
@@ -19,12 +21,12 @@ fn main() {
             foaf:mbox <mailto:alice@work.example> .
         :bob foaf:name "Bob".
     "#;
-    let mut graph = LightGraph::new();
+    let mut graph: LightGraph = LightGraph::new();
     parser::turtle::parse_str(example).in_graph(&mut graph);
 
-    let mut cs = CountSink::new();
-    graph.triples().in_sink(&mut cs);
-    println!("{} triples", cs.finish().unwrap());
+    let mut cols = 0;
+    graph.triples().for_each_triple(|_| cols += 1);
+    println!("{} triples", cols);
 
     let mut nt_stringifier = serializer::nt::stringifier();
     let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();

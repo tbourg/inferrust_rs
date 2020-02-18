@@ -14,65 +14,33 @@ use bit_matrix::BitMatrix;
 use std::clone::Clone;
 use std::convert::Infallible;
 
-pub struct CountSink {
-    size: i32,
-}
+// pub struct CountSink {
+//     size: i32,
+// }
 
-impl TripleSink for CountSink {
-    type Outcome = i32;
-    type Error = Infallible;
+// impl TripleSink for CountSink {
+//     type Outcome = i32;
+//     type Error = Infallible;
 
-    fn feed<T: Triple>(&mut self, t: &T) -> Result<(), Self::Error> {
-        Ok(self.size += 1)
-    }
+//     fn feed<T: Triple>(&mut self, _: &T) -> Result<(), Self::Error> {
+//         Ok(self.size += 1)
+//     }
 
-    fn finish(&mut self) -> Result<Self::Outcome, Self::Error> {
-        Ok(self.size)
-    }
-}
+//     fn finish(&mut self) -> Result<Self::Outcome, Self::Error> {
+//         Ok(self.size)
+//     }
+// }
 
-impl CountSink {
-    pub fn new() -> Self {
-        CountSink { size: 0 }
-    }
-}
+// impl CountSink {
+//     pub fn new() -> Self {
+//         CountSink { size: 0 }
+//     }
+// }
 
 pub struct MyGraph {
     matrix: BitMatrix,
     index_map: TermIndexMapU<u16, RcTermFactory>,
 }
-
-impl MutableGraph for MyGraph {
-    type MutationError = Infallible;
-
-    fn insert<T_, U_, V_>(
-        &mut self,
-        s: &Term<T_>,
-        p: &Term<U_>,
-        o: &Term<V_>,
-    ) -> MGResult<Self, bool>
-    where
-        T_: TermData,
-        U_: TermData,
-        V_: TermData,
-    {
-        Ok(true)
-    }
-    fn remove<T_, U_, V_>(
-        &mut self,
-        s: &Term<T_>,
-        p: &Term<U_>,
-        o: &Term<V_>,
-    ) -> MGResult<Self, bool>
-    where
-        T_: TermData,
-        U_: TermData,
-        V_: TermData,
-    {
-        Ok(true)
-    }
-}
-
 impl Graph for MyGraph {
     type Triple = ByTermRefs<std::rc::Rc<str>>;
     type Error = Infallible;
@@ -85,6 +53,8 @@ impl Graph for MyGraph {
 impl MyGraph {
     pub fn from(g: &LightGraph) -> () {
         let rows = g.subjects().unwrap().len() + g.objects().unwrap().len();
-        let cols = ();
+        let mut cols = 0;
+        g.triples().for_each_triple(|_| cols += 1);
+        let matrix = BitMatrix::new(rows, cols as usize);
     }
 }
