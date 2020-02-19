@@ -10,8 +10,8 @@ use my_graph::MyGraph;
 
 use std::convert::Infallible;
 
-// mod inferray_graph;
-// use inferray_graph::InfGraph;
+mod inferray_graph;
+use inferray_graph::InfGraph;
 
 fn main() {
     let example = r#"
@@ -30,7 +30,7 @@ fn main() {
 
     let mut nt_stringifier = serializer::nt::stringifier();
     let example2 = nt_stringifier
-        .stringify_graph(&mut MyGraph::from(&graph))
+        .stringify_graph(&mut InfGraph::from(&graph))
         .unwrap();
     println!("The resulting graph\n{}", example2);
 }
