@@ -193,7 +193,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "sophia"
 version = "0.3.0"
-source = "git+https://github.com/pchampin/sophia_rs#ed6d4de8e214a6ff10967dd5ab5ed53e0a39fea6"
+source = "git+https://github.com/tbourg/sophia_rs#aa0be23e78efd1a7cfa1ddfc7ef5ff3297b68054"
 dependencies = [
  "language-tag 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -213,7 +213,7 @@ dependencies = [
  "bimap 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bit-matrix 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sophia 0.3.0 (git+https://github.com/pchampin/sophia_rs)",
+ "sophia 0.3.0 (git+https://github.com/tbourg/sophia_rs)",
 ]
 
 [[package]]
@@ -358,7 +358,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rio_api 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "91cc8c591432304a0eea53629131136655dc1365294b4befe056079e37e31968"
 "checksum rio_turtle 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c5d45e698ea1ef0a273055a05a0b563d520bdd5e9b468ee5c012467725d430ef"
 "checksum smallvec 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5c2fb2ec9bcd216a5b0d0ccf31ab17b5ed1d627960edff65bbe95d3ce221cefc"
-"checksum sophia 0.3.0 (git+https://github.com/pchampin/sophia_rs)" = "<none>"
+"checksum sophia 0.3.0 (git+https://github.com/tbourg/sophia_rs)" = "<none>"
 "checksum strsim 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 "checksum syn 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)" = "af6f3550d8dff9ef7dc34d384ac6f107e5d31c8f57d9f28e0081503f547ac8f5"
 "checksum textwrap 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"

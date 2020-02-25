@@ -8,6 +8,6 @@ edition = "2018"
 
 [dependencies]
 clap = "~2.33.0"
-"sophia" = { git = "https://github.com/pchampin/sophia_rs"}
+"sophia" = { git = "https://github.com/tbourg/sophia_rs"}
 bimap = "0.4.0"
 bit-matrix = "0.1.0"

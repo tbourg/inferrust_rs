@@ -1,36 +1,33 @@
 use sophia::graph::{inmem::LightGraph, *};
-use sophia::ns::Namespace;
-use sophia::parser;
+use sophia::ns::*;
 use sophia::serializer;
 use sophia::serializer::TripleStringifier;
-use sophia::triple::stream::{TripleSink, TripleSource};
+use sophia::triple::stream::TripleSource;
 
 mod my_graph;
 use my_graph::MyGraph;
 
-use std::convert::Infallible;
-
-mod inferray_graph;
-use inferray_graph::InfGraph;
+mod inferray;
+use self::inferray::graph::*;
 
 fn main() {
-    let example = r#"
-        @prefix : <http://example.org/>.
-        @prefix foaf: <http://xmlns.com/foaf/0.1/>.
-        :alice foaf:name "Alice";
-            foaf:mbox <mailto:alice@work.example> .
-        :bob foaf:name "Bob".
+    let rep = r#"
+    @prefix : <http://example.org/> .
+    @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+    :Bart rdf:type :human .
+    :Lisa rdf:type :human .
+    :human rdfs:subClassOf :mammal .
+    :mammal rdfs:subClassOf :animal .
     "#;
-    let mut graph: LightGraph = LightGraph::new();
-    parser::turtle::parse_str(example).in_graph(&mut graph);
+    let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 
     let mut cols = 0;
     graph.triples().for_each_triple(|_| cols += 1);
     println!("{} triples", cols);
 
     let mut nt_stringifier = serializer::nt::stringifier();
-    let example2 = nt_stringifier
-        .stringify_graph(&mut InfGraph::from(&graph))
-        .unwrap();
+    let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();
     println!("The resulting graph\n{}", example2);
 }
