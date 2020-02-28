@@ -6,7 +6,7 @@ pub struct TripleStore {
 
 impl TripleStore {
     pub fn new() -> Self {
-        let mut elem = Vec::new();
+        let elem = Vec::new();
         Self { elem }
     }
 
@@ -20,11 +20,57 @@ impl TripleStore {
         self.elem[ip][1].push([io, is]);
     }
 
+    pub fn add_all(&mut self, other: Self) {
+        self.elem.resize(other.elem.len(), [Vec::new(), Vec::new()]);
+        for i in 0..other.elem.len() {
+            let chunk = &other.elem[i];
+            for pair in &chunk[0] {
+                self.elem[i][0].push(*pair);
+            }
+            for pair in &chunk[1] {
+                self.elem[i][1].push(*pair);
+            }
+        }
+        self.sort();
+    }
+
     pub fn sort(&mut self) {
         for chunk in &mut self.elem {
             sort(&mut chunk[0]);
             sort(&mut chunk[1]);
         }
+    }
+
+    pub fn res_to_prop(&mut self, res: i64, prop: i32) {
+        for chunk in &mut self.elem {
+            for i in 0..chunk[0].len() {
+                let pair = chunk[0][i];
+                if pair[0] == res {
+                    chunk[0][i][0] = prop.into();
+                }
+                if pair[1] == res {
+                    chunk[0][i][1] = prop.into();
+                }
+            }
+            for i in 0..chunk[1].len() {
+                let pair = chunk[1][i];
+                if pair[0] == res {
+                    chunk[1][i][0] = prop.into();
+                }
+                if pair[1] == res {
+                    chunk[1][i][1] = prop.into();
+                }
+            }
+        }
+        /////////
+    }
+
+    pub fn size(&mut self) -> usize {
+        let mut s = 0;
+        for chunk in &self.elem {
+            s += chunk[0].len();
+        }
+        s
     }
 }
 
@@ -34,10 +80,10 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     }
     let min = pairs.iter().min_by_key(|p| p[0]).unwrap()[0];
     let max = pairs.iter().max_by_key(|p| p[0]).unwrap()[0];
-    let width: usize = dbg!((max - min + 1) as usize);
-    let mut hist = dbg!(hist(&pairs, min, width));
+    let width: usize = ((max - min + 1) as usize);
+    let mut hist = (hist(&pairs, min, width));
     let hist_copy = hist.clone();
-    let start = dbg!(cum(&hist));
+    let start = (cum(&hist));
     let len = pairs.len();
     let mut objects = Vec::new();
     objects.resize(len, 0);

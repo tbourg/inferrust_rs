@@ -8,96 +8,98 @@ use std::convert::TryInto;
 
 use bimap::hash::BiHashMap;
 
+use super::store::TripleStore;
+
 pub struct NodeDictionary {
     res_ctr: i64,
     prop_ctr: i32,
     removed_val: Vec<i64>,
     resources: BiHashMap<RcTerm, i64>,
     properties: BiHashMap<RcTerm, i32>,
-    remap: bool,    
-    factory: RcTermFactory, 
-        rdfsResource: i64,
-        rdfsClass: i64,
-        rdfsDatatype: i64,
-        rdfsLiteral: i64,
-        rdfsContainer: i64,
-        rdfsdomain: i32,
-        rdfsrange: i32,
-        rdfssubClassOf: i32,
-        rdfssubPropertyOf: i32,
-        rdfsSeeAlso: i32,
-        rdfsisDefinedBy: i32,
-        rdfsComment: i32,
-        rdfsMember: i32,
-        rdfsContainerMembershipProperty: i32,
-        rdfsLabel: i32,
-        rdfList: i64,
-        rdfAlt: i64,
-        rdfBag: i64,
-        rdfSeq: i64,
-        rdfXMLLiteral: i64,
-        rdfStatement: i64,
-        rdfnil: i64,
-        rdfProperty: i32,
-        rdftype: i32,
-        rdfsubject: i32,
-        rdfobject: i32,
-        rdfpredicate: i32,
-        rdffirst: i32,
-        rdfrest: i32,
-        rdfValue: i32,
-        xsdnonNegativeInteger: i64,
-        xsdstring: i64,
-        owlthing: i32,
-        owltransitiveProperty: i32,
-        owlequivalentClass: i32,
-        owlequivalentProperty: i32,
-        owlobjectProperty: i32,
-        owldataTypeProperty: i32,
-        owlsameAs: i32,
-        owlinverseOf: i32,
-        owlpropertyDisjointWith: i32,
-        owldifferentFrom: i32,
-        owlallDifferent: i32,
-        owlallDisjointClasses: i32,
-        owlallValuesFrom: i32,
-        owlannotationProperty: i32,
-        owlassertionProperty: i32,
-        owlclass: i64,
-        owlcomplementOf: i32,
-        owldisjoinWith: i32,
-        owldistinctmembers: i32,
-        owlfunctionalProperty: i32,
-        intersectionOf: i32,
-        unionOf: i32,
-        owlinverseFunctionalProperty: i32,
-        irreflexiveProperty: i32,
-        maxCardinality: i32,
-        members: i32,
-        nothing: i32,
-        onClass: i32,
-        onProperty: i32,
-        oneOf: i32,
-        propertyChainAxiom: i32,
-        owlsomeValuesFrom: i32,
-        sourceIndividual: i32,
-        owlsymetricProperty: i32,
-        owltargetIndividual: i32,
-        targetValue: i32,
-        maxQualifiedCardinality: i32,
-}   
+    pub ts: TripleStore,
+    factory: RcTermFactory,
+    pub rdfsResource: i64,
+    pub rdfsClass: i64,
+    pub rdfsDatatype: i64,
+    pub rdfsLiteral: i64,
+    pub rdfsContainer: i64,
+    pub rdfsdomain: i32,
+    pub rdfsrange: i32,
+    pub rdfssubClassOf: i32,
+    pub rdfssubPropertyOf: i32,
+    pub rdfsSeeAlso: i32,
+    pub rdfsisDefinedBy: i32,
+    pub rdfsComment: i32,
+    pub rdfsMember: i32,
+    pub rdfsContainerMembershipProperty: i32,
+    pub rdfsLabel: i32,
+    pub rdfList: i64,
+    pub rdfAlt: i64,
+    pub rdfBag: i64,
+    pub rdfSeq: i64,
+    pub rdfXMLLiteral: i64,
+    pub rdfStatement: i64,
+    pub rdfnil: i64,
+    pub rdfProperty: i32,
+    pub rdftype: i32,
+    pub rdfsubject: i32,
+    pub rdfobject: i32,
+    pub rdfpredicate: i32,
+    pub rdffirst: i32,
+    pub rdfrest: i32,
+    pub rdfValue: i32,
+    pub xsdnonNegativeInteger: i64,
+    pub xsdstring: i64,
+    pub owlthing: i32,
+    pub owltransitiveProperty: i32,
+    pub owlequivalentClass: i32,
+    pub owlequivalentProperty: i32,
+    pub owlobjectProperty: i32,
+    pub owldataTypeProperty: i32,
+    pub owlsameAs: i32,
+    pub owlinverseOf: i32,
+    pub owlpropertyDisjointWith: i32,
+    pub owldifferentFrom: i32,
+    pub owlallDifferent: i32,
+    pub owlallDisjointClasses: i32,
+    pub owlallValuesFrom: i32,
+    pub owlannotationProperty: i32,
+    pub owlassertionProperty: i32,
+    pub owlclass: i64,
+    pub owlcomplementOf: i32,
+    pub owldisjoinWith: i32,
+    pub owldistinctmembers: i32,
+    pub owlfunctionalProperty: i32,
+    pub intersectionOf: i32,
+    pub unionOf: i32,
+    pub owlinverseFunctionalProperty: i32,
+    pub irreflexiveProperty: i32,
+    pub maxCardinality: i32,
+    pub members: i32,
+    pub nothing: i32,
+    pub onClass: i32,
+    pub onProperty: i32,
+    pub oneOf: i32,
+    pub propertyChainAxiom: i32,
+    pub owlsomeValuesFrom: i32,
+    pub sourceIndividual: i32,
+    pub owlsymetricProperty: i32,
+    pub owltargetIndividual: i32,
+    pub targetValue: i32,
+    pub maxQualifiedCardinality: i32,
+}
 
-impl NodeDictionary {   
-    const START_INDEX: i32 = i32::max_value();  
+impl NodeDictionary {
+    const START_INDEX: i32 = i32::max_value();
 
-    pub fn new() -> Self {  
-        let mut me = Self { 
-            res_ctr: Self::START_INDEX as i64,  
-            prop_ctr: Self::START_INDEX,    
+    pub fn new(ts: TripleStore) -> Self {
+        let mut me = Self {
+            res_ctr: Self::START_INDEX as i64,
+            prop_ctr: Self::START_INDEX,
             removed_val: vec![],
             resources: BiHashMap::<RcTerm, i64>::new(),
             properties: BiHashMap::<RcTerm, i32>::new(),
-            remap: false,
+            ts,
             factory: RcTermFactory::new(),
             rdfsResource: 0,
             rdfsClass: 0,
@@ -184,6 +186,9 @@ impl NodeDictionary {
     }
 
     fn add_term(&mut self, t: RcTerm) -> i64 {
+        if self.properties.contains_left(&t) {
+            return *self.properties.get_by_left(&t).expect("Err") as i64;
+        }
         if self.resources.contains_left(&t) {
             *self.resources.get_by_left(&t).expect("Err")
         } else {
@@ -194,7 +199,9 @@ impl NodeDictionary {
     }
 
     fn add_property_term(&mut self, t: RcTerm) -> i32 {
-        if self.properties.contains_left(&t) {
+        if self.resources.contains_left(&t) {
+            self.remap_res_to_prop(t)
+        } else if self.properties.contains_left(&t) {
             *self.properties.get_by_left(&t).expect("Err")
         } else {
             self.prop_ctr -= 1;
@@ -203,11 +210,25 @@ impl NodeDictionary {
         }
     }
 
+    fn remap_res_to_prop(&mut self, t: RcTerm) -> i32 {
+        let old = self.resources.remove_by_left(&t).expect("Err").1;
+        self.prop_ctr -= 1;
+        let p = self.prop_ctr;
+        self.properties.insert(t, p);
+        self.removed_val.push(old);
+        self.ts.res_to_prop(old, p);
+        p
+    }
+
     pub fn get_term(&self, index: i64) -> &RcTerm {
         if index < Self::START_INDEX as i64 {
-            self.properties.get_by_right(&(index as i32)).expect(&format!("No such properties {}", index))
+            self.properties
+                .get_by_right(&(index as i32))
+                .expect(&format!("No such properties {}", index))
         } else {
-            self.resources.get_by_right(&index).expect("No such ressources")
+            self.resources
+                .get_by_right(&index)
+                .expect("No such ressources")
         }
     }
 
@@ -222,10 +243,6 @@ impl NodeDictionary {
 
     fn prop_cnt(&self) -> i32 {
         Self::START_INDEX - self.prop_ctr
-    }
-
-    fn has_remap(&self) -> bool {
-        self.remap
     }
 
     fn was_removed(&self, index: i64) -> bool {

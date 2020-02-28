@@ -10,6 +10,10 @@ use my_graph::MyGraph;
 mod inferray;
 use self::inferray::graph::*;
 
+mod rules;
+use self::rules::Rule;
+use self::rules::RuleSet;
+
 fn main() {
     let rep = r#"
     @prefix : <http://example.org/> .
@@ -23,9 +27,14 @@ fn main() {
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 
-    let mut cols = 0;
-    graph.triples().for_each_triple(|_| cols += 1);
-    println!("{} triples", cols);
+    println!("{} triples", graph.size());
+    let mut nt_stringifier = serializer::nt::stringifier();
+    let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();
+    println!("The resulting graph\n{}", example2);
+    let mut rules = <Vec<Box<dyn Rule>> as RuleSet>::new();
+    // rules.specialize(std::rc::Rc::new(&graph));
+    rules.fire_all(&mut graph);
+    println!("{} triples", graph.size());
 
     let mut nt_stringifier = serializer::nt::stringifier();
     let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();

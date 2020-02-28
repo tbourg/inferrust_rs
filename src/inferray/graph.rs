@@ -10,8 +10,7 @@ use super::dictionary::NodeDictionary;
 use super::store::TripleStore;
 
 pub struct InfGraph {
-    dictionary: NodeDictionary,
-    store: TripleStore,
+    pub dictionary: NodeDictionary,
 }
 
 impl Graph for InfGraph {
@@ -21,14 +20,14 @@ impl Graph for InfGraph {
     fn triples(&self) -> GTripleSource<Self> {
         let mut v: Vec<Result<StreamedTriple<ByTermRefs<std::rc::Rc<str>>>, Self::Error>> =
             Vec::new();
-        eprintln!(":{:?}", self.store.elem);
-        for (ip, chunk) in (&self.store.elem).iter().enumerate() {
+        // eprintln!(":{:?}", self.dictionary.ts.elem);
+        for (ip, chunk) in (&self.dictionary.ts.elem).iter().enumerate() {
             // eprintln!("p: {}", p);
             if !chunk[0].is_empty() {
                 let ip = NodeDictionary::idx_to_prop_idx(ip);
                 let p = self.dictionary.get_term(ip);
                 for pair in &chunk[0] {
-                    eprintln!("pso: {} {:?}", ip, pair);
+                    // eprintln!("pso: {} {:?}", ip, pair);
                     let s = self.dictionary.get_term(pair[0]);
                     let o = self.dictionary.get_term(pair[1]);
                     v.push(Ok(StreamedTriple::by_term_refs(s, p, o)));
@@ -72,6 +71,10 @@ impl InfGraph {
         }
         [s, p as i64, o]
     }
+
+    pub fn size(&mut self) -> usize {
+        self.dictionary.ts.size()
+    }
 }
 
 impl<TS> From<TS> for InfGraph
@@ -80,15 +83,15 @@ where
 {
     fn from(mut ts: TS) -> Self {
         let store = TripleStore::new();
-        let dictionary = NodeDictionary::new();
-        let mut me = Self { dictionary, store };
+        let dictionary = NodeDictionary::new(store);
+        let mut me = Self { dictionary };
         ts.for_each_triple(|t| {
             let rep = me.encode_triple(&t);
-            eprintln!("{:?}", rep);
-            me.store.add_triple(rep);
+            //eprintln!("{:?}", rep);
+            me.dictionary.ts.add_triple(rep);
         })
         .expect("Streaming error");
-        me.store.sort();
+        me.dictionary.ts.sort();
         me
     }
 }
@@ -99,9 +102,3 @@ where
 fn contains_prop_in_s_or_o<TD>(t: &dyn Triple<TermData = TD>) -> i32 {
     -1
 }
-
-// :human rdfs:subclassof :mammal ||| :bart :type :human
-//  0           1            2           3    4      5
-//                        -->
-//          3             4              2
-//        :bart         :type         :mammal
