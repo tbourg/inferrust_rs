@@ -21,17 +21,13 @@ impl TripleStore {
     }
 
     pub fn add_all(&mut self, other: Self) {
-        self.elem.resize(other.elem.len(), [Vec::new(), Vec::new()]);
+        // self.elem.resize(other.elem.len(), [Vec::new(), Vec::new()]);
         for i in 0..other.elem.len() {
-            let chunk = &other.elem[i];
-            for pair in &chunk[0] {
-                self.elem[i][0].push(*pair);
-            }
-            for pair in &chunk[1] {
-                self.elem[i][1].push(*pair);
+            let ip = NodeDictionary::idx_to_prop_idx(i);
+            for pair in &other.elem[i][0] {
+                self.add_triple([pair[0], ip, pair[1]]);
             }
         }
-        self.sort();
     }
 
     pub fn sort(&mut self) {

@@ -19,11 +19,14 @@ fn main() {
     @prefix : <http://example.org/> .
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix owl: <http://www.w3.org/2002/07/owl#> .
 
     :Bart rdf:type :human .
     :Lisa rdf:type :human .
+    :BLOB a :entity .
     :human rdfs:subClassOf :mammal .
     :mammal rdfs:subClassOf :animal .
+    :animal owl:equivalentClass :entity .
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 

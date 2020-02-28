@@ -15,7 +15,7 @@ pub trait RuleSet {
 
 impl RuleSet for Vec<Box<dyn Rule>> {
     fn new() -> Vec<Box<dyn Rule>> {
-        vec![Box::new(CAX_SCO)]
+        vec![Box::new(CAX_SCO), Box::new(CAX_EQC1), Box::new(CAX_EQC2)]
     }
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>) {
     // for rule in self.iter() {
