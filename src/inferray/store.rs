@@ -1,26 +1,28 @@
-use super::dictionary::NodeDictionary;
+use super::NodeDictionary;
 
 pub struct TripleStore {
     pub elem: Vec<[Vec<[i64; 2]>; 2]>,
 }
 
 impl TripleStore {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         let elem = Vec::new();
         Self { elem }
     }
 
-    pub fn add_triple(&mut self, triple: [i64; 3]) {
+    pub(crate) fn add_triple(&mut self, triple: [i64; 3]) {
         let [is, ip, io] = triple;
-        let ip = NodeDictionary::prop_idx_to_idx(ip);
-        while self.elem.get(ip) == None {
+        let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
+        // dbg!(is, ip, io);
+        // dbg!(is, ip_to_store, io);
+        while self.elem.get(ip_to_store) == None {
             self.elem.push([Vec::new(), Vec::new()]);
         }
-        self.elem[ip][0].push([is, io]);
-        self.elem[ip][1].push([io, is]);
+        self.elem[ip_to_store][0].push([is, io]);
+        self.elem[ip_to_store][1].push([io, is]);
     }
 
-    pub fn add_all(&mut self, other: Self) {
+    pub(crate) fn add_all(&mut self, other: Self) {
         // self.elem.resize(other.elem.len(), [Vec::new(), Vec::new()]);
         for i in 0..other.elem.len() {
             let ip = NodeDictionary::idx_to_prop_idx(i);
@@ -30,14 +32,14 @@ impl TripleStore {
         }
     }
 
-    pub fn sort(&mut self) {
+    pub(crate) fn sort(&mut self) {
         for chunk in &mut self.elem {
             sort(&mut chunk[0]);
             sort(&mut chunk[1]);
         }
     }
 
-    pub fn res_to_prop(&mut self, res: i64, prop: i32) {
+    pub(crate) fn res_to_prop(&mut self, res: i64, prop: i32) {
         for chunk in &mut self.elem {
             for i in 0..chunk[0].len() {
                 let pair = chunk[0][i];
@@ -61,7 +63,7 @@ impl TripleStore {
         /////////
     }
 
-    pub fn size(&mut self) -> usize {
+    pub(crate) fn size(&mut self) -> usize {
         let mut s = 0;
         for chunk in &self.elem {
             s += chunk[0].len();
@@ -70,7 +72,7 @@ impl TripleStore {
     }
 }
 
-pub fn sort(pairs: &mut Vec<[i64; 2]>) {
+pub(crate) fn sort(pairs: &mut Vec<[i64; 2]>) {
     if pairs.is_empty() {
         return;
     }

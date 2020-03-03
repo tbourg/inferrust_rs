@@ -1,5 +1,5 @@
 [package]
-name = "sophia-test"
+name = "inferrust"
 version = "0.1.0"
 authors = ["Thomas Bourg <tbourg07@gmail.com>"]
 edition = "2018"

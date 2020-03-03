@@ -1,6 +1,6 @@
-use crate::inferray::dictionary::NodeDictionary;
-use crate::inferray::graph::InfGraph;
-use crate::inferray::store::TripleStore;
+use crate::inferray::InfGraph;
+use crate::inferray::NodeDictionary;
+use crate::inferray::TripleStore;
 use crate::rules::Rule;
 
 use sophia::ns::*;
@@ -31,7 +31,7 @@ use sophia::term::StaticTerm;
  * <li>Inferred triple contains only s,p,o from the head</li>
  * </ol>
  */
-pub fn apply_alpha_rule(
+fn apply_alpha_rule(
     graph: &InfGraph,
     id_1: i64,
     id_2: i64,
@@ -41,8 +41,13 @@ pub fn apply_alpha_rule(
     id_c1: i64,
     id_c2: i64,
 ) -> TripleStore {
-    let property_1_pairs = &graph.dictionary.ts.elem[id_1 as usize];
-    let property_2_pairs = &graph.dictionary.ts.elem[id_2 as usize];
+    let property_1_pairs = graph.dictionary.ts.elem.get(id_1 as usize);
+    let property_2_pairs = graph.dictionary.ts.elem.get(id_2 as usize);
+    if property_1_pairs == None || property_2_pairs == None {
+        return TripleStore::new();
+    }
+    let property_1_pairs = property_1_pairs.unwrap();
+    let property_2_pairs = property_2_pairs.unwrap();
     let mut output = TripleStore::new();
     for property_1_pair in &property_1_pairs[0] {
         for property_2_pair in &property_2_pairs[0] {
@@ -58,7 +63,7 @@ pub fn apply_alpha_rule(
             if index(id_c2) == index(id_c1) {
                 output.add_triple([
                     index(id_s),
-                    NodeDictionary::prop_idx_to_idx(index(id_p)) as i64,
+                    NodeDictionary::idx_to_prop_idx(index(id_p) as usize),
                     index(id_o),
                 ]);
             }
@@ -67,7 +72,7 @@ pub fn apply_alpha_rule(
     output
 }
 
-pub struct CAX_SCO;
+pub(crate) struct CAX_SCO;
 
 impl Rule for CAX_SCO {
     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
@@ -77,7 +82,7 @@ impl Rule for CAX_SCO {
     }
 }
 
-pub struct CAX_EQC1;
+pub(crate) struct CAX_EQC1;
 
 impl Rule for CAX_EQC1 {
     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
@@ -88,7 +93,7 @@ impl Rule for CAX_EQC1 {
     }
 }
 
-pub struct CAX_EQC2;
+pub(crate) struct CAX_EQC2;
 
 impl Rule for CAX_EQC2 {
     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {

@@ -1,18 +1,10 @@
-use sophia::graph::{inmem::LightGraph, *};
+use sophia::graph::Graph;
 use sophia::ns::*;
-use sophia::serializer;
-use sophia::serializer::TripleStringifier;
-use sophia::triple::stream::TripleSource;
+use sophia::serializer::nt::NtSerializer;
+use sophia::serializer::*;
 
-mod my_graph;
-use my_graph::MyGraph;
-
-mod inferray;
-use self::inferray::graph::*;
-
-mod rules;
-use self::rules::Rule;
-use self::rules::RuleSet;
+use inferrust::inferray::*;
+use inferrust::rules::{Rule, RuleSet};
 
 fn main() {
     let rep = r#"
@@ -26,20 +18,27 @@ fn main() {
     :BLOB a :entity .
     :human rdfs:subClassOf :mammal .
     :mammal rdfs:subClassOf :animal .
-    :animal owl:equivalentClass :entity .
+    :animal rdfs:subClassOf :entity .
+    :entity rdfs:subClassOf :animal .
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 
-    println!("{} triples", graph.size());
-    let mut nt_stringifier = serializer::nt::stringifier();
-    let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();
+    // dbg!(&graph.dictionary.ts.elem);
+
+    println!(
+        "{} triples and {} p",
+        graph.size(),
+        graph.dictionary.ts.elem.len()
+    );
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
     println!("The resulting graph\n{}", example2);
     let mut rules = <Vec<Box<dyn Rule>> as RuleSet>::new();
     // rules.specialize(std::rc::Rc::new(&graph));
     rules.fire_all(&mut graph);
     println!("{} triples", graph.size());
 
-    let mut nt_stringifier = serializer::nt::stringifier();
-    let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
     println!("The resulting graph\n{}", example2);
 }

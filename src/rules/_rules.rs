@@ -1,5 +1,5 @@
-use crate::inferray::graph::InfGraph;
-use crate::inferray::store::TripleStore;
+use crate::inferray::InfGraph;
+use crate::inferray::TripleStore;
 use crate::rules::*;
 
 pub trait Rule {
@@ -15,7 +15,12 @@ pub trait RuleSet {
 
 impl RuleSet for Vec<Box<dyn Rule>> {
     fn new() -> Vec<Box<dyn Rule>> {
-        vec![Box::new(CAX_SCO), Box::new(CAX_EQC1), Box::new(CAX_EQC2)]
+        vec![
+            Box::new(CAX_SCO),
+            Box::new(CAX_EQC1),
+            Box::new(CAX_EQC2),
+            Box::new(SCM_EQC2),
+        ]
     }
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>) {
     // for rule in self.iter() {
