@@ -1,3 +1,20 @@
+//! Class alpha groups the following rules :
+//! <ul>
+//! <li>CAX-SCO</li>
+//! <li>SCM-DOM1</li>
+//! <li>SCM-DOM2</li>
+//! <li>SCM-RNG1</li>
+//! <li>SCM-RNG2</li>
+//! </ul>
+//!
+//! All these rules have the following properties :
+//! <ol>
+//! <li>2 fixed predicates in the head triples</li>
+//! <li>Equality between first subject second object or first object second
+//! subject</li>
+//! <li>Inferred triple contains only s,p,o from the head</li>
+//! </ol>
+
 use crate::inferray::InfGraph;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
@@ -12,26 +29,7 @@ use sophia::term::StaticTerm;
 //          3             4              2
 //        :bart         :type         :mammal
 
-/**
- *
- * Class alpha groups the following rules :
- * <ul>
- * <li>CAX-SCO</li>
- * <li>SCM-DOM1</li>
- * <li>SCM-DOM2</li>
- * <li>SCM-RNG1</li>
- * <li>SCM-RNG2</li>
- * </ul>
- *
- * All these rules have the following properties :
- * <ol>
- * <li>2 fixed predicates in the head triples</li>
- * <li>Equality between first subject second object or first object second
- * subject</li>
- * <li>Inferred triple contains only s,p,o from the head</li>
- * </ol>
- */
-fn apply_alpha_rule(
+pub fn apply_alpha_rule(
     graph: &InfGraph,
     id_1: i64,
     id_2: i64,
@@ -72,7 +70,7 @@ fn apply_alpha_rule(
     output
 }
 
-pub(crate) struct CAX_SCO;
+pub struct CAX_SCO;
 
 impl Rule for CAX_SCO {
     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
@@ -82,7 +80,7 @@ impl Rule for CAX_SCO {
     }
 }
 
-pub(crate) struct CAX_EQC1;
+pub struct CAX_EQC1;
 
 impl Rule for CAX_EQC1 {
     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
@@ -93,7 +91,7 @@ impl Rule for CAX_EQC1 {
     }
 }
 
-pub(crate) struct CAX_EQC2;
+pub struct CAX_EQC2;
 
 impl Rule for CAX_EQC2 {
     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {

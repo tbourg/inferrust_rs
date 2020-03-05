@@ -1,6 +1,6 @@
 mod dictionary;
-pub(crate) use self::dictionary::*;
+pub use self::dictionary::*;
 mod graph;
 pub use self::graph::*;
 mod store;
-pub(crate) use self::store::*;
+pub use self::store::*;

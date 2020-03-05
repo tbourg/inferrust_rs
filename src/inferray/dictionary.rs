@@ -18,81 +18,81 @@ pub struct NodeDictionary {
     properties: BiHashMap<RcTerm, i32>,
     pub ts: TripleStore,
     factory: RcTermFactory,
-    pub(crate) rdfsResource: i64,
-    pub(crate) rdfsClass: i64,
-    pub(crate) rdfsDatatype: i64,
-    pub(crate) rdfsLiteral: i64,
-    pub(crate) rdfsContainer: i64,
-    pub(crate) rdfsdomain: i32,
-    pub(crate) rdfsrange: i32,
-    pub(crate) rdfssubClassOf: i32,
-    pub(crate) rdfssubPropertyOf: i32,
-    pub(crate) rdfsSeeAlso: i32,
-    pub(crate) rdfsisDefinedBy: i32,
-    pub(crate) rdfsComment: i32,
-    pub(crate) rdfsMember: i32,
-    pub(crate) rdfsContainerMembershipProperty: i32,
-    pub(crate) rdfsLabel: i32,
-    pub(crate) rdfList: i64,
-    pub(crate) rdfAlt: i64,
-    pub(crate) rdfBag: i64,
-    pub(crate) rdfSeq: i64,
-    pub(crate) rdfXMLLiteral: i64,
-    pub(crate) rdfStatement: i64,
-    pub(crate) rdfnil: i64,
-    pub(crate) rdfProperty: i32,
-    pub(crate) rdftype: i32,
-    pub(crate) rdfsubject: i32,
-    pub(crate) rdfobject: i32,
-    pub(crate) rdfpredicate: i32,
-    pub(crate) rdffirst: i32,
-    pub(crate) rdfrest: i32,
-    pub(crate) rdfValue: i32,
-    pub(crate) xsdnonNegativeInteger: i64,
-    pub(crate) xsdstring: i64,
-    pub(crate) owlthing: i32,
-    pub(crate) owltransitiveProperty: i32,
-    pub(crate) owlequivalentClass: i32,
-    pub(crate) owlequivalentProperty: i32,
-    pub(crate) owlobjectProperty: i32,
-    pub(crate) owldataTypeProperty: i32,
-    pub(crate) owlsameAs: i32,
-    pub(crate) owlinverseOf: i32,
-    pub(crate) owlpropertyDisjointWith: i32,
-    pub(crate) owldifferentFrom: i32,
-    pub(crate) owlallDifferent: i32,
-    pub(crate) owlallDisjointClasses: i32,
-    pub(crate) owlallValuesFrom: i32,
-    pub(crate) owlannotationProperty: i32,
-    pub(crate) owlassertionProperty: i32,
-    pub(crate) owlclass: i64,
-    pub(crate) owlcomplementOf: i32,
-    pub(crate) owldisjoinWith: i32,
-    pub(crate) owldistinctmembers: i32,
-    pub(crate) owlfunctionalProperty: i32,
-    pub(crate) intersectionOf: i32,
-    pub(crate) unionOf: i32,
-    pub(crate) owlinverseFunctionalProperty: i32,
-    pub(crate) irreflexiveProperty: i32,
-    pub(crate) maxCardinality: i32,
-    pub(crate) members: i32,
-    pub(crate) nothing: i32,
-    pub(crate) onClass: i32,
-    pub(crate) onProperty: i32,
-    pub(crate) oneOf: i32,
-    pub(crate) propertyChainAxiom: i32,
-    pub(crate) owlsomeValuesFrom: i32,
-    pub(crate) sourceIndividual: i32,
-    pub(crate) owlsymetricProperty: i32,
-    pub(crate) owltargetIndividual: i32,
-    pub(crate) targetValue: i32,
-    pub(crate) maxQualifiedCardinality: i32,
+    pub rdfsResource: i64,
+    pub rdfsClass: i64,
+    pub rdfsDatatype: i64,
+    pub rdfsLiteral: i64,
+    pub rdfsContainer: i64,
+    pub rdfsdomain: i32,
+    pub rdfsrange: i32,
+    pub rdfssubClassOf: i32,
+    pub rdfssubPropertyOf: i32,
+    pub rdfsSeeAlso: i32,
+    pub rdfsisDefinedBy: i32,
+    pub rdfsComment: i32,
+    pub rdfsMember: i32,
+    pub rdfsContainerMembershipProperty: i32,
+    pub rdfsLabel: i32,
+    pub rdfList: i64,
+    pub rdfAlt: i64,
+    pub rdfBag: i64,
+    pub rdfSeq: i64,
+    pub rdfXMLLiteral: i64,
+    pub rdfStatement: i64,
+    pub rdfnil: i64,
+    pub rdfProperty: i32,
+    pub rdftype: i32,
+    pub rdfsubject: i32,
+    pub rdfobject: i32,
+    pub rdfpredicate: i32,
+    pub rdffirst: i32,
+    pub rdfrest: i32,
+    pub rdfValue: i32,
+    pub xsdnonNegativeInteger: i64,
+    pub xsdstring: i64,
+    pub owlthing: i32,
+    pub owltransitiveProperty: i32,
+    pub owlequivalentClass: i32,
+    pub owlequivalentProperty: i32,
+    pub owlobjectProperty: i32,
+    pub owldataTypeProperty: i32,
+    pub owlsameAs: i32,
+    pub owlinverseOf: i32,
+    pub owlpropertyDisjointWith: i32,
+    pub owldifferentFrom: i32,
+    pub owlallDifferent: i32,
+    pub owlallDisjointClasses: i32,
+    pub owlallValuesFrom: i32,
+    pub owlannotationProperty: i32,
+    pub owlassertionProperty: i32,
+    pub owlclass: i64,
+    pub owlcomplementOf: i32,
+    pub owldisjoinWith: i32,
+    pub owldistinctmembers: i32,
+    pub owlfunctionalProperty: i32,
+    pub intersectionOf: i32,
+    pub unionOf: i32,
+    pub owlinverseFunctionalProperty: i32,
+    pub irreflexiveProperty: i32,
+    pub maxCardinality: i32,
+    pub members: i32,
+    pub nothing: i32,
+    pub onClass: i32,
+    pub onProperty: i32,
+    pub oneOf: i32,
+    pub propertyChainAxiom: i32,
+    pub owlsomeValuesFrom: i32,
+    pub sourceIndividual: i32,
+    pub owlsymetricProperty: i32,
+    pub owltargetIndividual: i32,
+    pub targetValue: i32,
+    pub maxQualifiedCardinality: i32,
 }
 
 impl NodeDictionary {
     const START_INDEX: i32 = i32::max_value();
 
-    pub(crate) fn new(ts: TripleStore) -> Self {
+    pub fn new(ts: TripleStore) -> Self {
         let mut me = Self {
             res_ctr: Self::START_INDEX as i64,
             prop_ctr: Self::START_INDEX,
@@ -175,12 +175,12 @@ impl NodeDictionary {
         me
     }
 
-    pub(crate) fn add(&mut self, str: &str) -> i64 {
+    pub fn add(&mut self, str: &str) -> i64 {
         let term = self.factory.iri(str).expect("Err");
         self.add_term(term)
     }
 
-    pub(crate) fn add_property(&mut self, str: &str) -> i32 {
+    pub fn add_property(&mut self, str: &str) -> i32 {
         let term = self.factory.iri(str).expect("Err");
         self.add_property_term(term)
     }
@@ -220,7 +220,7 @@ impl NodeDictionary {
         p
     }
 
-    pub(crate) fn get_term(&self, index: i64) -> &RcTerm {
+    pub fn get_term(&self, index: i64) -> &RcTerm {
         if index < Self::START_INDEX as i64 {
             self.properties
                 .get_by_right(&(index as i32))
@@ -232,7 +232,7 @@ impl NodeDictionary {
         }
     }
 
-    pub(crate) fn get_index<T>(&self, t: &Term<T>) -> Option<i64>
+    pub fn get_index<T>(&self, t: &Term<T>) -> Option<i64>
     where
         T: TermData,
     {
@@ -246,13 +246,13 @@ impl NodeDictionary {
         }
     }
 
-    pub(crate) fn prop_idx_to_idx(prop_idx: i64) -> usize {
-        (Self::START_INDEX as i64 - prop_idx - 1)
+    pub fn prop_idx_to_idx(prop_idx: i64) -> usize {
+        (/*dbg!(*/Self::START_INDEX as i64 - prop_idx - 1/*)*/)
             .try_into()
             .expect("Err converting index")
     }
 
-    pub(crate) fn idx_to_prop_idx(idx: usize) -> i64 {
+    pub fn idx_to_prop_idx(idx: usize) -> i64 {
         Self::START_INDEX as i64 - idx as i64 - 1
     }
 

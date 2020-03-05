@@ -20,6 +20,10 @@ fn main() {
     :mammal rdfs:subClassOf :animal .
     :animal rdfs:subClassOf :entity .
     :entity rdfs:subClassOf :animal .
+    :Bart :enfant :Lisa .
+    :enfant owl:inverseOf :parent .
+    :parent owl:equivalentProperty :geniteur . 
+    :progeniture owl:equivalentProperty :enfant .
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 

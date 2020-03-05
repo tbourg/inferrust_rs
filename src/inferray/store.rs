@@ -5,12 +5,12 @@ pub struct TripleStore {
 }
 
 impl TripleStore {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         let elem = Vec::new();
         Self { elem }
     }
 
-    pub(crate) fn add_triple(&mut self, triple: [i64; 3]) {
+    pub fn add_triple(&mut self, triple: [i64; 3]) {
         let [is, ip, io] = triple;
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
         // dbg!(is, ip, io);
@@ -22,7 +22,7 @@ impl TripleStore {
         self.elem[ip_to_store][1].push([io, is]);
     }
 
-    pub(crate) fn add_all(&mut self, other: Self) {
+    pub fn add_all(&mut self, other: Self) {
         // self.elem.resize(other.elem.len(), [Vec::new(), Vec::new()]);
         for i in 0..other.elem.len() {
             let ip = NodeDictionary::idx_to_prop_idx(i);
@@ -32,14 +32,14 @@ impl TripleStore {
         }
     }
 
-    pub(crate) fn sort(&mut self) {
+    pub fn sort(&mut self) {
         for chunk in &mut self.elem {
             sort(&mut chunk[0]);
             sort(&mut chunk[1]);
         }
     }
 
-    pub(crate) fn res_to_prop(&mut self, res: i64, prop: i32) {
+    pub fn res_to_prop(&mut self, res: i64, prop: i32) {
         for chunk in &mut self.elem {
             for i in 0..chunk[0].len() {
                 let pair = chunk[0][i];
@@ -63,7 +63,7 @@ impl TripleStore {
         /////////
     }
 
-    pub(crate) fn size(&mut self) -> usize {
+    pub fn size(&mut self) -> usize {
         let mut s = 0;
         for chunk in &self.elem {
             s += chunk[0].len();
@@ -72,7 +72,7 @@ impl TripleStore {
     }
 }
 
-pub(crate) fn sort(pairs: &mut Vec<[i64; 2]>) {
+pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     if pairs.is_empty() {
         return;
     }

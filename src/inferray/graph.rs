@@ -38,12 +38,31 @@ impl Graph for InfGraph {
         Box::from(v.into_iter())
     }
 
-    //     fn triples_with_s<'s, T>(&'s self, s: &'s Term<T>) -> GTripleSource<'s, Self>
-    //     where
-    //         T: TermData,
-    //     {
-    //         Box::new(self.triples().filter_ok(move |t| t.s() == s))
-    //     }
+    fn triples_with_s<'s, T>(&'s self, s: &'s Term<T>) -> GTripleSource<'s, Self>
+    where
+        T: TermData,
+    {
+        let mut v: Vec<Result<StreamedTriple<ByTermRefs<std::rc::Rc<str>>>, Self::Error>> =
+            Vec::new();
+        if let Some(is) = self.dictionary.get_index(s) {
+            let s = self.dictionary.get_term(is);
+            for (idx, chunk) in self.dictionary.ts.elem.iter().enumerate() {
+                let chunk = &chunk[0];
+                let chunk_len = chunk.len();
+                if !chunk.is_empty() && chunk[0][0] <= is && chunk[chunk_len - 1][0] >= is {
+                    let ip = NodeDictionary::idx_to_prop_idx(idx);
+                    let p = self.dictionary.get_term(ip);
+                    for pair in chunk {
+                        if pair[0] == is {
+                            let o = self.dictionary.get_term(pair[1]);
+                            v.push(Ok(StreamedTriple::by_term_refs(s, p, o)));
+                        }
+                    }
+                }
+            }
+        }
+        Box::from(v.into_iter())
+    }
 
     fn triples_with_p<'s, T>(&'s self, p: &'s Term<T>) -> GTripleSource<'s, Self>
     where
@@ -130,7 +149,6 @@ impl InfGraph {
     where
         TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,
     {
-        let contains_prop = contains_prop_in_s_or_o(t);
         let mut s: i64 = -1;
         let mut o: i64 = -1;
         let mut p: i32 = -1;
@@ -139,8 +157,9 @@ impl InfGraph {
         let p_str = t.p().value();
         // Property will always be property
         p = self.dictionary.add_property(&p_str);
-        if contains_prop != -1 {
-            match contains_prop {
+        let prop_in_s_or_o = contains_prop_in_s_or_o(p, &self.dictionary);
+        if prop_in_s_or_o != -1 {
+            match prop_in_s_or_o {
                 1 => {
                     s = self.dictionary.add_property(&s_str).into();
                     o = self.dictionary.add(&o_str);
@@ -186,6 +205,19 @@ where
 // Should return -1 if both s and o are res,
 // 1 if s is prop and o is res,
 // and 3 if both s and o are prop
-fn contains_prop_in_s_or_o<TD>(t: &dyn Triple<TermData = TD>) -> i32 {
-    -1
+fn contains_prop_in_s_or_o(property_index: i32, dictionary: &NodeDictionary) -> i32 {
+    let prop_in_s = vec![dictionary.rdfsdomain, dictionary.rdfsrange];
+    let prop_in_s_and_o = vec![
+        dictionary.owlequivalentProperty,
+        dictionary.owlinverseOf,
+        dictionary.rdfssubPropertyOf,
+        dictionary.owlsymetricProperty,
+    ];
+    if prop_in_s_and_o.contains(&property_index) {
+        3
+    } else if prop_in_s.contains(&property_index) {
+        1
+    } else {
+        -1
+    }
 }

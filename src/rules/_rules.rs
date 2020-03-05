@@ -2,11 +2,13 @@ use crate::inferray::InfGraph;
 use crate::inferray::TripleStore;
 use crate::rules::*;
 
+/// A trait to unify all the rules of the reasoner
 pub trait Rule {
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>);
     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore;
 }
 
+/// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
     fn new() -> Vec<Box<dyn Rule>>;
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>);
@@ -20,6 +22,8 @@ impl RuleSet for Vec<Box<dyn Rule>> {
             Box::new(CAX_EQC1),
             Box::new(CAX_EQC2),
             Box::new(SCM_EQC2),
+            Box::new(PRP_INV_1_2),
+            Box::new(PRP_EQP_1_2),
         ]
     }
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>) {

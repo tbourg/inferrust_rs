@@ -1,5 +1,7 @@
 //! This crate is an adaptation of [Inferray] in Rust, based on the crate [Sophia].
 //!
+//! [Inferray]:
+//! [Sophia]:
 //!
 //! # Getting started
 //!
@@ -21,21 +23,17 @@
 //!
 //!     :Bart rdf:type :human .
 //!     :Lisa rdf:type :human .
-//!     :BLOB a :entity .
 //!     :human rdfs:subClassOf :mammal .
 //!     :mammal rdfs:subClassOf :animal .
-//!     :animal owl:equivalentClass :entity .
 //!     "#;
 //!     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 //!
 //!     let mut rules = <Vec<Box<dyn Rule>> as RuleSet>::new();
 //!     rules.fire_all(&mut graph);
-//!
-//!     let mut nt_stringifier = serializer::nt::stringifier();
-//!     let example2 = nt_stringifier.stringify_graph(&mut graph).unwrap();
-//!     println!("The resulting graph\n{}", example2);
 //! }
 //! ```
+//!
+//! [Sophia parser]:
 //!
 //! ## Citation
 //! ```
