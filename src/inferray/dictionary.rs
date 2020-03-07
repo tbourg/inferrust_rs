@@ -175,17 +175,8 @@ impl NodeDictionary {
         me
     }
 
-    pub fn add(&mut self, str: &str) -> i64 {
-        let term = self.factory.iri(str).expect("Err");
-        self.add_term(term)
-    }
-
-    pub fn add_property(&mut self, str: &str) -> i32 {
-        let term = self.factory.iri(str).expect("Err");
-        self.add_property_term(term)
-    }
-
-    fn add_term(&mut self, t: RcTerm) -> i64 {
+    pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> i64 {
+        let t = self.factory.copy(term);
         if self.properties.contains_left(&t) {
             return *self.properties.get_by_left(&t).expect("Err") as i64;
         }
@@ -198,7 +189,8 @@ impl NodeDictionary {
         }
     }
 
-    fn add_property_term(&mut self, t: RcTerm) -> i32 {
+    pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> i32 {
+        let t = self.factory.copy(term);
         if self.resources.contains_left(&t) {
             self.remap_res_to_prop(t)
         } else if self.properties.contains_left(&t) {
@@ -236,7 +228,7 @@ impl NodeDictionary {
     where
         T: TermData,
     {
-        let inner_term = RcTerm::new_iri(t.value()).unwrap();
+        let inner_term = RcTerm::from(t);
         if self.properties.contains_left(&inner_term) {
             Some(*self.properties.get_by_left(&inner_term).unwrap() as i64)
         } else if self.resources.contains_left(&inner_term) {
@@ -258,88 +250,88 @@ impl NodeDictionary {
 
     fn init_const(&mut self) {
         // ---------------RDFS
-        self.rdfsResource = self.add(&rdfs::Resource.value());
-        self.rdfsClass = self.add(&rdfs::Class.value());
-        self.rdfsDatatype = self.add(&rdfs::Datatype.value());
-        self.rdfsLiteral = self.add(&rdfs::Literal.value());
-        self.rdfsContainer = self.add(&rdfs::Container.value());
+        self.rdfsResource = self.add(&rdfs::Resource);
+        self.rdfsClass = self.add(&rdfs::Class);
+        self.rdfsDatatype = self.add(&rdfs::Datatype);
+        self.rdfsLiteral = self.add(&rdfs::Literal);
+        self.rdfsContainer = self.add(&rdfs::Container);
 
-        self.rdfsdomain = self.add_property(&rdfs::domain.value());
-        self.rdfsrange = self.add_property(&rdfs::range.value());
-        self.rdfssubClassOf = self.add_property(&rdfs::subClassOf.value());
-        self.rdfssubPropertyOf = self.add_property(&rdfs::subPropertyOf.value());
-        self.rdfsSeeAlso = self.add_property(&rdfs::seeAlso.value());
-        self.rdfsisDefinedBy = self.add_property(&rdfs::isDefinedBy.value());
-        self.rdfsComment = self.add_property(&rdfs::comment.value());
-        self.rdfsMember = self.add_property(&rdfs::member.value());
+        self.rdfsdomain = self.add_property(&rdfs::domain);
+        self.rdfsrange = self.add_property(&rdfs::range);
+        self.rdfssubClassOf = self.add_property(&rdfs::subClassOf);
+        self.rdfssubPropertyOf = self.add_property(&rdfs::subPropertyOf);
+        self.rdfsSeeAlso = self.add_property(&rdfs::seeAlso);
+        self.rdfsisDefinedBy = self.add_property(&rdfs::isDefinedBy);
+        self.rdfsComment = self.add_property(&rdfs::comment);
+        self.rdfsMember = self.add_property(&rdfs::member);
         self.rdfsContainerMembershipProperty =
-            self.add_property(&rdfs::ContainerMembershipProperty.value());
-        self.rdfsLabel = self.add_property(&rdfs::label.value());
+            self.add_property(&rdfs::ContainerMembershipProperty);
+        self.rdfsLabel = self.add_property(&rdfs::label);
 
         // -----------------RDF
 
-        self.rdfList = self.add(&rdf::List.value());
-        self.rdfAlt = self.add(&rdf::Alt.value());
-        self.rdfBag = self.add(&rdf::Bag.value());
-        self.rdfSeq = self.add(&rdf::Seq.value());
-        self.rdfXMLLiteral = self.add(&rdf::XMLLiteral.value());
-        self.rdfStatement = self.add(&rdf::Statement.value());
-        self.rdfnil = self.add(&rdf::nil.value());
+        self.rdfList = self.add(&rdf::List);
+        self.rdfAlt = self.add(&rdf::Alt);
+        self.rdfBag = self.add(&rdf::Bag);
+        self.rdfSeq = self.add(&rdf::Seq);
+        self.rdfXMLLiteral = self.add(&rdf::XMLLiteral);
+        self.rdfStatement = self.add(&rdf::Statement);
+        self.rdfnil = self.add(&rdf::nil);
 
-        self.rdfProperty = self.add_property(&rdf::Property.value());
-        self.rdftype = self.add_property(&rdf::type_.value());
-        self.rdfsubject = self.add_property(&rdf::subject.value());
-        self.rdfobject = self.add_property(&rdf::object.value());
-        self.rdfpredicate = self.add_property(&rdf::predicate.value());
-        self.rdffirst = self.add_property(&rdf::first.value());
-        self.rdfrest = self.add_property(&rdf::rest.value());
-        self.rdfValue = self.add_property(&rdf::value.value());
+        self.rdfProperty = self.add_property(&rdf::Property);
+        self.rdftype = self.add_property(&rdf::type_);
+        self.rdfsubject = self.add_property(&rdf::subject);
+        self.rdfobject = self.add_property(&rdf::object);
+        self.rdfpredicate = self.add_property(&rdf::predicate);
+        self.rdffirst = self.add_property(&rdf::first);
+        self.rdfrest = self.add_property(&rdf::rest);
+        self.rdfValue = self.add_property(&rdf::value);
 
         // ------------------XSD
 
-        self.xsdnonNegativeInteger = self.add(&xsd::nonNegativeInteger.value());
-        self.xsdstring = self.add(&xsd::string.value());
+        self.xsdnonNegativeInteger = self.add(&xsd::nonNegativeInteger);
+        self.xsdstring = self.add(&xsd::string);
 
         // ------------------OWL
 
-        self.owlthing = self.add_property(&owl::Thing.value());
-        self.owltransitiveProperty = self.add_property(&owl::TransitiveProperty.value());
-        self.owlequivalentClass = self.add_property(&owl::equivalentClass.value());
-        self.owlequivalentProperty = self.add_property(&owl::equivalentProperty.value());
-        self.owlobjectProperty = self.add_property(&owl::ObjectProperty.value());
-        self.owldataTypeProperty = self.add_property(&owl::DatatypeProperty.value());
-        self.owlsameAs = self.add_property(&owl::sameAs.value());
+        self.owlthing = self.add_property(&owl::Thing);
+        self.owltransitiveProperty = self.add_property(&owl::TransitiveProperty);
+        self.owlequivalentClass = self.add_property(&owl::equivalentClass);
+        self.owlequivalentProperty = self.add_property(&owl::equivalentProperty);
+        self.owlobjectProperty = self.add_property(&owl::ObjectProperty);
+        self.owldataTypeProperty = self.add_property(&owl::DatatypeProperty);
+        self.owlsameAs = self.add_property(&owl::sameAs);
 
-        self.owlinverseOf = self.add_property(&owl::inverseOf.value());
-        self.owlpropertyDisjointWith = self.add_property(&owl::propertyDisjointWith.value());
-        self.owldifferentFrom = self.add_property(&owl::differentFrom.value());
-        self.owlallDifferent = self.add_property(&owl::AllDifferent.value());
-        self.owlallDisjointClasses = self.add_property(&owl::AllDisjointClasses.value());
-        self.owlallValuesFrom = self.add_property(&owl::allValuesFrom.value());
-        self.owlannotationProperty = self.add_property(&owl::AnnotationProperty.value());
-        self.owlassertionProperty = self.add_property(&owl::assertionProperty.value());
-        self.owlclass = self.add(&owl::Class.value());
-        self.owlcomplementOf = self.add_property(&owl::complementOf.value());
-        self.owldisjoinWith = self.add_property(&owl::disjointWith.value());
-        self.owldistinctmembers = self.add_property(&owl::distinctMembers.value());
-        self.owlfunctionalProperty = self.add_property(&owl::FunctionalProperty.value());
-        self.intersectionOf = self.add_property(&owl::intersectionOf.value());
-        self.unionOf = self.add_property(&owl::unionOf.value());
+        self.owlinverseOf = self.add_property(&owl::inverseOf);
+        self.owlpropertyDisjointWith = self.add_property(&owl::propertyDisjointWith);
+        self.owldifferentFrom = self.add_property(&owl::differentFrom);
+        self.owlallDifferent = self.add_property(&owl::AllDifferent);
+        self.owlallDisjointClasses = self.add_property(&owl::AllDisjointClasses);
+        self.owlallValuesFrom = self.add_property(&owl::allValuesFrom);
+        self.owlannotationProperty = self.add_property(&owl::AnnotationProperty);
+        self.owlassertionProperty = self.add_property(&owl::assertionProperty);
+        self.owlclass = self.add(&owl::Class);
+        self.owlcomplementOf = self.add_property(&owl::complementOf);
+        self.owldisjoinWith = self.add_property(&owl::disjointWith);
+        self.owldistinctmembers = self.add_property(&owl::distinctMembers);
+        self.owlfunctionalProperty = self.add_property(&owl::FunctionalProperty);
+        self.intersectionOf = self.add_property(&owl::intersectionOf);
+        self.unionOf = self.add_property(&owl::unionOf);
         self.owlinverseFunctionalProperty =
-            self.add_property(&owl::InverseFunctionalProperty.value());
-        self.irreflexiveProperty = self.add_property(&owl::IrreflexiveProperty.value());
-        self.maxCardinality = self.add_property(&owl::maxCardinality.value());
-        self.members = self.add_property(&owl::members.value());
-        self.nothing = self.add_property(&owl::Nothing.value());
-        self.onClass = self.add_property(&owl::onClass.value());
-        self.onProperty = self.add_property(&owl::onProperty.value());
-        self.oneOf = self.add_property(&owl::oneOf.value());
-        self.propertyChainAxiom = self.add_property(&owl::propertyChainAxiom.value());
-        self.owlsomeValuesFrom = self.add_property(&owl::someValuesFrom.value());
-        self.sourceIndividual = self.add_property(&owl::sourceIndividual.value());
-        self.owlsymetricProperty = self.add_property(&owl::SymmetricProperty.value());
-        self.owltargetIndividual = self.add_property(&owl::targetIndividual.value());
-        self.targetValue = self.add_property(&owl::targetValue.value());
-        self.maxQualifiedCardinality = self.add_property(&owl::maxQualifiedCardinality.value());
+            self.add_property(&owl::InverseFunctionalProperty);
+        self.irreflexiveProperty = self.add_property(&owl::IrreflexiveProperty);
+        self.maxCardinality = self.add_property(&owl::maxCardinality);
+        self.members = self.add_property(&owl::members);
+        self.nothing = self.add_property(&owl::Nothing);
+        self.onClass = self.add_property(&owl::onClass);
+        self.onProperty = self.add_property(&owl::onProperty);
+        self.oneOf = self.add_property(&owl::oneOf);
+        self.propertyChainAxiom = self.add_property(&owl::propertyChainAxiom);
+        self.owlsomeValuesFrom = self.add_property(&owl::someValuesFrom);
+        self.sourceIndividual = self.add_property(&owl::sourceIndividual);
+        self.owlsymetricProperty = self.add_property(&owl::SymmetricProperty);
+        self.owltargetIndividual = self.add_property(&owl::targetIndividual);
+        self.targetValue = self.add_property(&owl::targetValue);
+        self.maxQualifiedCardinality = self.add_property(&owl::maxQualifiedCardinality);
     }
 }

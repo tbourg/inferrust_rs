@@ -15,21 +15,29 @@ impl TripleStore {
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
         // dbg!(is, ip, io);
         // dbg!(is, ip_to_store, io);
-        while self.elem.get(ip_to_store) == None {
-            self.elem.push([Vec::new(), Vec::new()]);
+        if ip_to_store >= self.elem.len() {
+            self.elem.resize_with(ip_to_store+1, Default::default);
         }
-        self.elem[ip_to_store][0].push([is, io]);
-        self.elem[ip_to_store][1].push([io, is]);
+        self.add_triple_raw(is, ip_to_store, io);
     }
 
     pub fn add_all(&mut self, other: Self) {
-        // self.elem.resize(other.elem.len(), [Vec::new(), Vec::new()]);
-        for i in 0..other.elem.len() {
-            let ip = NodeDictionary::idx_to_prop_idx(i);
-            for pair in &other.elem[i][0] {
-                self.add_triple([pair[0], ip, pair[1]]);
+        if other.elem.len() > self.elem.len() {
+            self.elem.resize_with(other.elem.len(), Default::default);
+        }
+        for ip in 0..other.elem.len() {
+            for [is, io] in &other.elem[ip][0] {
+                self.add_triple_raw(*is, ip, *io);
             }
         }
+    }
+
+    /// # Pre-condition
+    /// `self.elem` must have an element at index `ip`
+    #[inline]
+    fn add_triple_raw(&mut self, is: i64, ip: usize, io: i64) {
+        self.elem[ip][0].push([is, io]);
+        self.elem[ip][1].push([io, is]);
     }
 
     pub fn sort(&mut self) {

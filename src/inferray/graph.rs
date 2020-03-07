@@ -152,28 +152,28 @@ impl InfGraph {
         let mut s: i64 = -1;
         let mut o: i64 = -1;
         let mut p: i32 = -1;
-        let s_str = t.s().value();
-        let o_str = t.o().value();
-        let p_str = t.p().value();
+        let ts = t.s();
+        let to = t.o();
+        let tp = t.p();
         // Property will always be property
-        p = self.dictionary.add_property(&p_str);
+        p = self.dictionary.add_property(tp);
         let prop_in_s_or_o = contains_prop_in_s_or_o(p, &self.dictionary);
         if prop_in_s_or_o != -1 {
             match prop_in_s_or_o {
                 1 => {
-                    s = self.dictionary.add_property(&s_str).into();
-                    o = self.dictionary.add(&o_str);
+                    s = self.dictionary.add_property(ts).into();
+                    o = self.dictionary.add(to);
                 }
                 3 => {
-                    s = self.dictionary.add_property(&s_str).into();
-                    o = self.dictionary.add_property(&o_str).into();
+                    s = self.dictionary.add_property(ts).into();
+                    o = self.dictionary.add_property(to).into();
                 }
                 _ => (),
             }
         } else {
             // Add a regular triple
-            s = self.dictionary.add(&s_str);
-            o = self.dictionary.add(&o_str);
+            s = self.dictionary.add(ts);
+            o = self.dictionary.add(to);
         }
         [s, p as i64, o]
     }
