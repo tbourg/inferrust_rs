@@ -228,7 +228,7 @@ impl NodeDictionary {
     where
         T: TermData,
     {
-        let inner_term = RcTerm::new_iri(t.value()).unwrap();
+        let inner_term = RcTerm::from(t);
         if self.properties.contains_left(&inner_term) {
             Some(*self.properties.get_by_left(&inner_term).unwrap() as i64)
         } else if self.resources.contains_left(&inner_term) {
