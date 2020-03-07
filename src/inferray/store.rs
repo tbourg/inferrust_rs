@@ -49,22 +49,14 @@ impl TripleStore {
 
     pub fn res_to_prop(&mut self, res: i64, prop: i32) {
         for chunk in &mut self.elem {
-            for i in 0..chunk[0].len() {
-                let pair = chunk[0][i];
-                if pair[0] == res {
-                    chunk[0][i][0] = prop.into();
-                }
-                if pair[1] == res {
-                    chunk[0][i][1] = prop.into();
-                }
-            }
-            for i in 0..chunk[1].len() {
-                let pair = chunk[1][i];
-                if pair[0] == res {
-                    chunk[1][i][0] = prop.into();
-                }
-                if pair[1] == res {
-                    chunk[1][i][1] = prop.into();
+            for i in 0..=1 {
+                for pair in &mut chunk[i] {
+                    if pair[0] == res {
+                        pair[0] = prop.into();
+                    }
+                    if pair[1] == res {
+                        pair[1] = prop.into();
+                    }
                 }
             }
         }
