@@ -42,8 +42,8 @@ impl TripleStore {
 
     pub fn sort(&mut self) {
         for chunk in &mut self.elem {
-            sort(&mut chunk[0]);
-            sort(&mut chunk[1]);
+            bucket_sort_pairs(&mut chunk[0]);
+            bucket_sort_pairs(&mut chunk[1]);
         }
     }
 
@@ -72,7 +72,7 @@ impl TripleStore {
     }
 }
 
-pub fn sort(pairs: &mut Vec<[i64; 2]>) {
+pub fn bucket_sort_pairs(pairs: &mut Vec<[i64; 2]>) {
     if pairs.is_empty() {
         return;
     }
@@ -81,7 +81,7 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     let width: usize = ((max - min + 1) as usize);
     let mut hist = (hist(&pairs, min, width));
     let hist_copy = hist.clone();
-    let start = (cum(&hist));
+    let start = (cumul(&hist));
     let len = pairs.len();
     let mut objects = vec![0; len];
     for i in 0..len {
@@ -91,9 +91,9 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
         objects[(pos + remaining - 1) as usize] = pairs[i][1];
     }
     for i in 0..(width - 1) {
-        sort_with_index(&mut objects, start[i], start[i + 1]);
+        insertion_sort_slice(&mut objects, start[i], start[i + 1]);
     }
-    sort_with_index(&mut objects, start[width - 1], len);
+    insertion_sort_slice(&mut objects, start[width - 1], len);
     let mut j = 0;
     let mut l = 0;
     let mut last = -1;
@@ -113,7 +113,7 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     pairs.resize(j as usize, [0, 0]);
 }
 
-fn sort_with_index(v: &mut Vec<i64>, from: usize, to: usize) {
+fn insertion_sort_slice(v: &mut [i64], from: usize, to: usize) {
     for i in from..to {
         let mut j = i;
         let tmp = v[i];
@@ -125,7 +125,7 @@ fn sort_with_index(v: &mut Vec<i64>, from: usize, to: usize) {
     }
 }
 
-fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<usize> {
+fn hist(pairs: &[[i64; 2]], min: i64, len: usize) -> Vec<usize> {
     let mut hist = vec![0; len];
     for pair in pairs {
         hist[(pair[0] - min) as usize] += 1;
@@ -133,7 +133,7 @@ fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<usize> {
     hist
 }
 
-fn cum(hist: &Vec<usize>) -> Vec<usize> {
+fn cumul(hist: &[usize]) -> Vec<usize> {
     let mut cum = vec![0; hist.len()];
     for (i, _e) in hist.iter().enumerate() {
         if i != 0 {
