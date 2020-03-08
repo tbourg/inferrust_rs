@@ -72,6 +72,7 @@ impl TripleStore {
     }
 }
 
+/// Sort the pairs and remove duplicates
 pub fn bucket_sort_pairs(pairs: &mut Vec<[i64; 2]>) {
     if pairs.is_empty() {
         return;
@@ -110,7 +111,7 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[i64; 2]>) {
             last = o;
         }
     }
-    pairs.resize(j as usize, [0, 0]);
+    pairs.truncate(j);
 }
 
 fn insertion_sort_slice(v: &mut [i64], from: usize, to: usize) {
