@@ -93,7 +93,7 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     for i in 0..(width - 1) {
         sort_with_index(&mut objects, start[i], start[i + 1]);
     }
-    sort_with_index(&mut objects, start[width - 1], len as i64);
+    sort_with_index(&mut objects, start[width - 1], len);
     let mut j = 0;
     let mut l = 0;
     let mut last = -1;
@@ -113,19 +113,19 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     pairs.resize(j as usize, [0, 0]);
 }
 
-fn sort_with_index(v: &mut Vec<i64>, from: i64, to: i64) {
+fn sort_with_index(v: &mut Vec<i64>, from: usize, to: usize) {
     for i in from..to {
         let mut j = i;
-        let tmp = v[i as usize];
-        while j > from && v[(j - 1) as usize] > tmp {
-            v[j as usize] = v[(j - 1) as usize];
+        let tmp = v[i];
+        while j > from && v[j - 1] > tmp {
+            v[j] = v[j - 1];
             j -= 1;
         }
-        v[j as usize] = tmp;
+        v[j] = tmp;
     }
 }
 
-fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<i64> {
+fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<usize> {
     let mut hist = vec![0; len];
     for pair in pairs {
         hist[(pair[0] - min) as usize] += 1;
@@ -133,7 +133,7 @@ fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<i64> {
     hist
 }
 
-fn cum(hist: &Vec<i64>) -> Vec<i64> {
+fn cum(hist: &Vec<usize>) -> Vec<usize> {
     let mut cum = vec![0; hist.len()];
     for (i, _e) in hist.iter().enumerate() {
         if i != 0 {
