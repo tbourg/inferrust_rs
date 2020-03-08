@@ -83,8 +83,7 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     let hist_copy = hist.clone();
     let start = (cum(&hist));
     let len = pairs.len();
-    let mut objects = Vec::new();
-    objects.resize(len, 0);
+    let mut objects = vec![0; len];
     for i in 0..len {
         let pos = start[(pairs[i][0] - min) as usize];
         let remaining = hist[(pairs[i][0] - min) as usize];
@@ -127,8 +126,7 @@ fn sort_with_index(v: &mut Vec<i64>, from: i64, to: i64) {
 }
 
 fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<i64> {
-    let mut hist = Vec::new();
-    hist.resize(len, 0);
+    let mut hist = vec![0; len];
     for pair in pairs {
         hist[(pair[0] - min) as usize] += 1;
     }
@@ -136,8 +134,7 @@ fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<i64> {
 }
 
 fn cum(hist: &Vec<i64>) -> Vec<i64> {
-    let mut cum = Vec::new();
-    cum.resize(hist.len(), 0);
+    let mut cum = vec![0; hist.len()];
     for (i, _e) in hist.iter().enumerate() {
         if i != 0 {
             cum[i] = cum[i - 1] + hist[i - 1];
