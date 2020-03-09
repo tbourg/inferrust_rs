@@ -42,29 +42,21 @@ impl TripleStore {
 
     pub fn sort(&mut self) {
         for chunk in &mut self.elem {
-            sort(&mut chunk[0]);
-            sort(&mut chunk[1]);
+            bucket_sort_pairs(&mut chunk[0]);
+            bucket_sort_pairs(&mut chunk[1]);
         }
     }
 
     pub fn res_to_prop(&mut self, res: i64, prop: i32) {
         for chunk in &mut self.elem {
-            for i in 0..chunk[0].len() {
-                let pair = chunk[0][i];
-                if pair[0] == res {
-                    chunk[0][i][0] = prop.into();
-                }
-                if pair[1] == res {
-                    chunk[0][i][1] = prop.into();
-                }
-            }
-            for i in 0..chunk[1].len() {
-                let pair = chunk[1][i];
-                if pair[0] == res {
-                    chunk[1][i][0] = prop.into();
-                }
-                if pair[1] == res {
-                    chunk[1][i][1] = prop.into();
+            for i in 0..=1 {
+                for pair in &mut chunk[i] {
+                    if pair[0] == res {
+                        pair[0] = prop.into();
+                    }
+                    if pair[1] == res {
+                        pair[1] = prop.into();
+                    }
                 }
             }
         }
@@ -80,7 +72,8 @@ impl TripleStore {
     }
 }
 
-pub fn sort(pairs: &mut Vec<[i64; 2]>) {
+/// Sort the pairs and remove duplicates
+pub fn bucket_sort_pairs(pairs: &mut Vec<[i64; 2]>) {
     if pairs.is_empty() {
         return;
     }
@@ -89,10 +82,9 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
     let width: usize = ((max - min + 1) as usize);
     let mut hist = (hist(&pairs, min, width));
     let hist_copy = hist.clone();
-    let start = (cum(&hist));
+    let start = (cumul(&hist));
     let len = pairs.len();
-    let mut objects = Vec::new();
-    objects.resize(len, 0);
+    let mut objects = vec![0; len];
     for i in 0..len {
         let pos = start[(pairs[i][0] - min) as usize];
         let remaining = hist[(pairs[i][0] - min) as usize];
@@ -100,9 +92,9 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
         objects[(pos + remaining - 1) as usize] = pairs[i][1];
     }
     for i in 0..(width - 1) {
-        sort_with_index(&mut objects, start[i], start[i + 1]);
+        insertion_sort_slice(&mut objects, start[i], start[i + 1]);
     }
-    sort_with_index(&mut objects, start[width - 1], len as i64);
+    insertion_sort_slice(&mut objects, start[width - 1], len);
     let mut j = 0;
     let mut l = 0;
     let mut last = -1;
@@ -119,33 +111,31 @@ pub fn sort(pairs: &mut Vec<[i64; 2]>) {
             last = o;
         }
     }
-    pairs.resize(j as usize, [0, 0]);
+    pairs.truncate(j);
 }
 
-fn sort_with_index(v: &mut Vec<i64>, from: i64, to: i64) {
+fn insertion_sort_slice(v: &mut [i64], from: usize, to: usize) {
     for i in from..to {
         let mut j = i;
-        let tmp = v[i as usize];
-        while j > from && v[(j - 1) as usize] > tmp {
-            v[j as usize] = v[(j - 1) as usize];
+        let tmp = v[i];
+        while j > from && v[j - 1] > tmp {
+            v[j] = v[j - 1];
             j -= 1;
         }
-        v[j as usize] = tmp;
+        v[j] = tmp;
     }
 }
 
-fn hist(pairs: &Vec<[i64; 2]>, min: i64, len: usize) -> Vec<i64> {
-    let mut hist = Vec::new();
-    hist.resize(len, 0);
+fn hist(pairs: &[[i64; 2]], min: i64, len: usize) -> Vec<usize> {
+    let mut hist = vec![0; len];
     for pair in pairs {
         hist[(pair[0] - min) as usize] += 1;
     }
     hist
 }
 
-fn cum(hist: &Vec<i64>) -> Vec<i64> {
-    let mut cum = Vec::new();
-    cum.resize(hist.len(), 0);
+fn cumul(hist: &[usize]) -> Vec<usize> {
+    let mut cum = vec![0; hist.len()];
     for (i, _e) in hist.iter().enumerate() {
         if i != 0 {
             cum[i] = cum[i - 1] + hist[i - 1];
