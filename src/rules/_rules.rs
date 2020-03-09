@@ -2,21 +2,22 @@ use crate::inferray::InfGraph;
 use crate::inferray::TripleStore;
 use crate::rules::*;
 
-/// A trait to unify all the rules of the reasoner
-pub trait Rule {
-    // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>);
-    fn fire(&mut self, graph: &mut InfGraph) -> TripleStore;
-}
+/// A type alias  to unify all the rules of the reasoner
+pub type Rule = fn(&mut InfGraph) -> TripleStore;
+// pub trait Rule {
+//     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>);
+//     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore;
+// }
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
-    fn new() -> Vec<Box<dyn Rule>>;
+    fn new() -> Vec<Box<Rule>>;
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>);
     fn fire_all(&mut self, graph: &mut InfGraph);
 }
 
-impl RuleSet for Vec<Box<dyn Rule>> {
-    fn new() -> Vec<Box<dyn Rule>> {
+impl RuleSet for Vec<Box<Rule>> {
+    fn new() -> Vec<Box<Rule>> {
         vec![
             Box::new(CAX_SCO),
             Box::new(CAX_EQC1),
@@ -38,7 +39,7 @@ impl RuleSet for Vec<Box<dyn Rule>> {
             prev_size = size;
             let mut outputs = TripleStore::new();
             for rule in self.iter_mut() {
-                outputs.add_all(rule.fire(graph));
+                outputs.add_all(rule(graph));
             }
             graph.dictionary.ts.add_all(outputs);
             graph.dictionary.ts.sort();

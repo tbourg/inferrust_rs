@@ -70,34 +70,20 @@ pub fn apply_alpha_rule(
     output
 }
 
-pub struct CAX_SCO;
-
-impl Rule for CAX_SCO {
-    fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
-        let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as i64) as i64;
-        let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
-        apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
-    }
+pub fn CAX_SCO(graph: &mut InfGraph) -> TripleStore {
+    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as i64) as i64;
+    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
+    apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
-pub struct CAX_EQC1;
-
-impl Rule for CAX_EQC1 {
-    fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
-        let id_1 =
-            NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as i64) as i64;
-        let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
-        apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
-    }
+pub fn CAX_EQC1(graph: &mut InfGraph) -> TripleStore {
+    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as i64) as i64;
+    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
+    apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
-pub struct CAX_EQC2;
-
-impl Rule for CAX_EQC2 {
-    fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
-        let id_1 =
-            NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as i64) as i64;
-        let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
-        apply_alpha_rule(graph, id_1, id_2, 3, 4, 0, 2, 5)
-    }
+pub fn CAX_EQC2(graph: &mut InfGraph) -> TripleStore {
+    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as i64) as i64;
+    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
+    apply_alpha_rule(graph, id_1, id_2, 3, 4, 0, 2, 5)
 }
