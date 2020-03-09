@@ -7,8 +7,9 @@ use sophia::triple::{stream::TripleSource, Triple};
 
 use std::convert::Infallible;
 
-use super::NodeDictionary;
-use super::TripleStore;
+use crate::closure::*;
+use crate::inferray::NodeDictionary;
+use crate::inferray::TripleStore;
 
 pub struct InfGraph {
     pub dictionary: NodeDictionary,
@@ -181,6 +182,8 @@ impl InfGraph {
     pub fn size(&mut self) -> usize {
         self.dictionary.ts.size()
     }
+
+    pub fn close(&mut self) {}
 }
 
 impl<TS> From<TS> for InfGraph
