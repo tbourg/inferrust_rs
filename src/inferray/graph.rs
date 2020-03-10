@@ -145,13 +145,13 @@ impl Graph for InfGraph {
 }
 
 impl InfGraph {
-    fn encode_triple<TD>(&mut self, t: &dyn Triple<TermData = TD>) -> [i64; 3]
+    fn encode_triple<TD>(&mut self, t: &dyn Triple<TermData = TD>) -> [u64; 3]
     where
         TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,
     {
-        let mut s: i64 = -1;
-        let mut o: i64 = -1;
-        let mut p: i32 = -1;
+        let mut s: u64 = 0;
+        let mut o: u64 = 0;
+        let mut p: u32 = 0;
         let ts = t.s();
         let to = t.o();
         let tp = t.p();
@@ -175,7 +175,7 @@ impl InfGraph {
             s = self.dictionary.add(ts);
             o = self.dictionary.add(to);
         }
-        [s, p as i64, o]
+        [s, p as u64, o]
     }
 
     pub fn size(&mut self) -> usize {
@@ -205,7 +205,7 @@ where
 // Should return -1 if both s and o are res,
 // 1 if s is prop and o is res,
 // and 3 if both s and o are prop
-fn contains_prop_in_s_or_o(property_index: i32, dictionary: &NodeDictionary) -> i32 {
+fn contains_prop_in_s_or_o(property_index: u32, dictionary: &NodeDictionary) -> i32 {
     let prop_in_s = vec![dictionary.rdfsdomain, dictionary.rdfsrange];
     let prop_in_s_and_o = vec![
         dictionary.owlequivalentProperty,

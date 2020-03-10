@@ -31,13 +31,13 @@ use sophia::term::StaticTerm;
 
 pub fn apply_alpha_rule(
     graph: &InfGraph,
-    id_1: i64,
-    id_2: i64,
-    id_s: i64,
-    id_p: i64,
-    id_o: i64,
-    id_c1: i64,
-    id_c2: i64,
+    id_1: u64,
+    id_2: u64,
+    id_s: u64,
+    id_p: u64,
+    id_o: u64,
+    id_c1: u64,
+    id_c2: u64,
 ) -> TripleStore {
     let property_1_pairs = graph.dictionary.ts.elem.get(id_1 as usize);
     let property_2_pairs = graph.dictionary.ts.elem.get(id_2 as usize);
@@ -71,19 +71,19 @@ pub fn apply_alpha_rule(
 }
 
 pub fn CAX_SCO(graph: &mut InfGraph) -> TripleStore {
-    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as i64) as i64;
-    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
+    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as u64) as u64;
+    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
 pub fn CAX_EQC1(graph: &mut InfGraph) -> TripleStore {
-    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as i64) as i64;
-    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
+    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as u64) as u64;
+    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
 pub fn CAX_EQC2(graph: &mut InfGraph) -> TripleStore {
-    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as i64) as i64;
-    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as i64) as i64;
+    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as u64) as u64;
+    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 4, 0, 2, 5)
 }

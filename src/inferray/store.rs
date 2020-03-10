@@ -1,7 +1,7 @@
 use super::NodeDictionary;
 
 pub struct TripleStore {
-    pub elem: Vec<[Vec<[i64; 2]>; 2]>,
+    pub elem: Vec<[Vec<[u64; 2]>; 2]>,
 }
 
 impl TripleStore {
@@ -10,13 +10,13 @@ impl TripleStore {
         Self { elem }
     }
 
-    pub fn add_triple(&mut self, triple: [i64; 3]) {
+    pub fn add_triple(&mut self, triple: [u64; 3]) {
         let [is, ip, io] = triple;
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
         // dbg!(is, ip, io);
         // dbg!(is, ip_to_store, io);
         if ip_to_store >= self.elem.len() {
-            self.elem.resize_with(ip_to_store+1, Default::default);
+            self.elem.resize_with(ip_to_store + 1, Default::default);
         }
         self.add_triple_raw(is, ip_to_store, io);
     }
@@ -35,7 +35,7 @@ impl TripleStore {
     /// # Pre-condition
     /// `self.elem` must have an element at index `ip`
     #[inline]
-    fn add_triple_raw(&mut self, is: i64, ip: usize, io: i64) {
+    fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
         self.elem[ip][0].push([is, io]);
         self.elem[ip][1].push([io, is]);
     }
@@ -47,7 +47,7 @@ impl TripleStore {
         }
     }
 
-    pub fn res_to_prop(&mut self, res: i64, prop: i32) {
+    pub fn res_to_prop(&mut self, res: u64, prop: u32) {
         for chunk in &mut self.elem {
             for i in 0..=1 {
                 for pair in &mut chunk[i] {
@@ -70,10 +70,23 @@ impl TripleStore {
         }
         s
     }
+
+    pub fn width(&mut self) -> (u64, u64, usize) {
+        for chunk in &self.elem {
+            for pair in &chunk[0] {
+                let (local_min, local_max) = if pair[0] <= pair[1] {
+                    (pair[0], pair[1])
+                } else {
+                    (pair[1], pair[0])
+                };
+            }
+        }
+        (0, 0, 0)
+    }
 }
 
 /// Sort the pairs and remove duplicates
-pub fn bucket_sort_pairs(pairs: &mut Vec<[i64; 2]>) {
+pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) {
     if pairs.is_empty() {
         return;
     }
@@ -97,10 +110,10 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[i64; 2]>) {
     insertion_sort_slice(&mut objects, start[width - 1], len);
     let mut j = 0;
     let mut l = 0;
-    let mut last = -1;
+    let mut last = 0;
     for i in 0..width {
         let val = hist_copy[i];
-        let s = min + i as i64;
+        let s = min + i as u64;
         for k in 0..val {
             let o = objects[l];
             l += 1;
@@ -114,7 +127,7 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[i64; 2]>) {
     pairs.truncate(j);
 }
 
-fn insertion_sort_slice(v: &mut [i64], from: usize, to: usize) {
+fn insertion_sort_slice(v: &mut [u64], from: usize, to: usize) {
     for i in from..to {
         let mut j = i;
         let tmp = v[i];
@@ -126,7 +139,7 @@ fn insertion_sort_slice(v: &mut [i64], from: usize, to: usize) {
     }
 }
 
-fn hist(pairs: &[[i64; 2]], min: i64, len: usize) -> Vec<usize> {
+fn hist(pairs: &[[u64; 2]], min: u64, len: usize) -> Vec<usize> {
     let mut hist = vec![0; len];
     for pair in pairs {
         hist[(pair[0] - min) as usize] += 1;
