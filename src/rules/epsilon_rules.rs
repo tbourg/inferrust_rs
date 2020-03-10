@@ -59,26 +59,18 @@ fn apply_epsilon_rule(graph: &InfGraph, prop_idx: usize, invert: bool) -> Triple
     output
 }
 
-pub struct PRP_INV_1_2;
-
-impl Rule for PRP_INV_1_2 {
-    fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
-        apply_epsilon_rule(
-            graph,
-            NodeDictionary::prop_idx_to_idx(graph.dictionary.owlinverseOf as i64),
-            true,
-        )
-    }
+pub fn PRP_INV_1_2(graph: &mut InfGraph) -> TripleStore {
+    apply_epsilon_rule(
+        graph,
+        NodeDictionary::prop_idx_to_idx(graph.dictionary.owlinverseOf as u64),
+        true,
+    )
 }
 
-pub struct PRP_EQP_1_2;
-
-impl Rule for PRP_EQP_1_2 {
-    fn fire(&mut self, graph: &mut InfGraph) -> TripleStore {
-        apply_epsilon_rule(
-            graph,
-            NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentProperty as i64),
-            false,
-        )
-    }
+pub fn PRP_EQP_1_2(graph: &mut InfGraph) -> TripleStore {
+    apply_epsilon_rule(
+        graph,
+        NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentProperty as u64),
+        false,
+    )
 }
