@@ -37,6 +37,7 @@ fn main() {
     let mut nt_stringifier = NtSerializer::new_stringifier();
     let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
     println!("The resulting graph\n{}", example2);
+    graph.close();
     let mut rules = <Vec<Box<Rule>> as RuleSet>::new();
     // rules.specialize(std::rc::Rc::new(&graph));
     rules.fire_all(&mut graph);

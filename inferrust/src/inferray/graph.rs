@@ -1,6 +1,7 @@
 use sophia::graph::inmem::*;
 use sophia::graph::GTripleSource;
 use sophia::graph::Graph;
+use sophia::ns::*;
 use sophia::term::{Term, TermData};
 use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
 use sophia::triple::{stream::TripleSource, Triple};
@@ -183,7 +184,24 @@ impl InfGraph {
         self.dictionary.ts.size()
     }
 
-    pub fn close(&mut self) {}
+    pub fn close(&mut self) {
+        self.close_on(self.dictionary.rdfssubClassOf);
+        self.close_on(self.dictionary.rdfssubPropertyOf);
+        // TODO apply close_on() on all transitive properties
+    }
+
+    fn close_on(&mut self, index: u32) {
+        let ip_to_store = NodeDictionary::prop_idx_to_idx(index as u64);
+        let pairs = self.dictionary.ts.elem[ip_to_store][0].clone();
+        let mut tc_g = ClosureGraph::from(pairs);
+        let closure = tc_g.close();
+        for (s, os) in closure.iter() {
+            for o in os.iter() {
+                self.dictionary.ts.add_triple_raw(*s, ip_to_store, *o);
+            }
+        }
+        self.dictionary.ts.sort();
+    }
 }
 
 impl<TS> From<TS> for InfGraph

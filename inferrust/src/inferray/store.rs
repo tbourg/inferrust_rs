@@ -37,7 +37,7 @@ impl TripleStore {
     /// # Pre-condition
     /// `self.elem` must have an element at index `ip`
     #[inline]
-    fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
+    pub fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
         self.elem[ip][0].push([is, io]);
         self.elem[ip][1].push([io, is]);
     }
