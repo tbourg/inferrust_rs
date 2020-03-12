@@ -41,5 +41,6 @@
 //! Inferray: fast in-memory RDF inference. PVLDB 9(6): 468-479 (2016)
 //! ```
 
+pub mod closure;
 pub mod inferray;
 pub mod rules;
