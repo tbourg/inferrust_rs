@@ -1,53 +1,70 @@
 use std::cell::{RefCell, RefMut};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 use std::rc::Rc;
 
+use crate::closure::utils;
+
 pub struct Node {
-    pub id: i64,
-    pub dfs_num: i32,
-    pub in_comp: bool,
+    pub id: u64,
+    pub dfs_num: RefCell<i32>,
+    pub in_comp: RefCell<bool>,
 }
 
 impl Node {
-    pub fn new(id: i64) -> Self {
+    pub fn new(id: u64) -> Self {
         Self {
             id,
-            dfs_num: -1,
-            in_comp: false,
+            dfs_num: RefCell::new(-1),
+            in_comp: RefCell::new(false),
         }
     }
-    pub fn set_num(&mut self, num: i32) {
-        self.dfs_num = num;
+    pub fn set_num(&self, num: i32) {
+        *self.dfs_num.borrow_mut() = num;
     }
 }
 
 pub struct ClosureGraph {
-    pub nodes: HashMap<i64, Node>,
-    pub edges: Vec<[i64; 2]>,
+    pub nodes: Vec<Node>,
+    pub edges: Vec<[u64; 2]>,
+    pub map: HashMap<u64, usize>,
+    len: usize,
 }
 
 impl ClosureGraph {
-    pub fn from(pairs: Vec<[i64; 2]>) -> Self {
-        let mut me = Self {
-            nodes: HashMap::new(),
-            edges: Vec::clone(&pairs),
-        };
-        for pair in pairs {
-            me.add_nodes(pair);
-        }
-        me
-    }
-
-    fn add_nodes(&mut self, ids: [i64; 2]) {
-        for id in &ids {
-            if !self.nodes.contains_key(id) {
-                self.nodes.insert(*id, Node::new(*id));
-            }
+    pub fn from(pairs: Vec<[u64; 2]>) -> Self {
+        let (nodes, map, len) = Self::create_nodes(&pairs);
+        Self {
+            nodes,
+            edges: pairs,
+            map,
+            len,
         }
     }
 
-    pub fn node(&mut self, id: i64) -> &mut Node {
-        self.nodes.get_mut(&id).unwrap()
+    fn create_nodes(pairs: &Vec<[u64; 2]>) -> (Vec<Node>, HashMap<u64, usize>, usize) {
+        let values: HashSet<u64> = pairs.iter().flat_map(|p| p.iter().cloned()).collect();
+        let len = values.len();
+        let mut nodes = Vec::with_capacity(len);
+        let mut map = HashMap::new();
+        let mut c = 0;
+        for value in values {
+            map.insert(value, c);
+            nodes.push(Node::new(value));
+            c += 1;
+        }
+        (nodes, map, len)
+    }
+
+    pub fn node(&self, id: u64) -> &Node {
+        &self.nodes[self.index(id)]
+    }
+
+    pub fn index(&self, id: u64) -> usize {
+        *self.map.get(&id).unwrap()
+    }
+
+    pub fn close(&mut self) -> HashMap<u64, HashSet<u64>> {
+        utils::graph_tc(self)
     }
 }
