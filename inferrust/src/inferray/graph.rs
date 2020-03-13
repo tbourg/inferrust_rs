@@ -187,20 +187,37 @@ impl InfGraph {
     pub fn close(&mut self) {
         self.close_on(self.dictionary.rdfssubClassOf);
         self.close_on(self.dictionary.rdfssubPropertyOf);
-        // TODO apply close_on() on all transitive properties
+        self.close_on(self.dictionary.rdfssubPropertyOf);
+        self.close_on(self.dictionary.owlsameAs);
+        for tr_idx in self.get_tr_idx().iter() {
+            // TODO apply close_on() on all transitive properties
+            self.close_on(*tr_idx);
+        }
     }
 
     fn close_on(&mut self, index: u32) {
         let ip_to_store = NodeDictionary::prop_idx_to_idx(index as u64);
-        let pairs = self.dictionary.ts.elem[ip_to_store][0].clone();
+        self.close_on_raw(ip_to_store);
+    }
+
+    fn close_on_raw(&mut self, raw_index: usize) {
+        let pairs = self.dictionary.ts.elem[raw_index][0].clone();
         let mut tc_g = ClosureGraph::from(pairs);
         let closure = tc_g.close();
         for (s, os) in closure.iter() {
             for o in os.iter() {
-                self.dictionary.ts.add_triple_raw(*s, ip_to_store, *o);
+                self.dictionary.ts.add_triple_raw(*s, raw_index, *o);
             }
         }
         self.dictionary.ts.sort();
+    }
+
+    fn get_tr_idx(&mut self) -> Vec<u32> {
+        self.dictionary.ts.elem[NodeDictionary::prop_idx_to_idx(self.dictionary.rdftype as u64)][0]
+            .iter()
+            .filter(|pair| pair[1] == self.dictionary.owltransitiveProperty as u64)
+            .map(|pair| pair[0] as u32)
+            .collect()
     }
 }
 
