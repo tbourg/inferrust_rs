@@ -9,5 +9,5 @@ pub use self::alpha_rules::*;
 mod beta_rules;
 pub use self::beta_rules::*;
 
-mod epsilon_rules;
-pub use self::epsilon_rules::*;
+mod delta_rules;
+pub use self::delta_rules::*;

@@ -45,11 +45,18 @@ pub fn apply_beta_rule(graph: &InfGraph, rule_p: usize, infer_p: usize) -> Tripl
 /// Body:
 /// - c1 rdfs:subClassOf c2
 /// - c2 rdfs:subClassOf c1
+///
 /// Head:
 /// - c1 owl:equivalentClass c2
 /// - c2 owl:equivalentClass c1
 pub fn SCM_EQC2(graph: &mut InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as u64);
+    apply_beta_rule(graph, id_1, id_2)
+}
+
+pub fn SCM_EQP2(graph: &mut InfGraph) -> TripleStore {
+    let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubPropertyOf as u64);
+    let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentProperty as u64);
     apply_beta_rule(graph, id_1, id_2)
 }

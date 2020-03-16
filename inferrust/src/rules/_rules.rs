@@ -19,6 +19,7 @@ pub trait RuleSet {
 impl RuleSet for Vec<Box<Rule>> {
     fn new() -> Vec<Box<Rule>> {
         vec![
+            /// Alpha class
             Box::new(CAX_SCO),
             Box::new(CAX_EQC1),
             Box::new(CAX_EQC2),
@@ -26,7 +27,10 @@ impl RuleSet for Vec<Box<Rule>> {
             Box::new(SCM_DOM2),
             Box::new(SCM_RNG1),
             Box::new(SCM_RNG2),
+            /// Beta class
             Box::new(SCM_EQC2),
+            Box::new(SCM_EQP2),
+            /// Delta class
             Box::new(PRP_INV_1_2),
             Box::new(PRP_EQP_1_2),
         ]
