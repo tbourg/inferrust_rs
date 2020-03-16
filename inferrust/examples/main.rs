@@ -12,16 +12,11 @@ fn main() {
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
-
-    :a owl:sameAs :b . 
-    :b owl:sameAs :c . 
-    :m rdfs:subClassOf :n . 
-    :n rdfs:subClassOf :o . 
-    :x rdfs:subPropertyOf :y . 
-    :y rdfs:subPropertyOf :z .
-    :aa :p :bb . 
-    :bb :p :cc . 
-    :p rdf:type owl:TransitiveProperty . 
+ 
+    :ancetre rdfs:domain :human . 
+    :ancetre rdfs:range :human .
+    :parent rdfs:subPropertyOf :ancetre . 
+    :human rdfs:subClassOf :animal . 
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 
@@ -38,7 +33,7 @@ fn main() {
     graph.close();
     let mut rules = <Vec<Box<Rule>> as RuleSet>::new();
     // rules.specialize(std::rc::Rc::new(&graph));
-    // rules.fire_all(&mut graph);
+    rules.fire_all(&mut graph);
     println!("{} triples", graph.size());
 
     let mut nt_stringifier = NtSerializer::new_stringifier();

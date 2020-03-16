@@ -205,7 +205,7 @@ impl InfGraph {
     }
 
     fn close_on_raw(&mut self, raw_index: usize) {
-        // dbg!(&self.dictionary.ts.elem[raw_index][0]);
+        // dbg!(&self.dictionary.ts.elem);
         let pairs = self.dictionary.ts.elem[raw_index][0].clone();
         let mut tc_g = ClosureGraph::from(pairs);
         // eprintln!("fermeture transitive");
@@ -225,6 +225,7 @@ impl InfGraph {
     fn reflexive_on_raw(&mut self, raw_index: usize) {
         for id in self.dictionary.ts.elem[raw_index][0].clone().iter() {
             self.dictionary.ts.add_triple_raw(id[0], raw_index, id[0]);
+            self.dictionary.ts.add_triple_raw(id[1], raw_index, id[1]);
         }
         self.dictionary.ts.sort();
     }

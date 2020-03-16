@@ -8,7 +8,9 @@ pub struct TripleStore {
 
 impl TripleStore {
     pub fn new() -> Self {
-        let elem = Vec::new();
+        let mut elem = Vec::new();
+        // expand the store to fit all the default props
+        elem.resize_with(69, Default::default);
         Self { elem }
     }
 
