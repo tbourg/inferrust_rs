@@ -2,6 +2,8 @@ use crate::closure::{ClosureGraph, Node};
 
 use std::collections::{HashMap, HashSet};
 
+/// Source: https://pdfs.semanticscholar.org/47cc/a59310abee097af31d678d6cb2f8263dee37.pdf?_ga=2.26709177.588007852.1584345117-1155404888.1573749711
+/// Figure 3, (line 16-22 necessary?)
 pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
     let mut stack = Vec::new();
     let mut root = HashMap::new();
@@ -26,7 +28,6 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
             .collect();
         tc.insert(v.id, HashSet::new());
         tc.get_mut(&v.id).unwrap().extend(v_succ.clone());
-        // v.succ.borrow().iter().map(|e| v.tc.borrow_mut().insert(*e));
         for wi in v_succ.iter() {
             let w = g.node(*wi);
             if *w.dfs_num.borrow() == -1 {
@@ -41,26 +42,18 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
             }
             let wtc = tc.get(&w.id).unwrap().clone();
             tc.get_mut(&v.id).unwrap().extend(wtc);
-            // v.tc.borrow_mut().extend(&*w.tc.borrow());
-            //v.tc = new Set([...v.tc,...w.tc]);
         }
-        if *root.get(&v.id).unwrap() == v.id {
-            let mut wid = stack.pop().unwrap();
-            while wid != v.id {
-                let w = g.node(wid);
-                *w.in_comp.borrow_mut() = true;
-                let vtc = tc.get(&v.id).unwrap().clone();
-                tc.get_mut(&w.id).unwrap().extend(vtc);
-                root.insert(w.id, v.id);
-                wid = stack.pop().unwrap();
-            }
-            /*do {
-                w = stack.pop();
-                w.inC = true;
-                w.tc = new Set([...w.tc,...v.tc]);
-                w.root = v;
-            } while(w != v);*/
-        }
+        // if *root.get(&v.id).unwrap() == v.id {
+        //     let mut wid = stack.pop().unwrap();
+        //     while wid != v.id {
+        //         let w = g.node(wid);
+        //         *w.in_comp.borrow_mut() = true;
+        //         let vtc = tc.get(&v.id).unwrap().clone();
+        //         tc.get_mut(&w.id).unwrap().extend(vtc);
+        //         root.insert(w.id, v.id);
+        //         wid = stack.pop().unwrap();
+        //     }
+        // }
     }
     for v in g.nodes.iter() {
         if *v.dfs_num.borrow() == -1 {

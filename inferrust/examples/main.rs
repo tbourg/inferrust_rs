@@ -13,8 +13,8 @@ fn main() {
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
 
-    :a owl:SameAs :b . 
-    :b owl:SameAs :c . 
+    :a owl:sameAs :b . 
+    :b owl:sameAs :c . 
     :m rdfs:subClassOf :n . 
     :n rdfs:subClassOf :o . 
     :x rdfs:subPropertyOf :y . 
