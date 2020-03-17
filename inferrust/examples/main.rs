@@ -16,8 +16,7 @@ fn main() {
     :ancetre rdfs:domain :human . 
     :ancetre rdfs:range :human .
     :parent rdfs:subPropertyOf :ancetre . 
-    :ancetre rdfs:subPropertyOf :parent . 
-    :human rdfs:subClassOf :animal . 
+    :Bart :parent :Lisa . 
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 

@@ -33,6 +33,10 @@ impl RuleSet for Vec<Box<Rule>> {
             /// Delta class
             Box::new(PRP_INV_1_2),
             Box::new(PRP_EQP_1_2),
+            /// Gamma class
+            Box::new(PRP_DOM),
+            Box::new(PRP_RNG),
+            Box::new(PRP_SPO1),
         ]
     }
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>) {

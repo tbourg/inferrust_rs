@@ -187,13 +187,10 @@ impl InfGraph {
     pub fn close(&mut self) {
         // eprintln!("SubClassOf");
         self.close_on(self.dictionary.rdfssubClassOf);
-        self.reflexive_on(self.dictionary.rdfssubClassOf);
         // eprintln!("SubPropertyOf");
         self.close_on(self.dictionary.rdfssubPropertyOf);
-        self.reflexive_on(self.dictionary.rdfssubPropertyOf);
         // eprintln!("SameAs");
         self.close_on(self.dictionary.owlsameAs);
-        self.reflexive_on(self.dictionary.owlsameAs);
         for tr_idx in self.get_tr_idx().iter() {
             self.close_on(*tr_idx);
         }
@@ -217,17 +214,6 @@ impl InfGraph {
         }
         self.dictionary.ts.sort();
         // dbg!(&self.dictionary.ts.elem[raw_index][0]);
-    }
-    fn reflexive_on(&mut self, index: u32) {
-        let ip_to_store = NodeDictionary::prop_idx_to_idx(index as u64);
-        self.reflexive_on_raw(ip_to_store);
-    }
-    fn reflexive_on_raw(&mut self, raw_index: usize) {
-        for id in self.dictionary.ts.elem[raw_index][0].clone().iter() {
-            self.dictionary.ts.add_triple_raw(id[0], raw_index, id[0]);
-            self.dictionary.ts.add_triple_raw(id[1], raw_index, id[1]);
-        }
-        self.dictionary.ts.sort();
     }
 
     fn get_tr_idx(&mut self) -> Vec<u32> {
