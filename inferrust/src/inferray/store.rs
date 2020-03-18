@@ -120,7 +120,7 @@ pub fn bucket_sort_pairs(
     hist2: &mut Vec<usize>,
     cumul: &mut Vec<usize>,
     min: u64,
-    max: u64,
+    _max: u64,
     width: usize,
 ) {
     if pairs.is_empty() {

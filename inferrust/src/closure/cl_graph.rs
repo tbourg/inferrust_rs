@@ -1,7 +1,5 @@
-use std::cell::{RefCell, RefMut};
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
-use std::rc::Rc;
 
 use crate::closure::utils;
 
@@ -28,17 +26,17 @@ pub struct ClosureGraph {
     pub nodes: Vec<Node>,
     pub edges: Vec<[u64; 2]>,
     pub map: HashMap<u64, usize>,
-    len: usize,
+    _len: usize,
 }
 
 impl ClosureGraph {
     pub fn from(pairs: Vec<[u64; 2]>) -> Self {
-        let (nodes, map, len) = Self::create_nodes(&pairs);
+        let (nodes, map, _len) = Self::create_nodes(&pairs);
         Self {
             nodes,
             edges: pairs,
             map,
-            len,
+            _len,
         }
     }
 

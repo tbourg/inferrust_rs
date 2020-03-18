@@ -35,8 +35,23 @@ fn main() {
     // rules.specialize(std::rc::Rc::new(&graph));
     rules.fire_all(&mut graph);
     println!("{} triples", graph.size());
-
     let mut nt_stringifier = NtSerializer::new_stringifier();
     let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
     println!("The resulting graph\n{}", example2);
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    println!(
+        "\nTest triples_with_po():\n{}",
+        nt_stringifier
+            .serialize_triples(
+                &mut graph.triples_with_po(
+                    &rdf::type_,
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("human")
+                        .unwrap(),
+                )
+            )
+            .unwrap()
+            .as_str()
+    );
 }

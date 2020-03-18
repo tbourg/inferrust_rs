@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 //! The reasoner core
 
 mod _rules;

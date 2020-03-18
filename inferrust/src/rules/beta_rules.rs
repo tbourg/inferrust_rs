@@ -14,10 +14,6 @@
 use crate::inferray::InfGraph;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
-use crate::rules::Rule;
-
-use sophia::ns::*;
-use sophia::term::StaticTerm;
 
 /// General method to apply a rule of the beta class, given the indexes of the rule property and of the inferred one
 pub fn apply_beta_rule(graph: &InfGraph, rule_p: usize, infer_p: usize) -> TripleStore {

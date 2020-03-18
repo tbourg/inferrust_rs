@@ -18,10 +18,6 @@
 use crate::inferray::InfGraph;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
-use crate::rules::Rule;
-
-use sophia::ns::*;
-use sophia::term::StaticTerm;
 
 // :human rdfs:subclassof :mammal ||| :bart :type :human
 //  0           1            2           3    4      5

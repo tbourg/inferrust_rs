@@ -25,7 +25,6 @@
 use crate::inferray::InfGraph;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
-use crate::rules::Rule;
 
 fn apply_delta_rule(graph: &InfGraph, prop_idx: usize, invert: bool) -> TripleStore {
     let mut output = TripleStore::new();
