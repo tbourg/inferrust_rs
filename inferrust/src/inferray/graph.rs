@@ -59,7 +59,8 @@ impl Graph for InfGraph {
                         let p = self
                             .dictionary
                             .get_term(NodeDictionary::idx_to_prop_idx(pi));
-                        let start_index = lower_bound(&chunk[0], si, 0, chunk[0].len());
+                        let len = chunk[0].len();
+                        let start_index = first(&chunk[0], si, 0, len - 1, len, 0);
                         chunk[0][start_index..]
                             .iter()
                             .take_while(move |[is, _]| si == *is)
@@ -120,7 +121,8 @@ impl Graph for InfGraph {
                         let p = self
                             .dictionary
                             .get_term(NodeDictionary::idx_to_prop_idx(pi));
-                        let start_index = lower_bound(&chunk[1], oi, 0, chunk[1].len());
+                        let len = chunk[1].len();
+                        let start_index = first(&chunk[1], oi, 0, len - 1, len, 0);
                         chunk[1][start_index..]
                             .iter()
                             .take_while(move |[io, _]| oi == *io)
@@ -154,7 +156,8 @@ impl Graph for InfGraph {
             if !chunk[0].is_empty() {
                 let s = self.dictionary.get_term(si);
                 let p = self.dictionary.get_term(pi);
-                let start_index = lower_bound(&chunk[0], si, 0, chunk[0].len());
+                let len = chunk[0].len();
+                let start_index = first(&chunk[0], si, 0, len - 1, len, 0);
                 Box::from(
                     chunk[0][start_index..]
                         .iter()
@@ -175,41 +178,45 @@ impl Graph for InfGraph {
         }
     }
 
-    // fn triples_with_so<'s, T, U>(
-    //     &'s self,
-    //     s: &'s Term<T>,
-    //     o: &'s Term<U>,
-    // ) -> GTripleSource<'s, Self>
-    // where
-    //     T: TermData,
-    //     U: TermData,
-    // {
-    //     if let (Some(si), Some(oi)) = (self.dictionary.get_index(s), self.dictionary.get_index(o)) {
-    //         let idx = NodeDictionary::prop_idx_to_idx(pi);
-    //         let chunk = &self.dictionary.ts.elem[idx];
-    //         if !chunk[0].is_empty() {
-    //             let s = self.dictionary.get_term(si);
-    //             let p = self.dictionary.get_term(pi);
-    //             let start_index = lower_bound(&chunk[0], si, 0, chunk[0].len());
-    //             Box::from(
-    //                 chunk[0][start_index..]
-    //                     .iter()
-    //                     .take_while(|[is, _]| *is == si)
-    //                     .map(move |[_, oi]| {
-    //                         Ok(StreamedTriple::by_term_refs(
-    //                             s,
-    //                             p,
-    //                             self.dictionary.get_term(*oi),
-    //                         ))
-    //                     }),
-    //             )
-    //         } else {
-    //             Box::from(Vec::new().into_iter())
-    //         }
-    //     } else {
-    //         Box::from(Vec::new().into_iter())
-    //     }
-    // }
+    fn triples_with_so<'s, T, U>(
+        &'s self,
+        s: &'s Term<T>,
+        o: &'s Term<U>,
+    ) -> GTripleSource<'s, Self>
+    where
+        T: TermData,
+        U: TermData,
+    {
+        if let (Some(si), Some(oi)) = (self.dictionary.get_index(s), self.dictionary.get_index(o)) {
+            let s = self.dictionary.get_term(si);
+            let o = self.dictionary.get_term(oi);
+            Box::from(
+                self.dictionary
+                    .ts
+                    .elem
+                    .iter()
+                    .enumerate()
+                    .filter_map(move |(pi, chunk)| {
+                        if chunk[0].is_empty() {
+                            None
+                        } else {
+                            if binary_search_pair(&chunk[0], [si, oi]) {
+                                Some(Ok(StreamedTriple::by_term_refs(
+                                    s,
+                                    self.dictionary
+                                        .get_term(NodeDictionary::idx_to_prop_idx(pi)),
+                                    o,
+                                )))
+                            } else {
+                                None
+                            }
+                        }
+                    }),
+            )
+        } else {
+            Box::from(Vec::new().into_iter())
+        }
+    }
 
     fn triples_with_po<'s, T, U>(
         &'s self,
@@ -227,7 +234,8 @@ impl Graph for InfGraph {
             if !chunk[1].is_empty() {
                 let p = self.dictionary.get_term(pi);
                 let o = self.dictionary.get_term(oi);
-                let start_index = lower_bound(&chunk[1], oi, 0, chunk[1].len());
+                let len = chunk[1].len();
+                let start_index = first(&chunk[1], oi, 0, len - 1, len, 0);
                 Box::from(
                     chunk[1][start_index..]
                         .iter()
@@ -248,67 +256,88 @@ impl Graph for InfGraph {
         }
     }
 
-    //     fn triples_with_spo<'s, T, U, V>(
-    //         &'s self,
-    //         s: &'s Term<T>,
-    //         p: &'s Term<U>,
-    //         o: &'s Term<V>,
-    //     ) -> GTripleSource<'s, Self>
-    //     where
-    //         T: TermData,
-    //         U: TermData,
-    //         V: TermData,
-    //     {
-    //         Box::new(self.triples_with_sp(s, p).filter_ok(move |t| t.o() == o))
-    //     }
+    fn triples_with_spo<'s, T, U, V>(
+        &'s self,
+        s: &'s Term<T>,
+        p: &'s Term<U>,
+        o: &'s Term<V>,
+    ) -> GTripleSource<'s, Self>
+    where
+        T: TermData,
+        U: TermData,
+        V: TermData,
+    {
+        if let (Some(si), Some(pi), Some(oi)) = (
+            self.dictionary.get_index(s),
+            self.dictionary.get_index(p),
+            self.dictionary.get_index(o),
+        ) {
+            let idx = NodeDictionary::prop_idx_to_idx(pi);
+            let chunk = &self.dictionary.ts.elem[idx];
+            if chunk[0].is_empty() {
+                Box::from(vec![].into_iter())
+            } else {
+                if binary_search_pair(&chunk[0], [si, oi]) {
+                    let s = self.dictionary.get_term(si);
+                    let o = self.dictionary.get_term(oi);
+                    let p = self.dictionary.get_term(pi);
+                    Box::from(vec![Ok(StreamedTriple::by_term_refs(s, p, o))].into_iter())
+                } else {
+                    Box::from(vec![].into_iter())
+                }
+            }
+        } else {
+            Box::from(vec![].into_iter())
+        }
+    }
 }
 
 /// Pre-condition: vec is an array of pairs sorted on the first elem of each pair
-fn _binary_search_seconds_by_first(_vec: Vec<[u64; 2]>, _first: u64) -> Vec<u64> {
-    let seconds = Vec::new();
-    // vec.binary_search_by_key(&first, mut f: F)
-    seconds
+/// then on the second
+fn binary_search_pair(vec: &Vec<[u64; 2]>, pair: [u64; 2]) -> bool {
+    let mut start = 0;
+    let mut end = vec.len() - 1;
+    while start <= end {
+        let mid = start + (end - start) / 2;
+        if (start == mid || end == mid) && vec[mid] != pair {
+            return false;
+        }
+        if vec[mid] == pair {
+            return true;
+        }
+        if vec[mid][0] > pair[0] {
+            end = mid;
+        } else if vec[mid][0] == pair[0] {
+            if vec[mid][1] > pair[1] {
+                end = mid;
+            } else {
+                start = mid;
+            }
+        } else {
+            start = mid;
+        }
+    }
+    false
 }
 
-/// src: https://stackoverflow.com/a/25966181
-fn lower_bound(vec: &Vec<[u64; 2]>, key: u64, low: usize, high: usize) -> usize {
-    if low > high {
-        return low;
+/// Pre-condition: vec is sorted on the first elem of each pair
+fn first(vec: &Vec<[u64; 2]>, x: u64, low: usize, high: usize, n: usize, key_pos: usize) -> usize {
+    if high >= low {
+        let mid = low + (high - low) / 2;
+        if mid == low {
+            if vec[mid][key_pos] != x {
+                return n;
+            }
+        }
+        if (mid == 0 || x > vec[mid - 1][key_pos]) && vec[mid][key_pos] == x {
+            return mid;
+        } else if x > vec[mid][key_pos] {
+            return first(vec, x, mid + 1, high, n, key_pos);
+        } else {
+            return first(vec, x, low, mid - 1, n, key_pos);
+        }
     }
-
-    let mid = low + ((high - low) >> 1);
-    if mid == 0 {
-        return 0;
-    }
-    if mid == high {
-        return high;
-    }
-    //Attention here, we go left for lower_bound when meeting equal values
-    if vec[mid][0] >= key {
-        return lower_bound(vec, key, low, mid - 1);
-    } else {
-        return lower_bound(vec, key, mid + 1, high);
-    }
-}
-
-fn _upper_bound(vec: &Vec<[u64; 2]>, key: u64, low: usize, high: usize) -> usize {
-    if low > high {
-        return low;
-    }
-
-    let mid = low + ((high - low) >> 1);
-    if mid == 0 {
-        return 0;
-    }
-    if mid == high {
-        return high;
-    }
-    //Attention here, we go right for upper_bound when meeting equal values
-    if vec[mid][0] > key {
-        return _upper_bound(vec, key, low, mid - 1);
-    } else {
-        return _upper_bound(vec, key, mid + 1, high);
-    }
+    return n;
 }
 
 impl InfGraph {

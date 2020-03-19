@@ -13,10 +13,11 @@ fn main() {
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
  
+    :Toto rdf:type :animal .  
     :ancetre rdfs:domain :human . 
     :ancetre rdfs:range :human .
     :parent rdfs:subPropertyOf :ancetre . 
-    :Bart :parent :Lisa . 
+    :Bart :parent :Lisa .
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 
@@ -40,7 +41,61 @@ fn main() {
     println!("The resulting graph\n{}", example2);
     let mut nt_stringifier = NtSerializer::new_stringifier();
     println!(
-        "\nTest triples_with_po():\n{}",
+        "\nTest triples_with_s(bart):\n{}",
+        nt_stringifier
+            .serialize_triples(
+                &mut graph.triples_with_s(
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("Bart")
+                        .unwrap(),
+                )
+            )
+            .unwrap()
+            .as_str()
+    );
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    println!(
+        "\nTest triples_with_p(type):\n{}",
+        nt_stringifier
+            .serialize_triples(&mut graph.triples_with_p(&rdf::type_,))
+            .unwrap()
+            .as_str()
+    );
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    println!(
+        "\nTest triples_with_o(human):\n{}",
+        nt_stringifier
+            .serialize_triples(
+                &mut graph.triples_with_o(
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("human")
+                        .unwrap(),
+                )
+            )
+            .unwrap()
+            .as_str()
+    );
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    println!(
+        "\nTest triples_with_sp(lisa,type):\n{}",
+        nt_stringifier
+            .serialize_triples(
+                &mut graph.triples_with_sp(
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("Lisa")
+                        .unwrap(),
+                    &rdf::type_,
+                )
+            )
+            .unwrap()
+            .as_str()
+    );
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    println!(
+        "\nTest triples_with_po(type,human):\n{}",
         nt_stringifier
             .serialize_triples(
                 &mut graph.triples_with_po(
@@ -48,6 +103,45 @@ fn main() {
                     &Namespace::new("http://example.org/")
                         .unwrap()
                         .get("human")
+                        .unwrap(),
+                )
+            )
+            .unwrap()
+            .as_str()
+    );
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    println!(
+        "\nTest triples_with_so(parent,ancetre):\n{}",
+        nt_stringifier
+            .serialize_triples(
+                &mut graph.triples_with_so(
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("parent")
+                        .unwrap(),
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("ancetre")
+                        .unwrap(),
+                )
+            )
+            .unwrap()
+            .as_str()
+    );
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    println!(
+        "\nTest triples_with_spo(parent,spo,ancetre):\n{}",
+        nt_stringifier
+            .serialize_triples(
+                &mut graph.triples_with_spo(
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("parent")
+                        .unwrap(),
+                    &rdfs::subPropertyOf,
+                    &Namespace::new("http://example.org/")
+                        .unwrap()
+                        .get("ancetre")
                         .unwrap(),
                 )
             )
