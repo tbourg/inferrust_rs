@@ -13,13 +13,11 @@ fn main() {
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
  
-    :a owl:sameAs :b . 
-    :a :p :b . 
-    :p owl:sameAs :pp . 
-    :p rdfs:range :c . 
-    :pp rdfs:domain :cc . 
-    :s :p :a . 
-    :a :p :o . 
+    :c rdf:type rdfs:Class . 
+    :d rdf:type rdfs:Datatype . 
+    :p rdf:type rdfs:Property . 
+    :cm rdf:type rdfs:ContainerMembershipProperty . 
+    :cm rdfs:range :c . 
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 

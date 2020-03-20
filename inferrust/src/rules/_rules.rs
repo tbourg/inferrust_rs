@@ -39,6 +39,12 @@ impl RuleSet for Vec<Box<Rule>> {
             Box::new(PRP_SPO1),
             /// Same as class
             Box::new(SAME_AS),
+            /// Zeta class (trivial rules)
+            Box::new(RDFS6),
+            Box::new(RDFS8),
+            Box::new(RDFS10),
+            Box::new(RDFS12),
+            Box::new(RDFS13),
         ]
     }
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>) {

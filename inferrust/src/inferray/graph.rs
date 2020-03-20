@@ -417,6 +417,307 @@ impl InfGraph {
             .map(|pair| pair[0] as u32)
             .collect()
     }
+
+    pub fn init_axiomatic_triples(&mut self) {
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsubject as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfpredicate as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfobject as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdffirst as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfrest as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfValue as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdf_1 as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfnil as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfList,
+        ]);
+        // Domain
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsubject as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfStatement,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfpredicate as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfStatement,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfobject as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfStatement,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsMember as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdffirst as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfList,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfrest as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfList,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsSeeAlso as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsisDefinedBy as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsComment as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsLabel as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfValue as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        // Range
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsClass,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsClass,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsClass,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsClass,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsubject as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfpredicate as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfobject as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsMember as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdffirst as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfrest as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfList,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsSeeAlso as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsisDefinedBy as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsComment as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsLiteral,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsLabel as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsLiteral,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfValue as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        // MISC
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfAlt,
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfsContainer,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfBag,
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfsContainer,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfSeq,
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfsContainer,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsContainerMembershipProperty as u64,
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdf_1 as u64,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfsContainerMembershipProperty as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdf_1 as u64,
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdf_1 as u64,
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfsResource,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsisDefinedBy as u64,
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfsSeeAlso as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfXMLLiteral,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfsDatatype,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfXMLLiteral,
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfsLiteral,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsDatatype,
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfsClass,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.xsdnonNegativeInteger,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfsDatatype,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.xsdstring,
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfsDatatype,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdftype as u64,
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdftype as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsdomain as u64,
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfsdomain as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfsrange as u64,
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfsrange as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfssubPropertyOf as u64,
+        ]);
+        self.dictionary.ts.add_triple([
+            self.dictionary.rdfssubClassOf as u64,
+            self.dictionary.rdfssubPropertyOf as u64,
+            self.dictionary.rdfssubClassOf as u64,
+        ]);
+    }
 }
 
 impl<TS> From<TS> for InfGraph

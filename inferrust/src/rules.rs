@@ -18,3 +18,6 @@ pub use self::gamma_rules::*;
 
 mod same_as_rules;
 pub use self::same_as_rules::*;
+
+mod zeta_rules;
+pub use self::zeta_rules::*;

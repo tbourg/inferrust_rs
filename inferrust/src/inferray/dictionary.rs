@@ -48,6 +48,7 @@ pub struct NodeDictionary {
     pub rdffirst: u32,
     pub rdfrest: u32,
     pub rdfValue: u32,
+    pub rdf_1: u32,
     pub xsdnonNegativeInteger: u64,
     pub xsdstring: u64,
     pub owlthing: u32,
@@ -131,6 +132,7 @@ impl NodeDictionary {
             rdffirst: 0,
             rdfrest: 0,
             rdfValue: 0,
+            rdf_1: 0,
             xsdnonNegativeInteger: 0,
             xsdstring: 0,
             owlthing: 0,
@@ -286,6 +288,13 @@ impl NodeDictionary {
         self.rdffirst = self.add_property(&rdf::first);
         self.rdfrest = self.add_property(&rdf::rest);
         self.rdfValue = self.add_property(&rdf::value);
+        // TODO: add rdf1 to sophia
+        self.rdf_1 = self.add_property(
+            &sophia::ns::Namespace::new("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+                .unwrap()
+                .get("_1")
+                .unwrap(),
+        );
 
         // ------------------XSD
 
