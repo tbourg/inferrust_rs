@@ -90,7 +90,7 @@ pub struct NodeDictionary {
 }
 
 impl NodeDictionary {
-    const START_INDEX: u32 = u32::max_value();
+    pub const START_INDEX: u32 = u32::max_value();
 
     pub fn new(ts: TripleStore) -> Self {
         let mut me = Self {

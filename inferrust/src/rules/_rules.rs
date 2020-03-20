@@ -37,6 +37,8 @@ impl RuleSet for Vec<Box<Rule>> {
             Box::new(PRP_DOM),
             Box::new(PRP_RNG),
             Box::new(PRP_SPO1),
+            /// Same as class
+            Box::new(SAME_AS),
         ]
     }
     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>) {

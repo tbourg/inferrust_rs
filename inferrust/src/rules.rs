@@ -14,4 +14,7 @@ mod delta_rules;
 pub use self::delta_rules::*;
 
 mod gamma_rules;
-use self::gamma_rules::*;
+pub use self::gamma_rules::*;
+
+mod same_as_rules;
+pub use self::same_as_rules::*;
