@@ -176,7 +176,7 @@ impl NodeDictionary {
     }
 
     pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
-        let t = self.factory.copy(term);
+        let t = self.factory.clone_term(term);
         if self.properties.contains_left(&t) {
             return *self.properties.get_by_left(&t).expect("Err") as u64;
         }
@@ -190,7 +190,7 @@ impl NodeDictionary {
     }
 
     pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> u32 {
-        let t = self.factory.copy(term);
+        let t = self.factory.clone_term(term);
         if self.resources.contains_left(&t) {
             self.remap_res_to_prop(t)
         } else if self.properties.contains_left(&t) {
