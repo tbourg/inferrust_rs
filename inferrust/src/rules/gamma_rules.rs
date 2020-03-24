@@ -30,10 +30,22 @@ fn apply_gamma_rule(
     raw_idx: bool,
 ) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 = &graph.dictionary.ts.elem[head_prop];
-    for pair1 in &pairs1[0] {
-        let pairs2 = &graph.dictionary.ts.elem[NodeDictionary::prop_idx_to_idx(pair1[0])];
-        for pair2 in &pairs2[0] {
+    let pairs1 = graph.dictionary.ts.elem.get(head_prop);
+    if pairs1 == None {
+        return output;
+    }
+    let pairs1 = &pairs1.unwrap()[0];
+    for pair1 in pairs1 {
+        let pairs2 = graph
+            .dictionary
+            .ts
+            .elem
+            .get(NodeDictionary::prop_idx_to_idx(pair1[0]));
+        if pairs2 == None {
+            break;
+        }
+        let pairs2 = &pairs2.unwrap()[0];
+        for pair2 in pairs2 {
             if raw_idx {
                 output.add_triple([pair2[if subject { 0 } else { 1 }], output_prop, pair1[1]]);
             } else {

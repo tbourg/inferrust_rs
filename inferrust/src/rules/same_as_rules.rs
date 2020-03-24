@@ -20,12 +20,21 @@ use crate::inferray::{InfGraph, NodeDictionary, TripleStore};
 //  */
 fn apply_same_as_rule(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 = &graph.dictionary.ts.elem
-        [NodeDictionary::prop_idx_to_idx(graph.dictionary.owlsameAs as u64)];
+    let pairs1 = graph
+        .dictionary
+        .ts
+        .elem
+        .get(NodeDictionary::prop_idx_to_idx(
+            graph.dictionary.owlsameAs as u64,
+        ));
+    if pairs1 == None {
+        return output;
+    }
+    let pairs1 = &pairs1.unwrap()[0];
     if pairs1.is_empty() {
         output
     } else {
-        for pair1 in &pairs1[0] {
+        for pair1 in pairs1 {
             if pair1[0] < NodeDictionary::START_INDEX as u64 {
                 if let Some(pairs2) = graph
                     .dictionary

@@ -75,7 +75,7 @@ impl Graph for InfGraph {
                     .flatten(),
             )
         } else {
-            Box::from(Vec::new().into_iter())
+            Box::from(std::iter::empty())
         }
     }
 
@@ -97,10 +97,10 @@ impl Graph for InfGraph {
                     ))
                 }))
             } else {
-                Box::from(Vec::new().into_iter())
+                Box::from(std::iter::empty())
             }
         } else {
-            Box::from(Vec::new().into_iter())
+            Box::from(std::iter::empty())
         }
     }
 
@@ -137,7 +137,7 @@ impl Graph for InfGraph {
                     .flatten(),
             )
         } else {
-            Box::from(Vec::new().into_iter())
+            Box::from(std::iter::empty())
         }
     }
 
@@ -171,10 +171,10 @@ impl Graph for InfGraph {
                         }),
                 )
             } else {
-                Box::from(Vec::new().into_iter())
+                Box::from(std::iter::empty())
             }
         } else {
-            Box::from(Vec::new().into_iter())
+            Box::from(std::iter::empty())
         }
     }
 
@@ -214,7 +214,7 @@ impl Graph for InfGraph {
                     }),
             )
         } else {
-            Box::from(Vec::new().into_iter())
+            Box::from(std::iter::empty())
         }
     }
 
@@ -249,10 +249,10 @@ impl Graph for InfGraph {
                         }),
                 )
             } else {
-                Box::from(Vec::new().into_iter())
+                Box::from(std::iter::empty())
             }
         } else {
-            Box::from(Vec::new().into_iter())
+            Box::from(std::iter::empty())
         }
     }
 
@@ -275,7 +275,7 @@ impl Graph for InfGraph {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
             let chunk = &self.dictionary.ts.elem[idx];
             if chunk[0].is_empty() {
-                Box::from(vec![].into_iter())
+                Box::from(std::iter::empty())
             } else {
                 if binary_search_pair(&chunk[0], [si, oi]) {
                     let s = self.dictionary.get_term(si);
@@ -283,11 +283,11 @@ impl Graph for InfGraph {
                     let p = self.dictionary.get_term(pi);
                     Box::from(vec![Ok(StreamedTriple::by_term_refs(s, p, o))].into_iter())
                 } else {
-                    Box::from(vec![].into_iter())
+                    Box::from(std::iter::empty())
                 }
             }
         } else {
-            Box::from(vec![].into_iter())
+            Box::from(std::iter::empty())
         }
     }
 }
@@ -385,8 +385,8 @@ impl InfGraph {
         self.close_on(self.dictionary.rdfssubPropertyOf);
         // eprintln!("SameAs");
         self.close_on(self.dictionary.owlsameAs);
-        for tr_idx in self.get_tr_idx().iter() {
-            self.close_on(*tr_idx);
+        for tr_idx in self.get_tr_idx() {
+            self.close_on(tr_idx);
         }
     }
 
@@ -397,7 +397,11 @@ impl InfGraph {
 
     fn close_on_raw(&mut self, raw_index: usize) {
         // dbg!(&self.dictionary.ts.elem);
-        let pairs = self.dictionary.ts.elem[raw_index][0].clone();
+        let pairs = self.dictionary.ts.elem.get(raw_index);
+        if pairs == None {
+            return;
+        }
+        let pairs = pairs.unwrap()[0].clone();
         let mut tc_g = ClosureGraph::from(pairs);
         // eprintln!("fermeture transitive");
         let closure = tc_g.close();
@@ -411,11 +415,17 @@ impl InfGraph {
     }
 
     fn get_tr_idx(&mut self) -> Vec<u32> {
-        self.dictionary.ts.elem[NodeDictionary::prop_idx_to_idx(self.dictionary.rdftype as u64)][0]
-            .iter()
-            .filter(|pair| pair[1] == self.dictionary.owltransitiveProperty as u64)
-            .map(|pair| pair[0] as u32)
-            .collect()
+        if let Some(pairs) = self.dictionary.ts.elem.get(NodeDictionary::prop_idx_to_idx(
+            self.dictionary.rdftype as u64,
+        )) {
+            pairs[0]
+                .iter()
+                .filter(|pair| pair[1] == self.dictionary.owltransitiveProperty as u64)
+                .map(|pair| pair[0] as u32)
+                .collect()
+        } else {
+            vec![]
+        }
     }
 
     pub fn init_axiomatic_triples(&mut self) {

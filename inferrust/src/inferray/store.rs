@@ -8,9 +8,7 @@ pub struct TripleStore {
 
 impl TripleStore {
     pub fn new() -> Self {
-        let mut elem = Vec::new();
-        // expand the store to fit all the default props
-        elem.resize_with(69, Default::default);
+        let elem = Vec::new();
         Self { elem }
     }
 
@@ -109,7 +107,11 @@ impl TripleStore {
                 max = if local_max > max { local_max } else { max };
             }
         }
-        (min, max, (max - min + 1) as usize)
+        if max == 0 {
+            (0, 0, 0)
+        } else {
+            (min, max, (max - min + 1) as usize)
+        }
     }
 }
 
