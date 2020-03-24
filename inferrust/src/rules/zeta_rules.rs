@@ -60,3 +60,71 @@ pub fn RDFS13(graph: &mut InfGraph) -> TripleStore {
     let output_o = graph.dictionary.rdfsLiteral;
     apply_zeta_rule(graph, input_o, output_p, output_o, false)
 }
+
+pub fn SCM_DP_OP(graph: &mut InfGraph) -> TripleStore {
+    let mut output = TripleStore::new();
+    for object in [
+        graph.dictionary.owldataTypeProperty as u64,
+        graph.dictionary.owlobjectProperty as u64,
+    ]
+    .iter()
+    {
+        let pairs1 = &graph.dictionary.ts.elem
+            [NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64)];
+        if pairs1[1].is_empty() {
+            return output;
+        }
+        for pair1 in &pairs1[1] {
+            if pair1[0] > *object {
+                break;
+            }
+            if pair1[0] == *object {
+                output.add_triple([
+                    pair1[1],
+                    graph.dictionary.rdfssubPropertyOf as u64,
+                    pair1[1],
+                ]);
+                output.add_triple([
+                    pair1[1],
+                    graph.dictionary.owlequivalentProperty as u64,
+                    pair1[1],
+                ]);
+            }
+        }
+    }
+    output
+}
+
+pub fn SCM_CLS(graph: &mut InfGraph) -> TripleStore {
+    let mut output = TripleStore::new();
+    let pairs1 =
+        &graph.dictionary.ts.elem[NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64)];
+    if pairs1[1].is_empty() {
+        return output;
+    }
+    let object = graph.dictionary.owlclass;
+    for pair1 in &pairs1[1] {
+        if pair1[0] > object {
+            break;
+        }
+        if pair1[0] == object {
+            output.add_triple([pair1[1], graph.dictionary.rdfssubClassOf as u64, pair1[1]]);
+            output.add_triple([
+                pair1[1],
+                graph.dictionary.owlequivalentClass as u64,
+                pair1[1],
+            ]);
+            output.add_triple([
+                pair1[1],
+                graph.dictionary.rdfssubClassOf as u64,
+                graph.dictionary.owlthing as u64,
+            ]);
+            output.add_triple([
+                graph.dictionary.nothing as u64,
+                graph.dictionary.rdfssubClassOf as u64,
+                pair1[1],
+            ]);
+        }
+    }
+    output
+}

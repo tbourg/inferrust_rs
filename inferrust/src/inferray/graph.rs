@@ -353,7 +353,7 @@ impl InfGraph {
         let tp = t.p();
         // Property will always be property
         p = self.dictionary.add_property(tp);
-        let prop_in_s_or_o = contains_prop_in_s_or_o(p, &self.dictionary);
+        let prop_in_s_or_o = contains_prop_in_s_or_o(p, to, &self.dictionary);
         if prop_in_s_or_o != -1 {
             match prop_in_s_or_o {
                 1 => {
@@ -742,13 +742,28 @@ where
 // Should return -1 if both s and o are res,
 // 1 if s is prop and o is res,
 // and 3 if both s and o are prop
-fn contains_prop_in_s_or_o(property_index: u32, dictionary: &NodeDictionary) -> i32 {
+fn contains_prop_in_s_or_o<TD>(
+    property_index: u32,
+    object: &Term<TD>,
+    dictionary: &NodeDictionary,
+) -> i8
+where
+    TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,
+{
+    // Special case: if p a ...Property -> return 3
+    if property_index == dictionary.rdftype {
+        let o_str = object.value();
+        if o_str.starts_with("http://www.w3.org/2002/07/owl#")
+            && o_str.to_lowercase().ends_with("property")
+        {
+            return 3;
+        }
+    }
     let prop_in_s = vec![dictionary.rdfsdomain, dictionary.rdfsrange];
     let prop_in_s_and_o = vec![
         dictionary.owlequivalentProperty,
         dictionary.owlinverseOf,
         dictionary.rdfssubPropertyOf,
-        dictionary.owlsymetricProperty,
     ];
     if prop_in_s_and_o.contains(&property_index) {
         3
