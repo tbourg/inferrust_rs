@@ -14,6 +14,8 @@ fn main() {
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
  
     :a :p :b .
+    :b :p :c . 
+    :p a owl:TransitiveProperty, owl:SymmetricProperty . 
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
 

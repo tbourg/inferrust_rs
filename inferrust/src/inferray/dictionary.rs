@@ -84,7 +84,7 @@ pub struct NodeDictionary {
     pub propertyChainAxiom: u32,
     pub owlsomeValuesFrom: u32,
     pub sourceIndividual: u32,
-    pub owlsymetricProperty: u32,
+    pub owlsymmetricProperty: u32,
     pub owltargetIndividual: u32,
     pub targetValue: u32,
     pub maxQualifiedCardinality: u32,
@@ -168,7 +168,7 @@ impl NodeDictionary {
             propertyChainAxiom: 0,
             owlsomeValuesFrom: 0,
             sourceIndividual: 0,
-            owlsymetricProperty: 0,
+            owlsymmetricProperty: 0,
             owltargetIndividual: 0,
             targetValue: 0,
             maxQualifiedCardinality: 0,
@@ -337,7 +337,7 @@ impl NodeDictionary {
         self.propertyChainAxiom = self.add_property(&owl::propertyChainAxiom);
         self.owlsomeValuesFrom = self.add_property(&owl::someValuesFrom);
         self.sourceIndividual = self.add_property(&owl::sourceIndividual);
-        self.owlsymetricProperty = self.add_property(&owl::SymmetricProperty);
+        self.owlsymmetricProperty = self.add_property(&owl::SymmetricProperty);
         self.owltargetIndividual = self.add_property(&owl::targetIndividual);
         self.targetValue = self.add_property(&owl::targetValue);
         self.maxQualifiedCardinality = self.add_property(&owl::maxQualifiedCardinality);

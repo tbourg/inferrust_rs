@@ -28,8 +28,8 @@ impl RuleSet for Vec<Box<Rule>> {
             Box::new(SCM_RNG1),
             Box::new(SCM_RNG2),
             /// Beta class
-            Box::new(SCM_EQC2),
-            Box::new(SCM_EQP2),
+            Box::new(SCM_SCO_EQC2),
+            Box::new(SCM_SPO_EQP2),
             Box::new(SCM_EQC1),
             Box::new(SCM_EQP1),
             /// Delta class
@@ -39,6 +39,8 @@ impl RuleSet for Vec<Box<Rule>> {
             Box::new(PRP_DOM),
             Box::new(PRP_RNG),
             Box::new(PRP_SPO1),
+            Box::new(PRP_SYMP),
+            Box::new(EQ_TRANS),
             /// Same as class
             Box::new(SAME_AS),
             /// Zeta class (trivial rules)
