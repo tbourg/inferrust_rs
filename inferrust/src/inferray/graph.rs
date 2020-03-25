@@ -9,6 +9,7 @@ use std::convert::Infallible;
 use crate::closure::*;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
+use crate::rules::*;
 
 pub struct InfGraph {
     pub dictionary: NodeDictionary,
@@ -378,15 +379,33 @@ impl InfGraph {
         self.dictionary.ts.size()
     }
 
-    pub fn close(&mut self) {
+    pub fn process(&mut self, profile: &mut RuleProfile) {
+        self.close(&mut profile.cl_profile);
+        profile.before_rules.process(self);
+        profile.rules.process(self);
+        profile.after_rules.process(self);
+        if profile.axiomatic_triples {
+            self.init_axiomatic_triples();
+        }
+    }
+
+    pub fn close(&mut self, profile: &mut ClosureProfile) {
         // eprintln!("SubClassOf");
-        self.close_on(self.dictionary.rdfssubClassOf);
-        // eprintln!("SubPropertyOf");
-        self.close_on(self.dictionary.rdfssubPropertyOf);
-        // eprintln!("SameAs");
-        self.close_on(self.dictionary.owlsameAs);
-        for tr_idx in self.get_tr_idx() {
-            self.close_on(tr_idx);
+        if profile.on_sco {
+            self.close_on(self.dictionary.rdfssubClassOf);
+        }
+        if profile.on_spo {
+            // eprintln!("SubPropertyOf");
+            self.close_on(self.dictionary.rdfssubPropertyOf);
+        }
+        if profile.on_sa {
+            // eprintln!("SameAs");
+            self.close_on(self.dictionary.owlsameAs);
+        }
+        if profile.on_trp {
+            for tr_idx in self.get_tr_idx() {
+                self.close_on(tr_idx);
+            }
         }
     }
 
@@ -763,9 +782,7 @@ where
     // Special case: if p a ...Property -> return 3
     if property_index == dictionary.rdftype {
         let o_str = object.value();
-        if o_str.starts_with("http://www.w3.org/2002/07/owl#")
-            && o_str.to_lowercase().ends_with("property")
-        {
+        if o_str.to_lowercase().ends_with("property") {
             return 3;
         }
     }

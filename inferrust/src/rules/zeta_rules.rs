@@ -8,12 +8,21 @@ fn apply_zeta_rule(
     object_is_subject: bool,
 ) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 =
-        &graph.dictionary.ts.elem[NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64)];
-    if pairs1[1].is_empty() {
+    let pairs1 = graph
+        .dictionary
+        .ts
+        .elem
+        .get(NodeDictionary::prop_idx_to_idx(
+            graph.dictionary.rdftype as u64,
+        ));
+    if pairs1 == None {
         return output;
     }
-    for pair1 in &pairs1[1] {
+    let pairs1 = &pairs1.unwrap()[1];
+    if pairs1.is_empty() {
+        return output;
+    }
+    for pair1 in pairs1 {
         if pair1[0] > input_o {
             break;
         }
@@ -69,12 +78,21 @@ pub fn SCM_DP_OP(graph: &mut InfGraph) -> TripleStore {
     ]
     .iter()
     {
-        let pairs1 = &graph.dictionary.ts.elem
-            [NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64)];
-        if pairs1[1].is_empty() {
-            return output;
+        let pairs1 = graph
+            .dictionary
+            .ts
+            .elem
+            .get(NodeDictionary::prop_idx_to_idx(
+                graph.dictionary.rdftype as u64,
+            ));
+        if pairs1 == None {
+            break;
         }
-        for pair1 in &pairs1[1] {
+        let pairs1 = &pairs1.unwrap()[1];
+        if pairs1.is_empty() {
+            break;
+        }
+        for pair1 in pairs1 {
             if pair1[0] > *object {
                 break;
             }
@@ -97,13 +115,22 @@ pub fn SCM_DP_OP(graph: &mut InfGraph) -> TripleStore {
 
 pub fn SCM_CLS(graph: &mut InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 =
-        &graph.dictionary.ts.elem[NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64)];
-    if pairs1[1].is_empty() {
+    let pairs1 = graph
+        .dictionary
+        .ts
+        .elem
+        .get(NodeDictionary::prop_idx_to_idx(
+            graph.dictionary.rdftype as u64,
+        ));
+    if pairs1 == None {
+        return output;
+    }
+    let pairs1 = &pairs1.unwrap()[1];
+    if pairs1.is_empty() {
         return output;
     }
     let object = graph.dictionary.owlclass;
-    for pair1 in &pairs1[1] {
+    for pair1 in pairs1 {
         if pair1[0] > object {
             break;
         }
@@ -124,6 +151,42 @@ pub fn SCM_CLS(graph: &mut InfGraph) -> TripleStore {
                 graph.dictionary.rdfssubClassOf as u64,
                 pair1[1],
             ]);
+        }
+    }
+    output
+}
+
+pub fn RDFS4(graph: &mut InfGraph) -> TripleStore {
+    let mut output = TripleStore::new();
+    let mut resources_idx = Vec::new();
+    let pairs1 = graph
+        .dictionary
+        .ts
+        .elem
+        .get(NodeDictionary::prop_idx_to_idx(
+            graph.dictionary.rdftype as u64,
+        ));
+    if pairs1 == None {
+        return output;
+    }
+    let pairs1 = &pairs1.unwrap()[1];
+    if pairs1.is_empty() {
+        return output;
+    }
+    let object = graph.dictionary.rdfsResource;
+    for pair1 in pairs1 {
+        if pair1[0] > object {
+            break;
+        }
+        if pair1[0] == object {
+            resources_idx.push(pair1[1])
+        }
+    }
+    for pairs2 in &graph.dictionary.ts.elem {
+        for pair2 in &pairs2[0] {
+            if resources_idx.contains(&pair2[1]) {
+                output.add_triple([pair2[0], graph.dictionary.rdftype as u64, object]);
+            }
         }
     }
     output
