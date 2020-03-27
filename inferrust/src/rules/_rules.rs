@@ -1,5 +1,4 @@
-use crate::inferray::InfGraph;
-use crate::inferray::TripleStore;
+use crate::inferray::*;
 use crate::rules::*;
 
 /// A type alias  to unify all the rules of the reasoner
@@ -158,6 +157,9 @@ impl RuleProfile {
             Box::new(RDFS13),
             Box::new(SCM_DP_OP),
             Box::new(SCM_CLS),
+            /// Other rules
+            Box::new(PRP_FP),
+            Box::new(PRP_IFP),
         ];
         Self {
             cl_profile: ClosureProfile {
@@ -180,4 +182,106 @@ impl RuleProfile {
             },
         }
     }
+}
+
+pub fn PRP_FP(graph: &mut InfGraph) -> TripleStore {
+    let mut output = TripleStore::new();
+    let pairs = graph
+        .dictionary
+        .ts
+        .elem
+        .get(NodeDictionary::prop_idx_to_idx(
+            graph.dictionary.rdftype as u64,
+        ));
+    if pairs == None {
+        return output;
+    }
+    let pairs = &pairs.unwrap()[1]; // so copy
+    let expected_o = graph.dictionary.owlfunctionalProperty as u64;
+    for pair in pairs {
+        if pair[0] > expected_o {
+            break;
+        }
+        if pair[0] == expected_o {
+            let prop = pair[1];
+            let raw_prop = NodeDictionary::prop_idx_to_idx(prop);
+            let pairs1 = graph.dictionary.ts.elem.get(raw_prop);
+            if pairs1 == None {
+                break;
+            }
+            let pairs2 = &pairs1.unwrap()[0];
+            if pairs2.is_empty() {
+                break;
+            }
+            let pairs1 = &pairs1.unwrap()[0];
+            for pair1 in pairs1 {
+                for pair2 in pairs2 {
+                    if pair1[0] > pair2[0] {
+                        break;
+                    }
+                    if pair1[0] == pair2[0] {
+                        if pair1[1] != pair2[1] {
+                            output.add_triple([
+                                pair1[1],
+                                graph.dictionary.owlsameAs as u64,
+                                pair2[1],
+                            ])
+                        }
+                    }
+                }
+            }
+        }
+    }
+    output
+}
+
+pub fn PRP_IFP(graph: &mut InfGraph) -> TripleStore {
+    let mut output = TripleStore::new();
+    let pairs = graph
+        .dictionary
+        .ts
+        .elem
+        .get(NodeDictionary::prop_idx_to_idx(
+            graph.dictionary.rdftype as u64,
+        ));
+    if pairs == None {
+        return output;
+    }
+    let pairs = &pairs.unwrap()[1]; // so copy
+    let expected_o = graph.dictionary.owlinverseFunctionalProperty as u64;
+    for pair in pairs {
+        if pair[0] > expected_o {
+            break;
+        }
+        if pair[0] == expected_o {
+            let prop = pair[1];
+            let raw_prop = NodeDictionary::prop_idx_to_idx(prop);
+            let pairs1 = graph.dictionary.ts.elem.get(raw_prop);
+            if pairs1 == None {
+                break;
+            }
+            let pairs2 = &pairs1.unwrap()[1];
+            if pairs2.is_empty() {
+                break;
+            }
+            let pairs1 = &pairs1.unwrap()[1];
+            for pair1 in pairs1 {
+                for pair2 in pairs2 {
+                    if pair1[0] > pair2[0] {
+                        break;
+                    }
+                    if pair1[0] == pair2[0] {
+                        if pair1[1] != pair2[1] {
+                            output.add_triple([
+                                pair1[1],
+                                graph.dictionary.owlsameAs as u64,
+                                pair2[1],
+                            ])
+                        }
+                    }
+                }
+            }
+        }
+    }
+    output
 }

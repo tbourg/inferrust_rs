@@ -35,6 +35,7 @@ fn apply_same_as_rule(graph: &InfGraph) -> TripleStore {
         output
     } else {
         for pair1 in pairs1 {
+            output.add_triple([pair1[1], graph.dictionary.owlsameAs as u64, pair1[0]]);
             if pair1[0] < NodeDictionary::START_INDEX as u64 {
                 if let Some(pairs2) = graph
                     .dictionary
@@ -47,46 +48,38 @@ fn apply_same_as_rule(graph: &InfGraph) -> TripleStore {
                     }
                 }
             } else {
-                output.add_triple([pair1[1], graph.dictionary.owlsameAs as u64, pair1[0]]);
-                graph
-                    .dictionary
-                    .ts
-                    .elem
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, chunk)| {
-                        if !chunk[0].is_empty() {
-                            if chunk[0][0][0] <= pair1[0]
-                                && chunk[0][chunk[0].len() - 1][0] >= pair1[0]
-                            {
-                                let pi = NodeDictionary::idx_to_prop_idx(idx);
-                                chunk[0]
-                                    .iter()
-                                    .take_while(|pair| pair[0] <= pair1[0])
-                                    .filter(|pair| pair[0] == pair1[0])
-                                    .map(|pair| {
-                                        output.add_triple([pair1[1], pi, pair[1]]);
-                                    })
-                                    .for_each(|_| ());
+                for (idx, chunk) in graph.dictionary.ts.elem.iter().enumerate() {
+                    let pi = NodeDictionary::idx_to_prop_idx(idx);
+                    if pi == graph.dictionary.owlsameAs as u64 {
+                        continue;
+                    }
+                    if !chunk[0].is_empty() {
+                        if chunk[0][0][0] <= pair1[0] && chunk[0][chunk[0].len() - 1][0] >= pair1[0]
+                        {
+                            for pair in chunk[0].iter() {
+                                if pair[0] > pair1[0] {
+                                    break;
+                                }
+                                if pair[0] == pair1[0] {
+                                    output.add_triple([pair1[1], pi, pair[1]]);
+                                }
                             }
                         }
-                        if !chunk[1].is_empty() {
-                            if chunk[1][0][0] <= pair1[0]
-                                && chunk[1][chunk[0].len() - 1][0] >= pair1[0]
-                            {
-                                let pi = NodeDictionary::idx_to_prop_idx(idx);
-                                chunk[1]
-                                    .iter()
-                                    .take_while(|pair| pair[0] <= pair1[0])
-                                    .filter(|pair| pair[0] == pair1[0])
-                                    .map(|pair| {
-                                        output.add_triple([pair[1], pi, pair1[1]]);
-                                    })
-                                    .for_each(|_| ());
+                    }
+                    if !chunk[1].is_empty() {
+                        if chunk[1][0][0] <= pair1[0] && chunk[1][chunk[1].len() - 1][0] >= pair1[0]
+                        {
+                            for pair in chunk[1].iter() {
+                                if pair[0] > pair1[0] {
+                                    break;
+                                }
+                                if pair[0] == pair1[0] {
+                                    output.add_triple([pair[1], pi, pair1[1]]);
+                                }
                             }
                         }
-                    })
-                    .for_each(|_| ());
+                    }
+                }
             }
         }
         output
