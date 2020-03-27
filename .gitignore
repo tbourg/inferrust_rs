@@ -4,3 +4,5 @@
 .vscode/
 Cargo.lock
 */target
+*/res/
+*/examples/
