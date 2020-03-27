@@ -11,12 +11,12 @@ extern crate time;
 use time::precise_time_ns;
 
 fn main() {
-    let rep = &std::fs::read_to_string("inferrust/res/persondata_en_10k.ttl").unwrap();
+    let rep = &std::fs::read_to_string("inferrust/res/persondata_en_1M.ttl").unwrap();
     let dbo_person =
         Term::<&'static str>::new_iri("http://wikidata.dbpedia.org/ontology/Person").unwrap();
     let mut ts = sophia::parser::turtle::parse_str(rep);
     let t0 = precise_time_ns();
-    let mut s_graph = LightGraph::new();
+    let mut s_graph = FastGraph::new();
     ts.in_graph(&mut s_graph).unwrap();
     let t1 = precise_time_ns();
     let time_creation = (t1 - t0) as f64 / 1e9;

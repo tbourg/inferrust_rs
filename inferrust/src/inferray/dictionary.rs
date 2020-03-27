@@ -4,6 +4,7 @@ use sophia::ns::*;
 use sophia::term::factory::{RcTermFactory, TermFactory};
 use sophia::term::{RcTerm, Term, TermData};
 
+use std::collections::*;
 use std::convert::TryInto;
 
 use bimap::hash::BiHashMap;
@@ -14,8 +15,10 @@ pub struct NodeDictionary {
     res_ctr: u64,
     prop_ctr: u32,
     removed_val: Vec<u64>,
-    resources: BiHashMap<RcTerm, u64>,
-    properties: BiHashMap<RcTerm, u32>,
+    resources: Vec<RcTerm>,
+    res_to_idx: HashMap<RcTerm, u64>,
+    properties: Vec<RcTerm>,
+    prop_to_idx: HashMap<RcTerm, u32>,
     pub ts: TripleStore,
     factory: RcTermFactory,
     pub rdfsResource: u64,
@@ -98,8 +101,10 @@ impl NodeDictionary {
             res_ctr: Self::START_INDEX as u64,
             prop_ctr: Self::START_INDEX,
             removed_val: vec![],
-            resources: BiHashMap::<RcTerm, u64>::new(),
-            properties: BiHashMap::<RcTerm, u32>::new(),
+            resources: Vec::new(),
+            res_to_idx: HashMap::<RcTerm, u64>::new(),
+            properties: Vec::new(),
+            prop_to_idx: HashMap::<RcTerm, u32>::new(),
             ts,
             factory: RcTermFactory::new(),
             rdfsResource: 0,
@@ -179,36 +184,39 @@ impl NodeDictionary {
 
     pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
         let t = self.factory.clone_term(term);
-        if self.properties.contains_left(&t) {
-            return *self.properties.get_by_left(&t).expect("Err") as u64;
+        if self.properties.contains(&t) {
+            return *self.prop_to_idx.get(&t).unwrap() as u64;
         }
-        if self.resources.contains_left(&t) {
-            *self.resources.get_by_left(&t).expect("Err")
+        if self.resources.contains(&t) {
+            *self.res_to_idx.get(&t).expect("Err")
         } else {
             self.res_ctr += 1;
-            self.resources.insert(t, self.res_ctr);
+            self.resources.push(t.clone());
+            self.res_to_idx.insert(t, self.res_ctr);
             self.res_ctr
         }
     }
 
     pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> u32 {
         let t = self.factory.clone_term(term);
-        if self.resources.contains_left(&t) {
+        if self.resources.contains(&t) {
             self.remap_res_to_prop(t)
-        } else if self.properties.contains_left(&t) {
-            *self.properties.get_by_left(&t).expect("Err")
+        } else if self.properties.contains(&t) {
+            *self.prop_to_idx.get(&t).expect("Err")
         } else {
             self.prop_ctr -= 1;
-            self.properties.insert(t, self.prop_ctr);
+            self.properties.push(t.clone());
+            self.prop_to_idx.insert(t, self.prop_ctr);
             self.prop_ctr
         }
     }
 
     fn remap_res_to_prop(&mut self, t: RcTerm) -> u32 {
-        let old = self.resources.remove_by_left(&t).expect("Err").1;
+        let old = self.res_to_idx.remove(&t).expect("Err");
         self.prop_ctr -= 1;
         let p = self.prop_ctr;
-        self.properties.insert(t, p);
+        self.properties.push(t.clone());
+        self.prop_to_idx.insert(t, p);
         self.removed_val.push(old);
         self.ts.res_to_prop(old, p);
         p
@@ -216,12 +224,17 @@ impl NodeDictionary {
 
     pub fn get_term(&self, index: u64) -> &RcTerm {
         if index < Self::START_INDEX as u64 {
+            // dbg!(self.properties.len());
             self.properties
-                .get_by_right(&(index as u32))
-                .expect(&format!("No such properties {}", index))
+                .get((Self::START_INDEX - index as u32 - 1) as usize)
+                .expect(&format!(
+                    "No such properties {}",
+                    Self::START_INDEX as u64 - index
+                ))
         } else {
+            // dbg!(self.resources.len(), index - Self::START_INDEX as u64);
             self.resources
-                .get_by_right(&index)
+                .get((index - Self::START_INDEX as u64 - 1) as usize)
                 .expect("No such ressources")
         }
     }
@@ -231,10 +244,10 @@ impl NodeDictionary {
         T: TermData,
     {
         let inner_term = RcTerm::from(t);
-        if self.properties.contains_left(&inner_term) {
-            Some(*self.properties.get_by_left(&inner_term).unwrap() as u64)
-        } else if self.resources.contains_left(&inner_term) {
-            Some(*self.resources.get_by_left(&inner_term).unwrap())
+        if self.properties.contains(&inner_term) {
+            Some(*self.prop_to_idx.get(&inner_term).unwrap() as u64)
+        } else if self.resources.contains(&inner_term) {
+            Some(*self.res_to_idx.get(&inner_term).unwrap())
         } else {
             None
         }
