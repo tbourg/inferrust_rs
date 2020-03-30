@@ -381,12 +381,12 @@ impl InfGraph {
 
     pub fn process(&mut self, profile: &mut RuleProfile) {
         self.close(&mut profile.cl_profile);
-        profile.before_rules.process(self);
-        profile.rules.process(self);
-        profile.after_rules.process(self);
         if profile.axiomatic_triples {
             self.init_axiomatic_triples();
         }
+        profile.before_rules.process(self);
+        profile.rules.process(self);
+        profile.after_rules.process(self);
     }
 
     pub fn close(&mut self, profile: &mut ClosureProfile) {

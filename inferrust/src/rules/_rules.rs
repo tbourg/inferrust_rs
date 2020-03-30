@@ -168,7 +168,7 @@ impl RuleProfile {
                 on_spo: true,
                 on_trp: true,
             },
-            axiomatic_triples: false,
+            axiomatic_triples: true,
             before_rules: StaticRuleSet {
                 rules: Box::new(vec![]),
             },
