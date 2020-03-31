@@ -1,5 +1,7 @@
 use std::mem;
 
+use rayon::prelude::*;
+
 use super::NodeDictionary;
 
 pub struct TripleStore {
@@ -44,29 +46,19 @@ impl TripleStore {
 
     pub fn sort(&mut self) {
         let (min, max, width) = self.width();
-        let mut hist: Vec<usize> = vec![0; width];
-        let mut hist2: Vec<usize> = Vec::with_capacity(width);
-        let mut cumul: Vec<usize> = vec![0; width];
-        for chunk in &mut self.elem {
-            bucket_sort_pairs(
-                &mut chunk[0],
-                &mut hist,
-                &mut hist2,
-                &mut cumul,
-                min,
-                max,
-                width,
-            );
-            bucket_sort_pairs(
-                &mut chunk[1],
-                &mut hist,
-                &mut hist2,
-                &mut cumul,
-                min,
-                max,
-                width,
-            );
-        }
+        self.elem.par_iter_mut().for_each_init(
+            || {
+                let hist: Vec<usize> = vec![0; width];
+                let hist2: Vec<usize> = Vec::with_capacity(width);
+                let cumul: Vec<usize> = vec![0; width];
+                (hist, hist2, cumul)
+            },
+            |(hist, hist2, cumul), chunk| {
+                chunk.iter_mut().for_each(|chunk_part| {
+                    bucket_sort_pairs(chunk_part, hist, hist2, cumul, min, max, width);
+                });
+            },
+        );
     }
 
     pub fn res_to_prop(&mut self, res: u64, prop: u32) {

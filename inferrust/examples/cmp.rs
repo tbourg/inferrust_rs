@@ -11,6 +11,10 @@ extern crate time;
 use time::precise_time_ns;
 
 fn main() {
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(22)
+        .build_global()
+        .unwrap();
     let rep = &std::fs::read_to_string("inferrust/res/persondata_en_10k.ttl").unwrap();
     let dbo_person = Term::<&'static str>::new_iri("http://dbpedia.org/ontology/Person").unwrap();
     let mut ts = sophia::parser::turtle::parse_str(rep);
