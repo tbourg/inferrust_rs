@@ -3,7 +3,7 @@ use inferrust::rules::*;
 
 fn main() {
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(
-        &std::fs::read_to_string("../bsbmtools-0.2/dataset.ttl").unwrap(),
+        &std::fs::read_to_string("inferrust/res/subClassOf1000.nt").unwrap(),
     ));
 
     // dbg!(&graph.dictionary.ts.elem);
