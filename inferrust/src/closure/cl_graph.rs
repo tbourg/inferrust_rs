@@ -5,7 +5,7 @@ use crate::closure::utils;
 
 pub struct Node {
     pub id: u64,
-    pub dfs_num: RefCell<i32>,
+    pub dfs_num: RefCell<usize>,
     pub in_comp: RefCell<bool>,
 }
 
@@ -13,11 +13,11 @@ impl Node {
     pub fn new(id: u64) -> Self {
         Self {
             id,
-            dfs_num: RefCell::new(-1),
+            dfs_num: RefCell::new(usize::max_value()),
             in_comp: RefCell::new(false),
         }
     }
-    pub fn set_num(&self, num: i32) {
+    pub fn set_num(&self, num: usize) {
         *self.dfs_num.borrow_mut() = num;
     }
 }
