@@ -8,14 +8,12 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
     let mut stack = Vec::new();
     let mut root = HashMap::new();
     let mut tc = HashMap::new();
-    let mut adj_comp_roots = HashMap::new();
     let mut num = 0;
     fn node_tc(
         v: &Node,
         stack: &mut Vec<u64>,
         root: &mut HashMap<u64, u64>,
         tc: &mut HashMap<u64, HashSet<u64>>,
-        adj_comp_roots: &mut HashMap<u64, HashSet<u64>>,
         g: &ClosureGraph,
         num: &mut usize,
     ) {
@@ -24,7 +22,7 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
         stack.push(v.id);
         root.insert(v.id, v.id);
         tc.insert(v.id, HashSet::new());
-        adj_comp_roots.insert(v.id, HashSet::new());
+        let mut adj_comp_roots= HashSet::new();
         let v_succ: Vec<u64> = g
             .edges
             .iter()
@@ -35,15 +33,12 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
         for wi in v_succ.iter() {
             let w = g.node(*wi);
             if *w.dfs_num.borrow() == usize::max_value() {
-                node_tc(&w, stack, root, tc, adj_comp_roots, g, num);
+                node_tc(&w, stack, root, tc, g, num);
                 let vroot = g.node(root[&v.id]);
                 let wroot = g.node(root[&w.id]);
                 root.insert(v.id, minn(&vroot, &wroot));
                 if *w.in_comp.borrow() {
-                    adj_comp_roots
-                        .get_mut(&v.id)
-                        .unwrap()
-                        .insert(root[&w.id]);
+                    adj_comp_roots.insert(root[&w.id]);
                 }
             } else if *v.dfs_num.borrow() > *w.dfs_num.borrow() {
                 if !*w.in_comp.borrow() {
@@ -51,14 +46,11 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
                     let wroot = g.node(root[&w.id]);
                     root.insert(v.id, minn(&vroot, &wroot));
                 } else {
-                    adj_comp_roots
-                        .get_mut(&v.id)
-                        .unwrap()
-                        .insert(root[&w.id]);
+                    adj_comp_roots.insert(root[&w.id]);
                 }
             }
         }
-        for r in adj_comp_roots[&v.id].iter() {
+        for r in adj_comp_roots.iter() {
             if !&tc[&root[&v.id]].contains(r) {
                 tc.get_mut(&root[&v.id]).unwrap().insert(*r);
                 let tcr = tc[r].clone();
@@ -90,12 +82,12 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
     }
     for v in g.nodes.iter() {
         if *v.dfs_num.borrow() == usize::max_value() {
+            dbg!(v.id);
             node_tc(
                 v,
                 &mut stack,
                 &mut root,
                 &mut tc,
-                &mut adj_comp_roots,
                 &g,
                 &mut num,
             );
