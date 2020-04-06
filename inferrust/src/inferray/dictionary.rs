@@ -222,7 +222,7 @@ impl NodeDictionary {
         } else {
             self.resources
                 .get_by_right(&index)
-                .expect("No such ressources")
+                .expect(&format!("No such ressources {}", index))
         }
     }
 
@@ -238,6 +238,14 @@ impl NodeDictionary {
         } else {
             None
         }
+    }
+
+    pub fn was_removed(&mut self, res: &u64) -> bool {
+        self.removed_val.contains(res)
+    }
+
+    pub fn get_res_ctr(&mut self) -> u64 {
+        self.res_ctr
     }
 
     pub fn prop_idx_to_idx(prop_idx: u64) -> usize {

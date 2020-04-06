@@ -386,7 +386,14 @@ impl InfGraph {
         }
         profile.before_rules.process(self);
         profile.rules.process(self);
-        profile.after_rules.process(self);
+        match profile.after_rules {
+            Some(rule) => {
+                let out = rule(self);
+                self.dictionary.ts.add_all(out);
+                self.dictionary.ts.sort();
+            }
+            None => (),
+        }
     }
 
     pub fn close(&mut self, profile: &mut ClosureProfile) {

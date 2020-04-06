@@ -106,21 +106,85 @@ pub struct RuleProfile {
     pub axiomatic_triples: bool,
     pub before_rules: StaticRuleSet,
     pub rules: FixPointRuleSet,
-    pub after_rules: StaticRuleSet,
+    pub after_rules: Option<Rule>,
 }
 
 impl RuleProfile {
-    // pub fn RDFS() -> Self {
-    //     Self {
+    pub fn RDFS() -> Self {
+        let rules: Vec<Box<Rule>> = vec![
+            /// Alpha class
+            Box::new(CAX_SCO),
+            Box::new(SCM_DOM1),
+            Box::new(SCM_DOM2),
+            Box::new(SCM_RNG1),
+            Box::new(SCM_RNG2),
+            /// Gamma class
+            Box::new(PRP_DOM),
+            Box::new(PRP_RNG),
+            Box::new(PRP_SPO1),
+        ];
+        let before_rules: Vec<Box<Rule>> = vec![
+            /// Zeta class (trivial rules)
+            Box::new(RDFS4),
+            Box::new(RDFS6),
+            Box::new(RDFS8),
+            Box::new(RDFS10),
+            Box::new(RDFS12),
+            Box::new(RDFS13),
+        ];
+        Self {
+            cl_profile: ClosureProfile {
+                on_sa: true,
+                on_sco: true,
+                on_spo: true,
+                on_trp: true,
+            },
+            axiomatic_triples: true,
+            before_rules: StaticRuleSet {
+                rules: Box::new(before_rules),
+            },
+            rules: FixPointRuleSet {
+                rules: StaticRuleSet {
+                    rules: Box::new(rules),
+                },
+            },
+            after_rules: Some(finalize),
+        }
+    }
 
-    //     }
-    // }
+    pub fn RDFSDefault() -> Self {
+        Self {
+            axiomatic_triples: false,
+            ..Self::RDFS()
+        }
+    }
 
     // pub fn RhoDF() -> Self {
     //     Self {
 
     //     }
     // }
+
+    pub fn Closure() -> Self {
+        Self {
+            cl_profile: ClosureProfile {
+                on_sa: true,
+                on_sco: true,
+                on_spo: true,
+                on_trp: true,
+            },
+            axiomatic_triples: false,
+            before_rules: StaticRuleSet {
+                rules: Box::new(vec![]),
+            },
+            rules: FixPointRuleSet {
+                rules: StaticRuleSet {
+                    rules: Box::new(vec![]),
+                },
+            },
+            after_rules: None,
+        }
+    }
 
     pub fn RDFSPlus() -> Self {
         let all_rules: Vec<Box<Rule>> = vec![
@@ -177,9 +241,7 @@ impl RuleProfile {
                     rules: Box::new(all_rules),
                 },
             },
-            after_rules: StaticRuleSet {
-                rules: Box::new(vec![]),
-            },
+            after_rules: None,
         }
     }
 }
@@ -283,5 +345,17 @@ pub fn PRP_IFP(graph: &mut InfGraph) -> TripleStore {
             }
         }
     }
+    output
+}
+
+pub fn finalize(graph: &mut InfGraph) -> TripleStore {
+    let mut output = TripleStore::new();
+    let type_ = graph.dictionary.rdftype as u64;
+    let res = graph.dictionary.rdfsResource;
+    ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dictionary.get_res_ctr())
+        .filter(|e| !graph.dictionary.was_removed(e))
+        .for_each(|e| {
+            output.add_triple([e, type_, res]);
+        });
     output
 }
