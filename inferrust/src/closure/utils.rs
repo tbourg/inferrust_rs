@@ -36,34 +36,34 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
             let w = g.node(*wi);
             if *w.dfs_num.borrow() == usize::max_value() {
                 node_tc(&w, stack, root, tc, adj_comp_roots, g, num);
-                let wroot = g.node(*root.get(&w.id).unwrap());
+                let wroot = g.node(root[&w.id]);
                 root.insert(v.id, minn(v, &wroot));
                 if *w.in_comp.borrow() {
                     adj_comp_roots
                         .get_mut(&v.id)
                         .unwrap()
-                        .insert(*root.get(&w.id).unwrap());
+                        .insert(root[&w.id]);
                 }
             } else if *v.dfs_num.borrow() > *w.dfs_num.borrow() {
                 if !*w.in_comp.borrow() {
-                    let wroot = g.node(*root.get(&w.id).unwrap());
+                    let wroot = g.node(root[&w.id]);
                     root.insert(v.id, minn(v, &wroot));
                 } else {
                     adj_comp_roots
                         .get_mut(&v.id)
                         .unwrap()
-                        .insert(*root.get(&w.id).unwrap());
+                        .insert(root[&w.id]);
                 }
             }
         }
-        for r in adj_comp_roots.get(&v.id).unwrap().iter() {
-            if !tc.get(root.get(&v.id).unwrap()).unwrap().contains(r) {
-                tc.get_mut(root.get(&v.id).unwrap()).unwrap().insert(*r);
-                let tcr = tc.get(r).unwrap().clone();
-                tc.get_mut(root.get(&v.id).unwrap()).unwrap().extend(tcr);
+        for r in adj_comp_roots[&v.id].iter() {
+            if !&tc[&root[&v.id]].contains(r) {
+                tc.get_mut(&root[&v.id]).unwrap().insert(*r);
+                let tcr = tc[r].clone();
+                tc.get_mut(&root[&v.id]).unwrap().extend(tcr);
             }
         }
-        if *root.get(&v.id).unwrap() == v.id {
+        if root[&v.id] == v.id {
             let top = g.node(*stack.last().unwrap());
             if *top.dfs_num.borrow() > *v.dfs_num.borrow() {
                 tc.get_mut(&v.id).unwrap().insert(v.id);
@@ -72,17 +72,17 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
             while wid != v.id {
                 let w = g.node(wid);
                 *w.in_comp.borrow_mut() = true;
-                if !tc.get(&wid).unwrap().is_empty() {
-                    let wtc = tc.get(&wid).unwrap().clone();
+                if !tc[&wid].is_empty() {
+                    let wtc = tc[&wid].clone();
                     tc.get_mut(&v.id).unwrap().extend(wtc);
                 }
                 root.insert(w.id, v.id);
                 wid = stack.pop().unwrap();
             }
         } else {
-            tc.get_mut(root.get(&v.id).unwrap()).unwrap().insert(v.id);
-            let tcv = tc.get(&v.id).unwrap().clone();
-            tc.get_mut(root.get(&v.id).unwrap()).unwrap().extend(tcv);
+            tc.get_mut(&root[&v.id]).unwrap().insert(v.id);
+            let tcv = tc[&v.id].clone();
+            tc.get_mut(&root[&v.id]).unwrap().extend(tcv);
             tc.get_mut(&v.id).unwrap().clear();
         }
     }
