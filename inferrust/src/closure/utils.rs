@@ -74,6 +74,7 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
                 root.insert(w.id, v.id);
                 wid = stack.pop().unwrap();
             }
+            *v.in_comp.borrow_mut() = true;
         } else {
             let tc_v = tc[&v.id].iter().cloned().collect::<Vec<_>>();
             let tc_root_v = tc.get_mut(&root[&v.id]).unwrap();
