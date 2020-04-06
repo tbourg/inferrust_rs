@@ -52,9 +52,10 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
         }
         for r in adj_comp_roots.iter() {
             if !&tc[&root[&v.id]].contains(r) {
-                tc.get_mut(&root[&v.id]).unwrap().insert(*r);
-                let tcr = tc[r].clone();
-                tc.get_mut(&root[&v.id]).unwrap().extend(tcr);
+                let tc_r = tc[r].iter().cloned().collect::<Vec<_>>();
+                let tc_root_v = tc.get_mut(&root[&v.id]).unwrap();
+                tc_root_v.insert(*r);
+                tc_root_v.extend(tc_r);
             }
         }
         if root[&v.id] == v.id {
@@ -74,9 +75,10 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
                 wid = stack.pop().unwrap();
             }
         } else {
-            tc.get_mut(&root[&v.id]).unwrap().insert(v.id);
-            let tcv = tc[&v.id].clone();
-            tc.get_mut(&root[&v.id]).unwrap().extend(tcv);
+            let tc_v = tc[&v.id].iter().cloned().collect::<Vec<_>>();
+            let tc_root_v = tc.get_mut(&root[&v.id]).unwrap();
+            tc_root_v.insert(v.id);
+            tc_root_v.extend(tc_v);
             tc.get_mut(&v.id).unwrap().clear();
         }
     }
