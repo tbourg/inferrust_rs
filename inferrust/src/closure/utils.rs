@@ -1,4 +1,5 @@
 use crate::closure::{ClosureGraph, Node};
+use crate::utils::*;
 
 use std::collections::{HashMap, HashSet};
 
@@ -9,6 +10,7 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
     let mut root = HashMap::new();
     let mut tc = HashMap::new();
     let mut num = 0;
+    dbg!(&g.edges);
     fn node_tc(
         v: &Node,
         stack: &mut Vec<u64>,
@@ -22,14 +24,15 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
         stack.push(v.id);
         root.insert(v.id, v.id);
         tc.insert(v.id, HashSet::new());
-        let mut adj_comp_roots= HashSet::new();
-        let v_succ: Vec<u64> = g
-            .edges
+        let mut adj_comp_roots = HashSet::new();
+        let len = g.edges.len();
+        let start_index = first(&g.edges, v.id, 0, len - 1, len, 0);
+        let v_succ: Vec<u64> = g.edges[start_index..]
             .iter()
-            .filter(|e| e[0] == v.id)
+            .take_while(|e| e[0] == v.id)
             .map(|e| e[1])
             .collect();
-        dbg!((&v.id, *num, &v_succ));
+        dbg!((&v.id, *num, start_index, &g.edges[start_index..], &v_succ));
         for wi in v_succ.iter() {
             let w = g.node(*wi);
             if *w.dfs_num.borrow() == usize::max_value() {
@@ -83,17 +86,9 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
             tc.get_mut(&v.id).unwrap().clear();
         }
     }
-    for v in g.nodes.iter() {
+    for (_, v) in g.map.iter() {
         if *v.dfs_num.borrow() == usize::max_value() {
-            dbg!(v.id);
-            node_tc(
-                v,
-                &mut stack,
-                &mut root,
-                &mut tc,
-                &g,
-                &mut num,
-            );
+            node_tc(v, &mut stack, &mut root, &mut tc, &g, &mut num);
         }
     }
     dbg!(root);
@@ -107,4 +102,3 @@ fn minn(a: &Node, b: &Node) -> u64 {
         b.id
     }
 }
-
