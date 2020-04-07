@@ -30,6 +30,7 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
         let v_succ: Vec<u64> = g.edges[start_index..]
             .iter()
             .take_while(|e| e[0] == v.id)
+            // .filter(|e| e[0] == v.id)
             .map(|e| e[1])
             .collect();
         // dbg!((&v.id, *num, start_index, &g.edges[start_index..], &v_succ));

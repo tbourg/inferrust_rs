@@ -49,7 +49,7 @@ pub fn first(
         } else if x > vec[mid][key_pos] {
             return first(vec, x, mid + 1, high, n, key_pos);
         } else {
-            return first(vec, x, low, mid - 1, n, key_pos);
+            return first(vec, x, low, mid, n, key_pos);
         }
     }
     return n;
