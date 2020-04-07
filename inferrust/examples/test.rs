@@ -20,13 +20,18 @@ fn main() {
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
     // dbg!(&graph.dictionary.ts.elem);
-    graph.process(&mut RuleProfile::RDFSDefault());
     println!(
         "{} triples and {} p",
         graph.size(),
         graph.dictionary.ts.elem.len()
     );
-    let mut nt_stringifier = NtSerializer::new_stringifier();
-    let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
-    println!("The resulting graph\n{}", example2);
+    graph.process(&mut RuleProfile::RDFS());
+    println!(
+        "{} triples and {} p",
+        graph.size(),
+        graph.dictionary.ts.elem.len()
+    );
+    // let mut nt_stringifier = NtSerializer::new_stringifier();
+    // let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
+    // println!("The resulting graph\n{}", example2);
 }

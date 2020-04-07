@@ -134,10 +134,10 @@ impl RuleProfile {
         ];
         Self {
             cl_profile: ClosureProfile {
-                on_sa: true,
+                on_sa: false,
                 on_sco: true,
                 on_spo: true,
-                on_trp: true,
+                on_trp: false,
             },
             axiomatic_triples: true,
             before_rules: StaticRuleSet {
@@ -158,12 +158,40 @@ impl RuleProfile {
             ..Self::RDFS()
         }
     }
-
-    // pub fn RhoDF() -> Self {
-    //     Self {
-
-    //     }
-    // }
+    pub fn RhoDF() -> Self {
+        let before_rules: Vec<Box<Rule>> = vec![
+            /// Zeta class (trivial rules)
+            Box::new(RDFS4),
+        ];
+        let rules: Vec<Box<Rule>> = vec![
+            /// Alpha class
+            Box::new(CAX_SCO),
+            Box::new(SCM_DOM2),
+            Box::new(SCM_RNG2),
+            /// Gamma class
+            Box::new(PRP_DOM),
+            Box::new(PRP_RNG),
+            Box::new(PRP_SPO1),
+        ];
+        Self {
+            cl_profile: ClosureProfile {
+                on_sa: false,
+                on_sco: true,
+                on_spo: true,
+                on_trp: false,
+            },
+            axiomatic_triples: false,
+            before_rules: StaticRuleSet {
+                rules: Box::new(before_rules),
+            },
+            rules: FixPointRuleSet {
+                rules: StaticRuleSet {
+                    rules: Box::new(rules),
+                },
+            },
+            after_rules: None,
+        }
+    }
 
     pub fn Closure() -> Self {
         Self {
@@ -185,9 +213,14 @@ impl RuleProfile {
             after_rules: None,
         }
     }
-
     pub fn RDFSPlus() -> Self {
-        let all_rules: Vec<Box<Rule>> = vec![
+        let before_rules: Vec<Box<Rule>> = vec![
+            /// Zeta class (trivial rules)
+            Box::new(RDFS4),
+            Box::new(SCM_DP_OP),
+            Box::new(SCM_CLS),
+        ];
+        let rules: Vec<Box<Rule>> = vec![
             /// Alpha class
             Box::new(CAX_SCO),
             Box::new(CAX_EQC1),
@@ -212,15 +245,6 @@ impl RuleProfile {
             Box::new(EQ_TRANS),
             /// Same as class
             Box::new(SAME_AS),
-            /// Zeta class (trivial rules)
-            Box::new(RDFS4),
-            Box::new(RDFS6),
-            Box::new(RDFS8),
-            Box::new(RDFS10),
-            Box::new(RDFS12),
-            Box::new(RDFS13),
-            Box::new(SCM_DP_OP),
-            Box::new(SCM_CLS),
             /// Other rules
             Box::new(PRP_FP),
             Box::new(PRP_IFP),
@@ -232,13 +256,13 @@ impl RuleProfile {
                 on_spo: true,
                 on_trp: true,
             },
-            axiomatic_triples: true,
+            axiomatic_triples: false,
             before_rules: StaticRuleSet {
-                rules: Box::new(vec![]),
+                rules: Box::new(before_rules),
             },
             rules: FixPointRuleSet {
                 rules: StaticRuleSet {
-                    rules: Box::new(all_rules),
+                    rules: Box::new(rules),
                 },
             },
             after_rules: None,
