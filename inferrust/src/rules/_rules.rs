@@ -2,7 +2,7 @@ use crate::inferray::*;
 use crate::rules::*;
 
 /// A type alias  to unify all the rules of the reasoner
-pub type Rule = fn(&mut InfGraph) -> TripleStore;
+pub type Rule = fn(&InfGraph) -> TripleStore;
 // pub trait Rule {
 //     // fn specialize(&mut self, graph: std::rc::Rc<&'static InfGraph>);
 //     fn fire(&mut self, graph: &mut InfGraph) -> TripleStore;
@@ -270,7 +270,7 @@ impl RuleProfile {
     }
 }
 
-pub fn PRP_FP(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_FP(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs = graph
         .dictionary
@@ -321,7 +321,7 @@ pub fn PRP_FP(graph: &mut InfGraph) -> TripleStore {
     output
 }
 
-pub fn PRP_IFP(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_IFP(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs = graph
         .dictionary
@@ -372,7 +372,7 @@ pub fn PRP_IFP(graph: &mut InfGraph) -> TripleStore {
     output
 }
 
-pub fn finalize(graph: &mut InfGraph) -> TripleStore {
+pub fn finalize(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
     let type_ = graph.dictionary.rdftype as u64;
     let res = graph.dictionary.rdfsResource;

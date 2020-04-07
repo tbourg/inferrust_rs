@@ -240,11 +240,11 @@ impl NodeDictionary {
         }
     }
 
-    pub fn was_removed(&mut self, res: &u64) -> bool {
+    pub fn was_removed(&self, res: &u64) -> bool {
         self.removed_val.contains(res)
     }
 
-    pub fn get_res_ctr(&mut self) -> u64 {
+    pub fn get_res_ctr(&self) -> u64 {
         self.res_ctr
     }
 

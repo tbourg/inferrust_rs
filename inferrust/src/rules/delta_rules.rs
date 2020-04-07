@@ -58,7 +58,7 @@ fn apply_delta_rule(graph: &InfGraph, prop_idx: usize, invert: bool) -> TripleSt
     output
 }
 
-pub fn PRP_INV_1_2(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_INV_1_2(graph: &InfGraph) -> TripleStore {
     apply_delta_rule(
         graph,
         NodeDictionary::prop_idx_to_idx(graph.dictionary.owlinverseOf as u64),
@@ -66,7 +66,7 @@ pub fn PRP_INV_1_2(graph: &mut InfGraph) -> TripleStore {
     )
 }
 
-pub fn PRP_EQP_1_2(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_EQP_1_2(graph: &InfGraph) -> TripleStore {
     apply_delta_rule(
         graph,
         NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentProperty as u64),

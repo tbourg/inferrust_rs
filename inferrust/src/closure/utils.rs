@@ -10,7 +10,7 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
     let mut root = HashMap::new();
     let mut tc = HashMap::new();
     let mut num = 0;
-    dbg!(&g.edges);
+    // dbg!(&g.edges);
     fn node_tc(
         v: &Node,
         stack: &mut Vec<u64>,
@@ -32,7 +32,7 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
             .take_while(|e| e[0] == v.id)
             .map(|e| e[1])
             .collect();
-        dbg!((&v.id, *num, start_index, &g.edges[start_index..], &v_succ));
+        // dbg!((&v.id, *num, start_index, &g.edges[start_index..], &v_succ));
         for wi in v_succ.iter() {
             let w = g.node(*wi);
             if *w.dfs_num.borrow() == usize::max_value() {
@@ -91,7 +91,7 @@ pub fn graph_tc(g: &ClosureGraph) -> HashMap<u64, HashSet<u64>> {
             node_tc(v, &mut stack, &mut root, &mut tc, &g, &mut num);
         }
     }
-    dbg!(root);
+    // dbg!(root);
     tc
 }
 

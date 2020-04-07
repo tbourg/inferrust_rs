@@ -37,40 +37,40 @@ fn apply_zeta_rule(
     output
 }
 
-pub fn RDFS6(graph: &mut InfGraph) -> TripleStore {
+pub fn RDFS6(graph: &InfGraph) -> TripleStore {
     let input_o = graph.dictionary.rdfProperty as u64;
     let output_p = graph.dictionary.rdfssubPropertyOf as u64;
     apply_zeta_rule(graph, input_o, output_p, 0, true)
 }
 
-pub fn RDFS8(graph: &mut InfGraph) -> TripleStore {
+pub fn RDFS8(graph: &InfGraph) -> TripleStore {
     let input_o = graph.dictionary.rdfsClass;
     let output_p = graph.dictionary.rdftype as u64;
     let output_o = graph.dictionary.rdfsResource;
     apply_zeta_rule(graph, input_o, output_p, output_o, false)
 }
 
-pub fn RDFS10(graph: &mut InfGraph) -> TripleStore {
+pub fn RDFS10(graph: &InfGraph) -> TripleStore {
     let input_o = graph.dictionary.rdfsClass;
     let output_p = graph.dictionary.rdfssubClassOf as u64;
     apply_zeta_rule(graph, input_o, output_p, 0, true)
 }
 
-pub fn RDFS12(graph: &mut InfGraph) -> TripleStore {
+pub fn RDFS12(graph: &InfGraph) -> TripleStore {
     let input_o = graph.dictionary.rdfsContainerMembershipProperty as u64;
     let output_p = graph.dictionary.rdfssubPropertyOf as u64;
     let output_o = graph.dictionary.rdfsMember as u64;
     apply_zeta_rule(graph, input_o, output_p, output_o, false)
 }
 
-pub fn RDFS13(graph: &mut InfGraph) -> TripleStore {
+pub fn RDFS13(graph: &InfGraph) -> TripleStore {
     let input_o = graph.dictionary.rdfsDatatype;
     let output_p = graph.dictionary.rdfssubClassOf as u64;
     let output_o = graph.dictionary.rdfsLiteral;
     apply_zeta_rule(graph, input_o, output_p, output_o, false)
 }
 
-pub fn SCM_DP_OP(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_DP_OP(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
     for object in [
         graph.dictionary.owldataTypeProperty as u64,
@@ -113,7 +113,7 @@ pub fn SCM_DP_OP(graph: &mut InfGraph) -> TripleStore {
     output
 }
 
-pub fn SCM_CLS(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_CLS(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs1 = graph
         .dictionary
@@ -156,7 +156,7 @@ pub fn SCM_CLS(graph: &mut InfGraph) -> TripleStore {
     output
 }
 
-pub fn RDFS4(graph: &mut InfGraph) -> TripleStore {
+pub fn RDFS4(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
     let mut resources_idx = Vec::new();
     let pairs1 = graph

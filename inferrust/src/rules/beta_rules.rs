@@ -69,25 +69,25 @@ fn apply_inverse_beta_rule(graph: &InfGraph, rule_p: usize, infer_p: usize) -> T
 /// Head:
 /// - c1 owl:equivalentClass c2
 /// - c2 owl:equivalentClass c1
-pub fn SCM_SCO_EQC2(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_SCO_EQC2(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as u64);
     apply_beta_rule(graph, id_1, id_2)
 }
 
-pub fn SCM_SPO_EQP2(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_SPO_EQP2(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubPropertyOf as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentProperty as u64);
     apply_beta_rule(graph, id_1, id_2)
 }
 
-pub fn SCM_EQC1(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_EQC1(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as u64);
     apply_inverse_beta_rule(graph, id_1, id_2)
 }
 
-pub fn SCM_EQP1(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_EQP1(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentProperty as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubPropertyOf as u64);
     apply_inverse_beta_rule(graph, id_1, id_2)

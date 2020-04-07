@@ -71,43 +71,43 @@ pub fn apply_alpha_rule(
     output
 }
 
-pub fn CAX_SCO(graph: &mut InfGraph) -> TripleStore {
+pub fn CAX_SCO(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
-pub fn CAX_EQC1(graph: &mut InfGraph) -> TripleStore {
+pub fn CAX_EQC1(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
-pub fn CAX_EQC2(graph: &mut InfGraph) -> TripleStore {
+pub fn CAX_EQC2(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.owlequivalentClass as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 4, 0, 2, 5)
 }
 
-pub fn SCM_DOM1(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_DOM1(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfsdomain as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 0, 1, 5, 2, 3)
 }
 
-pub fn SCM_DOM2(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_DOM2(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfsdomain as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 1, 2, 0, 5)
 }
 
-pub fn SCM_RNG1(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_RNG1(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfsrange as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubClassOf as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 0, 1, 5, 2, 3)
 }
 
-pub fn SCM_RNG2(graph: &mut InfGraph) -> TripleStore {
+pub fn SCM_RNG2(graph: &InfGraph) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfsrange as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(graph, id_1, id_2, 3, 1, 2, 0, 5)

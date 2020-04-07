@@ -86,6 +86,6 @@ fn apply_same_as_rule(graph: &InfGraph) -> TripleStore {
     }
 }
 
-pub fn SAME_AS(graph: &mut InfGraph) -> TripleStore {
+pub fn SAME_AS(graph: &InfGraph) -> TripleStore {
     apply_same_as_rule(graph)
 }

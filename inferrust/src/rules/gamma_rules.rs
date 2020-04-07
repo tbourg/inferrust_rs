@@ -56,7 +56,7 @@ fn apply_gamma_rule(
     output
 }
 
-pub fn PRP_DOM(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_DOM(graph: &InfGraph) -> TripleStore {
     apply_gamma_rule(
         graph,
         NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfsdomain as u64),
@@ -66,7 +66,7 @@ pub fn PRP_DOM(graph: &mut InfGraph) -> TripleStore {
     )
 }
 
-pub fn PRP_RNG(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_RNG(graph: &InfGraph) -> TripleStore {
     apply_gamma_rule(
         graph,
         NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfsrange as u64),
@@ -76,7 +76,7 @@ pub fn PRP_RNG(graph: &mut InfGraph) -> TripleStore {
     )
 }
 
-pub fn PRP_SPO1(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_SPO1(graph: &InfGraph) -> TripleStore {
     apply_gamma_rule(
         graph,
         NodeDictionary::prop_idx_to_idx(graph.dictionary.rdfssubPropertyOf as u64),
@@ -86,7 +86,7 @@ pub fn PRP_SPO1(graph: &mut InfGraph) -> TripleStore {
     )
 }
 
-pub fn PRP_SYMP(graph: &mut InfGraph) -> TripleStore {
+pub fn PRP_SYMP(graph: &InfGraph) -> TripleStore {
     let mut output = TripleStore::new();
     let expected_ip = NodeDictionary::prop_idx_to_idx(graph.dictionary.rdftype as u64);
     let expected_io = graph.dictionary.owlsymmetricProperty as u64;
@@ -117,7 +117,7 @@ pub fn PRP_SYMP(graph: &mut InfGraph) -> TripleStore {
     output
 }
 
-pub fn EQ_TRANS(graph: &mut InfGraph) -> TripleStore {
+pub fn EQ_TRANS(graph: &InfGraph) -> TripleStore {
     let pairs = graph
         .dictionary
         .ts
