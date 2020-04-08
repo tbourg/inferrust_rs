@@ -1,6 +1,5 @@
-use std::mem;
-
 use rayon::prelude::*;
+use std::mem;
 
 use super::NodeDictionary;
 
@@ -86,24 +85,16 @@ impl TripleStore {
     }
 
     pub fn width(&mut self) -> (u64, u64, usize) {
-        let mut min: u64 = u64::max_value();
-        let mut max: u64 = 0;
-        for chunk in &self.elem {
-            for pair in &chunk[0] {
-                let (local_min, local_max) = if pair[0] <= pair[1] {
-                    (pair[0], pair[1])
-                } else {
-                    (pair[1], pair[0])
-                };
-                min = if local_min < min { local_min } else { min };
-                max = if local_max > max { local_max } else { max };
-            }
-        }
-        if max == 0 {
-            (0, 0, 0)
-        } else {
-            (min, max, (max - min + 1) as usize)
-        }
+        let (min, max) = self
+            .elem
+            .iter()
+            .map(|chunk| &chunk[0])
+            .flat_map(|pairs| pairs.iter())
+            .flat_map(|pair| pair.iter())
+            .fold((u64::max_value(), 0), |acc, &x| {
+                (acc.0.min(x), acc.1.max(x))
+            });
+        (min, max, (max - min + 1) as usize)
     }
 }
 
@@ -173,9 +164,7 @@ fn build_hist(pairs: &[[u64; 2]], min: u64, hist: &mut Vec<usize>) {
 }
 
 fn build_cumul(hist: &[usize], cumul: &mut Vec<usize>) {
-    for (i, _e) in hist.iter().enumerate() {
-        if i != 0 {
-            cumul[i] = cumul[i - 1] + hist[i - 1];
-        }
+    for i in 1..hist.len() {
+        cumul[i] = cumul[i - 1] + hist[i - 1];
     }
 }
