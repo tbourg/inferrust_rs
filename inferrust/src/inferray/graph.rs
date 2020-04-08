@@ -381,6 +381,9 @@ impl InfGraph {
             return;
         }
         let pairs = pairs.unwrap()[0].clone();
+        if pairs.is_empty() {
+            return;
+        }
         let mut tc_g = ClosureGraph::from(pairs);
         // eprintln!("fermeture transitive");
         let closure = tc_g.close();
