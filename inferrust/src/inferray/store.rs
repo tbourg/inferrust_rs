@@ -5,12 +5,13 @@ use super::NodeDictionary;
 
 pub struct TripleStore {
     pub elem: Vec<[Vec<[u64; 2]>; 2]>,
+    size: usize,
 }
 
 impl TripleStore {
     pub fn new() -> Self {
         let elem = Vec::new();
-        Self { elem }
+        Self { elem, size: 0 }
     }
 
     pub fn add_triple(&mut self, triple: [u64; 3]) {
@@ -41,23 +42,31 @@ impl TripleStore {
     pub fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
         self.elem[ip][0].push([is, io]);
         self.elem[ip][1].push([io, is]);
+        self.size += 1;
     }
 
     pub fn sort(&mut self) {
         let (min, max, width) = self.width();
-        self.elem.par_iter_mut().for_each_init(
-            || {
-                let hist: Vec<usize> = vec![0; width];
-                let hist2: Vec<usize> = Vec::with_capacity(width);
-                let cumul: Vec<usize> = vec![0; width];
-                (hist, hist2, cumul)
-            },
-            |(hist, hist2, cumul), chunk| {
-                chunk.iter_mut().for_each(|chunk_part| {
-                    bucket_sort_pairs(chunk_part, hist, hist2, cumul, min, max, width);
-                });
-            },
-        );
+        self.size = self
+            .elem
+            .par_iter_mut()
+            .map_init(
+                || {
+                    let hist: Vec<usize> = vec![0; width];
+                    let hist2: Vec<usize> = Vec::with_capacity(width);
+                    let cumul: Vec<usize> = vec![0; width];
+                    (hist, hist2, cumul)
+                },
+                |(hist, hist2, cumul), chunk| {
+                    let mut new_size = 0;
+                    chunk.iter_mut().for_each(|chunk_part| {
+                        new_size =
+                            bucket_sort_pairs(chunk_part, hist, hist2, cumul, min, max, width);
+                    });
+                    new_size
+                },
+            )
+            .sum();
     }
 
     pub fn res_to_prop(&mut self, res: u64, prop: u32) {
@@ -77,11 +86,7 @@ impl TripleStore {
     }
 
     pub fn size(&mut self) -> usize {
-        let mut s = 0;
-        for chunk in &self.elem {
-            s += chunk[0].len();
-        }
-        s
+        self.size
     }
 
     pub fn width(&mut self) -> (u64, u64, usize) {
@@ -107,9 +112,9 @@ pub fn bucket_sort_pairs(
     min: u64,
     _max: u64,
     width: usize,
-) {
+) -> usize {
     if pairs.is_empty() {
-        return;
+        return 0;
     }
     build_hist(&pairs, min, hist);
     mem::replace(hist2, hist.to_vec());
@@ -143,6 +148,7 @@ pub fn bucket_sort_pairs(
         }
     }
     pairs.truncate(j);
+    j
 }
 
 fn insertion_sort_slice(v: &mut [u64], from: usize, to: usize) {
