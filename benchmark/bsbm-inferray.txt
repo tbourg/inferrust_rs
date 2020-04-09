@@ -1,0 +1,60 @@
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample10.nt
+size: 5046
+size: 8141
+RDFS: 206ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample10.nt
+size: 4987
+size: 5015
+RHODF: 15ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample10.nt
+size: 4987
+size: 7396
+RDFSPLUS: 66ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample100.nt
+size: 40236
+size: 57017
+RDFS: 320ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample100.nt
+size: 40177
+size: 40401
+RHODF: 13ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample100.nt
+size: 40177
+size: 54618
+RDFSPLUS: 9ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample20.nt
+size: 8517
+size: 12811
+RDFS: 14ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample20.nt
+size: 8458
+size: 8506
+RHODF: 5ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample20.nt
+size: 8458
+size: 12045
+RDFSPLUS: 12ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample50.nt
+size: 22688
+size: 33997
+RDFS: 14ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample50.nt
+size: 22629
+size: 22753
+RHODF: 5ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample50.nt
+size: 22629
+size: 31702
+RDFSPLUS: 12ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample500.nt
+size: 190555
+size: 259305
+RDFS: 54ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample500.nt
+size: 190496
+size: 191558
+RHODF: 11ms
+C:\users\tbour\Desktop\sophia-test\inferrust\res\bsbm\sample500.nt
+size: 190496
+size: 252239
+RDFSPLUS: 16ms
