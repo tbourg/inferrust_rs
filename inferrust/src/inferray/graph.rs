@@ -391,9 +391,9 @@ impl InfGraph {
                 self.dictionary.ts.add_triple_raw(*s, raw_index, *o);
             }
         }
-        let t = time::precise_time_ns();
+        // let t = time::precise_time_ns();
         self.dictionary.ts.sort();
-        dbg!((time::precise_time_ns() - t) as f64 / 1e9);
+        // dbg!((time::precise_time_ns() - t) as f64 / 1e9);
     }
 
     fn get_tr_idx(&mut self) -> Vec<u32> {

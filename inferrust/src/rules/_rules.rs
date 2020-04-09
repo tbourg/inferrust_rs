@@ -74,6 +74,7 @@ pub struct RuleProfile {
     pub before_rules: StaticRuleSet,
     pub rules: FixPointRuleSet,
     pub after_rules: Option<Rule>,
+    name: String,
 }
 
 impl RuleProfile {
@@ -116,9 +117,9 @@ impl RuleProfile {
                 },
             },
             after_rules: Some(finalize),
+            name: "RDFS".to_string(),
         }
     }
-
     pub fn RDFSDefault() -> Self {
         Self {
             axiomatic_triples: false,
@@ -157,9 +158,9 @@ impl RuleProfile {
                 },
             },
             after_rules: None,
+            name: "RhoDF".to_string(),
         }
     }
-
     pub fn Closure() -> Self {
         Self {
             cl_profile: ClosureProfile {
@@ -178,6 +179,7 @@ impl RuleProfile {
                 },
             },
             after_rules: None,
+            name: "Closure".to_string(),
         }
     }
     pub fn RDFSPlus() -> Self {
@@ -232,8 +234,13 @@ impl RuleProfile {
                     rules: Box::new(rules),
                 },
             },
-            after_rules: None,
+            after_rules: Some(finalize),
+            name: "RDFS+".to_string(),
         }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
     }
 }
 
