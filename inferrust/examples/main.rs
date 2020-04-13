@@ -4,7 +4,7 @@ use sophia::serializer::nt::NtSerializer;
 use sophia::serializer::*;
 
 use inferrust::inferray::*;
-use inferrust::rules::{Rule, RuleSet};
+use inferrust::rules::RuleProfile;
 
 fn main() {
     let rep = r#"
@@ -20,6 +20,7 @@ fn main() {
     :Bart :parent :Lisa .
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
+    graph.process(&mut RuleProfile::RDFSDefault());
 
     // dbg!(&graph.dictionary.ts.elem);
 

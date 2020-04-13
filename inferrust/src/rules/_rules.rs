@@ -2,7 +2,7 @@ use crate::inferray::*;
 use crate::rules::*;
 
 /// A type alias  to unify all the rules of the reasoner
-pub type Rule = fn(&InfGraph) -> TripleStore;
+pub type Rule = fn(&mut TripleStore) -> TripleStore;
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
@@ -17,7 +17,7 @@ impl RuleSet for Vec<Box<Rule>> {
         }
         let mut outputs = TripleStore::new();
         for rule in self.iter_mut() {
-            outputs.add_all(rule(graph));
+            outputs.add_all(rule(&mut graph.dictionary.ts));
         }
         graph.dictionary.ts.add_all(outputs);
         graph.dictionary.ts.sort();
@@ -73,7 +73,7 @@ pub struct RuleProfile {
     pub axiomatic_triples: bool,
     pub before_rules: StaticRuleSet,
     pub rules: FixPointRuleSet,
-    pub after_rules: Option<Rule>,
+    pub after_rules: Option<Box<dyn Fn(&mut InfGraph)>>,
     name: String,
 }
 
@@ -116,7 +116,7 @@ impl RuleProfile {
                     rules: Box::new(rules),
                 },
             },
-            after_rules: Some(finalize),
+            after_rules: Some(Box::new(finalize)),
             name: "RDFS".to_string(),
         }
     }
@@ -234,7 +234,7 @@ impl RuleProfile {
                     rules: Box::new(rules),
                 },
             },
-            after_rules: Some(finalize),
+            after_rules: Some(Box::new(finalize)),
             name: "RDFS+".to_string(),
         }
     }
@@ -244,20 +244,16 @@ impl RuleProfile {
     }
 }
 
-pub fn PRP_FP(graph: &InfGraph) -> TripleStore {
+pub fn PRP_FP(ts: &mut TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs = graph
-        .dictionary
-        .ts
-        .elem
-        .get(NodeDictionary::prop_idx_to_idx(
-            graph.dictionary.rdftype as u64,
-        ));
+    let pairs = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::rdftype as u64,
+    ));
     if pairs == None {
         return output;
     }
     let pairs = &pairs.unwrap()[1]; // so copy
-    let expected_o = graph.dictionary.owlfunctionalProperty as u64;
+    let expected_o = NodeDictionary::owlfunctionalProperty as u64;
     for pair in pairs {
         if pair[0] > expected_o {
             break;
@@ -265,7 +261,7 @@ pub fn PRP_FP(graph: &InfGraph) -> TripleStore {
         if pair[0] == expected_o {
             let prop = pair[1];
             let raw_prop = NodeDictionary::prop_idx_to_idx(prop);
-            let pairs1 = graph.dictionary.ts.elem.get(raw_prop);
+            let pairs1 = ts.elem.get(raw_prop);
             if pairs1 == None {
                 break;
             }
@@ -283,7 +279,7 @@ pub fn PRP_FP(graph: &InfGraph) -> TripleStore {
                         if pair1[1] != pair2[1] {
                             output.add_triple([
                                 pair1[1],
-                                graph.dictionary.owlsameAs as u64,
+                                NodeDictionary::owlsameAs as u64,
                                 pair2[1],
                             ])
                         }
@@ -295,20 +291,16 @@ pub fn PRP_FP(graph: &InfGraph) -> TripleStore {
     output
 }
 
-pub fn PRP_IFP(graph: &InfGraph) -> TripleStore {
+pub fn PRP_IFP(ts: &mut TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs = graph
-        .dictionary
-        .ts
-        .elem
-        .get(NodeDictionary::prop_idx_to_idx(
-            graph.dictionary.rdftype as u64,
-        ));
+    let pairs = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::rdftype as u64,
+    ));
     if pairs == None {
         return output;
     }
     let pairs = &pairs.unwrap()[1]; // so copy
-    let expected_o = graph.dictionary.owlinverseFunctionalProperty as u64;
+    let expected_o = NodeDictionary::owlinverseFunctionalProperty as u64;
     for pair in pairs {
         if pair[0] > expected_o {
             break;
@@ -316,7 +308,7 @@ pub fn PRP_IFP(graph: &InfGraph) -> TripleStore {
         if pair[0] == expected_o {
             let prop = pair[1];
             let raw_prop = NodeDictionary::prop_idx_to_idx(prop);
-            let pairs1 = graph.dictionary.ts.elem.get(raw_prop);
+            let pairs1 = ts.elem.get(raw_prop);
             if pairs1 == None {
                 break;
             }
@@ -334,7 +326,7 @@ pub fn PRP_IFP(graph: &InfGraph) -> TripleStore {
                         if pair1[1] != pair2[1] {
                             output.add_triple([
                                 pair1[1],
-                                graph.dictionary.owlsameAs as u64,
+                                NodeDictionary::owlsameAs as u64,
                                 pair2[1],
                             ])
                         }
@@ -346,14 +338,13 @@ pub fn PRP_IFP(graph: &InfGraph) -> TripleStore {
     output
 }
 
-pub fn finalize(graph: &InfGraph) -> TripleStore {
-    let mut output = TripleStore::new();
-    let type_ = graph.dictionary.rdftype as u64;
-    let res = graph.dictionary.rdfsResource;
-    ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dictionary.get_res_ctr())
-        .filter(|e| !graph.dictionary.was_removed(e))
-        .for_each(|e| {
-            output.add_triple([e, type_, res]);
-        });
-    output
+pub fn finalize(graph: &mut InfGraph) {
+    let type_ = NodeDictionary::rdftype as u64;
+    let res = NodeDictionary::rdfsResource;
+    ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dictionary.get_res_ctr()).for_each(|e| {
+        if !graph.dictionary.was_removed(&e) {
+            graph.dictionary.ts.add_triple([e, type_, res]);
+        }
+    });
+    graph.dictionary.ts.sort();
 }

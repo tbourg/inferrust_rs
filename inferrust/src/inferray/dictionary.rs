@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-#[feature(const_fn)]
+#![allow(non_upper_case_globals)]
 use sophia::ns::*;
 use sophia::term::factory::{RcTermFactory, TermFactory};
 use sophia::term::{RcTerm, Term, TermData};

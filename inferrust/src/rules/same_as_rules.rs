@@ -18,15 +18,11 @@ use crate::inferray::{InfGraph, NodeDictionary, TripleStore};
 //  *
 //  *         Dec. 13
 //  */
-fn apply_same_as_rule(graph: &InfGraph) -> TripleStore {
+fn apply_same_as_rule(ts: &mut TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 = graph
-        .dictionary
-        .ts
-        .elem
-        .get(NodeDictionary::prop_idx_to_idx(
-            graph.dictionary.owlsameAs as u64,
-        ));
+    let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::owlsameAs as u64,
+    ));
     if pairs1 == None {
         return output;
     }
@@ -35,22 +31,17 @@ fn apply_same_as_rule(graph: &InfGraph) -> TripleStore {
         output
     } else {
         for pair1 in pairs1 {
-            output.add_triple([pair1[1], graph.dictionary.owlsameAs as u64, pair1[0]]);
+            output.add_triple([pair1[1], NodeDictionary::owlsameAs as u64, pair1[0]]);
             if pair1[0] < NodeDictionary::START_INDEX as u64 {
-                if let Some(pairs2) = graph
-                    .dictionary
-                    .ts
-                    .elem
-                    .get(NodeDictionary::prop_idx_to_idx(pair1[0]))
-                {
+                if let Some(pairs2) = ts.elem.get(NodeDictionary::prop_idx_to_idx(pair1[0])) {
                     for pair2 in &pairs2[0] {
                         output.add_triple([pair2[0], pair1[1], pair2[1]]);
                     }
                 }
             } else {
-                for (idx, chunk) in graph.dictionary.ts.elem.iter().enumerate() {
+                for (idx, chunk) in ts.elem.iter().enumerate() {
                     let pi = NodeDictionary::idx_to_prop_idx(idx);
-                    if pi == graph.dictionary.owlsameAs as u64 {
+                    if pi == NodeDictionary::owlsameAs as u64 {
                         continue;
                     }
                     if !chunk[0].is_empty() {
@@ -86,6 +77,6 @@ fn apply_same_as_rule(graph: &InfGraph) -> TripleStore {
     }
 }
 
-pub fn SAME_AS(graph: &InfGraph) -> TripleStore {
-    apply_same_as_rule(graph)
+pub fn SAME_AS(ts: &mut TripleStore) -> TripleStore {
+    apply_same_as_rule(ts)
 }
