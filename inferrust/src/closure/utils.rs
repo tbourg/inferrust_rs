@@ -1,8 +1,6 @@
 use crate::closure::{ClosureGraph, Node};
-use crate::utils::*;
 
-use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
+use std::collections::HashSet;
 
 /// Source: https://pdfs.semanticscholar.org/47cc/a59310abee097af31d678d6cb2f8263dee37.pdf?_ga=2.26709177.588007852.1584345117-1155404888.1573749711
 /// Figure 4
