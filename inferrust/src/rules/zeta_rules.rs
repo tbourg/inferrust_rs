@@ -14,11 +14,11 @@ fn apply_zeta_rule(
     if pairs1 == None {
         return output;
     }
-    let pairs1 = &pairs1.unwrap()[1];
+    let pairs1 = pairs1.unwrap().os();
     if pairs1.is_empty() {
         return output;
     }
-    for pair1 in pairs1 {
+    for pair1 in &*pairs1 {
         if pair1[0] > input_o {
             break;
         }
@@ -80,11 +80,11 @@ pub fn SCM_DP_OP(ts: &mut TripleStore) -> TripleStore {
         if pairs1 == None {
             break;
         }
-        let pairs1 = &pairs1.unwrap()[1];
+        let pairs1 = pairs1.unwrap().os();
         if pairs1.is_empty() {
             break;
         }
-        for pair1 in pairs1 {
+        for pair1 in &*pairs1 {
             if pair1[0] > *object {
                 break;
             }
@@ -109,7 +109,7 @@ pub fn SCM_CLS(ts: &mut TripleStore) -> TripleStore {
     if pairs1 == None {
         return output;
     }
-    let pairs1 = &pairs1.unwrap()[1];
+    let pairs1 = pairs1.unwrap().os();
     if pairs1.is_empty() {
         return output;
     }
@@ -149,7 +149,7 @@ pub fn RDFS4(ts: &mut TripleStore) -> TripleStore {
     if pairs1 == None {
         return output;
     }
-    let pairs1 = &pairs1.unwrap()[1];
+    let pairs1 = pairs1.unwrap().os();
     if pairs1.is_empty() {
         return output;
     }
@@ -163,7 +163,7 @@ pub fn RDFS4(ts: &mut TripleStore) -> TripleStore {
         }
     }
     for pairs2 in &ts.elem {
-        for pair2 in &pairs2[0] {
+        for pair2 in pairs2.so() {
             if resources_idx.contains(&pair2[1]) {
                 output.add_triple([pair2[0], NodeDictionary::rdftype as u64, object]);
             }

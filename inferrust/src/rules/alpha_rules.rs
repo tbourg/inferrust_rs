@@ -42,8 +42,8 @@ pub fn apply_alpha_rule(
     let property_1_pairs = property_1_pairs.unwrap();
     let property_2_pairs = property_2_pairs.unwrap();
     let mut output = TripleStore::new();
-    for property_1_pair in &property_1_pairs[0] {
-        for property_2_pair in &property_2_pairs[0] {
+    for property_1_pair in property_1_pairs.so() {
+        for property_2_pair in property_2_pairs.so() {
             let index = |i| match i {
                 0 => property_1_pair[0],
                 1 => id_1,

@@ -246,15 +246,15 @@ impl RuleProfile {
 
 pub fn PRP_FP(ts: &mut TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs_mut = ts.elem.get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
-    if pairs == None {
+    if pairs_mut == None {
         return output;
     }
-    let pairs = &pairs.unwrap()[1]; // so copy
+    let pairs: &Vec<[u64; 2]> = pairs_mut.unwrap().os(); // os copy
     let expected_o = NodeDictionary::owlfunctionalProperty as u64;
-    for pair in pairs {
+    for pair in &*pairs {
         if pair[0] > expected_o {
             break;
         }
@@ -265,11 +265,11 @@ pub fn PRP_FP(ts: &mut TripleStore) -> TripleStore {
             if pairs1 == None {
                 break;
             }
-            let pairs2 = &pairs1.unwrap()[0];
+            let pairs2 = pairs1.unwrap().so();
             if pairs2.is_empty() {
                 break;
             }
-            let pairs1 = &pairs1.unwrap()[0];
+            let pairs1 = pairs1.unwrap().so();
             for pair1 in pairs1 {
                 for pair2 in pairs2 {
                     if pair1[0] > pair2[0] {
@@ -299,9 +299,9 @@ pub fn PRP_IFP(ts: &mut TripleStore) -> TripleStore {
     if pairs == None {
         return output;
     }
-    let pairs = &pairs.unwrap()[1]; // so copy
+    let pairs = pairs.unwrap().os(); // os copy
     let expected_o = NodeDictionary::owlinverseFunctionalProperty as u64;
-    for pair in pairs {
+    for pair in &*pairs {
         if pair[0] > expected_o {
             break;
         }
@@ -312,13 +312,13 @@ pub fn PRP_IFP(ts: &mut TripleStore) -> TripleStore {
             if pairs1 == None {
                 break;
             }
-            let pairs2 = &pairs1.unwrap()[1];
+            let pairs2 = pairs1.unwrap().os();
             if pairs2.is_empty() {
                 break;
             }
-            let pairs1 = &pairs1.unwrap()[1];
-            for pair1 in pairs1 {
-                for pair2 in pairs2 {
+            let pairs1 = pairs1.unwrap().os();
+            for pair1 in &*pairs1 {
+                for pair2 in &*pairs2 {
                     if pair1[0] > pair2[0] {
                         break;
                     }

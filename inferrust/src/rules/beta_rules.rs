@@ -24,8 +24,8 @@ fn apply_beta_rule(ts: &mut TripleStore, rule_p: usize, infer_p: usize) -> Tripl
     let pairs1 = pairs.unwrap();
     let pairs2 = pairs.unwrap();
     let mut output = TripleStore::new();
-    for pair1 in &pairs1[0] {
-        for pair2 in &pairs2[0] {
+    for pair1 in pairs1.so() {
+        for pair2 in pairs2.so() {
             if pair1[1] == pair2[0] {
                 if pair1[0] == pair2[1] {
                     output.add_triple([pair1[0], infer_p, pair1[1]]);
@@ -51,7 +51,7 @@ fn apply_inverse_beta_rule(ts: &mut TripleStore, rule_p: usize, infer_p: usize) 
     let infer_p = NodeDictionary::idx_to_prop_idx(infer_p);
     let pairs1 = pairs.unwrap();
     let mut output = TripleStore::new();
-    for pair1 in &pairs1[0] {
+    for pair1 in pairs1.so() {
         output.add_triple([pair1[0], infer_p, pair1[1]]);
         output.add_triple([pair1[1], infer_p, pair1[0]]);
         output.add_triple([pair1[0], rule_p, pair1[1]]);

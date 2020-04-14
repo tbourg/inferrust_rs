@@ -26,7 +26,7 @@ fn apply_same_as_rule(ts: &mut TripleStore) -> TripleStore {
     if pairs1 == None {
         return output;
     }
-    let pairs1 = &pairs1.unwrap()[0];
+    let pairs1 = pairs1.unwrap().so();
     if pairs1.is_empty() {
         output
     } else {
@@ -34,7 +34,7 @@ fn apply_same_as_rule(ts: &mut TripleStore) -> TripleStore {
             output.add_triple([pair1[1], NodeDictionary::owlsameAs as u64, pair1[0]]);
             if pair1[0] < NodeDictionary::START_INDEX as u64 {
                 if let Some(pairs2) = ts.elem.get(NodeDictionary::prop_idx_to_idx(pair1[0])) {
-                    for pair2 in &pairs2[0] {
+                    for pair2 in pairs2.so() {
                         output.add_triple([pair2[0], pair1[1], pair2[1]]);
                     }
                 }
@@ -44,10 +44,11 @@ fn apply_same_as_rule(ts: &mut TripleStore) -> TripleStore {
                     if pi == NodeDictionary::owlsameAs as u64 {
                         continue;
                     }
-                    if !chunk[0].is_empty() {
-                        if chunk[0][0][0] <= pair1[0] && chunk[0][chunk[0].len() - 1][0] >= pair1[0]
+                    if !chunk.so().is_empty() {
+                        if chunk.so()[0][0] <= pair1[0]
+                            && chunk.so()[chunk.so().len() - 1][0] >= pair1[0]
                         {
-                            for pair in chunk[0].iter() {
+                            for pair in chunk.so().iter() {
                                 if pair[0] > pair1[0] {
                                     break;
                                 }
@@ -57,10 +58,11 @@ fn apply_same_as_rule(ts: &mut TripleStore) -> TripleStore {
                             }
                         }
                     }
-                    if !chunk[1].is_empty() {
-                        if chunk[1][0][0] <= pair1[0] && chunk[1][chunk[1].len() - 1][0] >= pair1[0]
+                    if !chunk.os().is_empty() {
+                        if chunk.os()[0][0] <= pair1[0]
+                            && chunk.os()[chunk.os().len() - 1][0] >= pair1[0]
                         {
-                            for pair in chunk[1].iter() {
+                            for pair in chunk.os().iter() {
                                 if pair[0] > pair1[0] {
                                     break;
                                 }

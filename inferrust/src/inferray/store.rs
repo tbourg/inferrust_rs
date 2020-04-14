@@ -1,11 +1,117 @@
 use rayon::prelude::*;
+use std::cell::Ref;
+use std::cell::RefCell;
 use std::mem;
 
 use super::NodeDictionary;
 
 pub struct TripleStore {
-    pub elem: Vec<[Vec<[u64; 2]>; 2]>,
+    pub elem: Vec<Chunk>,
     size: usize,
+}
+
+#[derive(PartialEq)]
+pub struct Chunk {
+    so: Vec<[u64; 2]>,
+    os: Vec<[u64; 2]>,
+    os_sorted: bool,
+}
+
+unsafe impl Send for Chunk {}
+
+impl Chunk {
+    pub fn so_sort(
+        &mut self,
+        hist: &mut Vec<usize>,
+        hist2: &mut Vec<usize>,
+        cumul: &mut Vec<usize>,
+        min: u64,
+        max: u64,
+        width: usize,
+    ) -> usize {
+        self.os_sorted = false;
+        bucket_sort_pairs(&mut self.so, hist, hist2, cumul, min, max, width)
+    }
+
+    unsafe fn os_sort(&self) {
+        // TODO
+        if !self.os.is_empty() {
+            let (min, max) = self
+                .os
+                .iter()
+                .flat_map(|pair| pair.iter())
+                .fold((u64::max_value(), 0), |acc, &x| {
+                    (acc.0.min(x), acc.1.max(x))
+                });
+            let width = (max - min + 1) as usize;
+            let mut hist: Vec<usize> = vec![0; width];
+            let mut hist2: Vec<usize> = Vec::with_capacity(width);
+            let mut cumul: Vec<usize> = vec![0; width];
+            let content = &self.os as *const Vec<[u64; 2]> as *mut Vec<[u64; 2]>;
+            let mut content = content.as_mut().unwrap();
+            // content.foo();
+            bucket_sort_pairs(
+                &mut content,
+                &mut hist,
+                &mut hist2,
+                &mut cumul,
+                min,
+                max,
+                width,
+            );
+        }
+        *(&self.os_sorted as *const bool as *mut bool)
+            .as_mut()
+            .unwrap() = true;
+    }
+
+    pub fn so(&self) -> &Vec<[u64; 2]> {
+        &self.so
+    }
+
+    pub fn os(&self) -> &Vec<[u64; 2]> {
+        if !self.os_sorted {
+            unsafe {
+                self.os_sort();
+            }
+        }
+        &self.os
+    }
+
+    fn res_to_prop(&mut self, res: u64, prop: u64) {
+        for pair in self.so.iter_mut() {
+            for i in 0..=1 {
+                if pair[i] == res {
+                    pair[i] = prop;
+                }
+            }
+        }
+        for pair in self.os.iter_mut() {
+            for i in 0..=1 {
+                if pair[i] == res {
+                    pair[i] = prop;
+                }
+            }
+        }
+    }
+
+    pub fn add_so(&mut self, so: [u64; 2]) {
+        self.so.push(so);
+    }
+
+    pub fn add_os(&mut self, os: [u64; 2]) {
+        self.os.push(os);
+    }
+}
+
+impl Default for Chunk {
+    fn default() -> Self {
+        Self {
+            so: Vec::new(),
+            os: Vec::new(),
+            os_sorted: false,
+        }
+    }
 }
 
 impl TripleStore {
@@ -30,7 +136,7 @@ impl TripleStore {
             self.elem.resize_with(other.elem.len(), Default::default);
         }
         for ip in 0..other.elem.len() {
-            for [is, io] in &other.elem[ip][0] {
+            for [is, io] in other.elem[ip].so() {
                 self.add_triple_raw(*is, ip, *io);
             }
         }
@@ -40,8 +146,8 @@ impl TripleStore {
     /// `self.elem` must have an element at index `ip`
     #[inline]
     pub fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
-        self.elem[ip][0].push([is, io]);
-        self.elem[ip][1].push([io, is]);
+        self.elem[ip].add_so([is, io]);
+        self.elem[ip].add_os([io, is]);
         self.size += 1;
     }
 
@@ -57,30 +163,14 @@ impl TripleStore {
                     let cumul: Vec<usize> = vec![0; width];
                     (hist, hist2, cumul)
                 },
-                |(hist, hist2, cumul), chunk| {
-                    let mut new_size = 0;
-                    chunk.iter_mut().for_each(|chunk_part| {
-                        new_size =
-                            bucket_sort_pairs(chunk_part, hist, hist2, cumul, min, max, width);
-                    });
-                    new_size
-                },
+                |(hist, hist2, cumul), chunk| chunk.so_sort(hist, hist2, cumul, min, max, width),
             )
             .sum();
     }
 
     pub fn res_to_prop(&mut self, res: u64, prop: u32) {
         for chunk in &mut self.elem {
-            for i in 0..=1 {
-                for pair in &mut chunk[i] {
-                    if pair[0] == res {
-                        pair[0] = prop.into();
-                    }
-                    if pair[1] == res {
-                        pair[1] = prop.into();
-                    }
-                }
-            }
+            chunk.res_to_prop(res, prop.into());
         }
         /////////
     }
@@ -93,7 +183,7 @@ impl TripleStore {
         let (min, max) = self
             .elem
             .iter()
-            .map(|chunk| &chunk[0])
+            .map(|chunk| chunk.so())
             .flat_map(|pairs| pairs.iter())
             .flat_map(|pair| pair.iter())
             .fold((u64::max_value(), 0), |acc, &x| {
@@ -116,7 +206,7 @@ pub fn bucket_sort_pairs(
     if pairs.is_empty() {
         return 0;
     }
-    build_hist(&pairs, min, hist);
+    build_hist(pairs, min, hist);
     mem::replace(hist2, hist.to_vec());
     build_cumul(&hist, cumul);
     let len = pairs.len();

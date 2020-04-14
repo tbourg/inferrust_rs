@@ -27,12 +27,12 @@ impl Graph for InfGraph {
                 .elem
                 .iter()
                 .enumerate()
-                .filter(|(_, chunk)| !chunk[0].is_empty())
+                .filter(|(_, chunk)| !chunk.so().is_empty())
                 .map(move |(pi, chunk)| {
                     let p = self
                         .dictionary
                         .get_term(NodeDictionary::idx_to_prop_idx(pi));
-                    chunk[0].iter().map(move |[si, oi]| {
+                    chunk.so().iter().map(move |[si, oi]| {
                         Ok(StreamedTriple::by_term_refs(
                             self.dictionary.get_term(*si),
                             p,
@@ -56,14 +56,14 @@ impl Graph for InfGraph {
                     .elem
                     .iter()
                     .enumerate()
-                    .filter(|(_, chunk)| !chunk[0].is_empty())
+                    .filter(|(_, chunk)| !chunk.so().is_empty())
                     .map(move |(pi, chunk)| {
                         let p = self
                             .dictionary
                             .get_term(NodeDictionary::idx_to_prop_idx(pi));
-                        let len = chunk[0].len();
-                        let start_index = first(&chunk[0], si, 0, len - 1, len, 0);
-                        chunk[0][start_index..]
+                        let len = chunk.so().len();
+                        let start_index = first(&chunk.so(), si, 0, len - 1, len, 0);
+                        chunk.so()[start_index..]
                             .iter()
                             .take_while(move |[is, _]| si == *is)
                             .map(move |[_, oi]| {
@@ -89,9 +89,9 @@ impl Graph for InfGraph {
         if let Some(ip) = self.dictionary.get_index(p) {
             let idx = NodeDictionary::prop_idx_to_idx(ip);
             let chunk = &self.dictionary.ts.elem[idx];
-            if !chunk[0].is_empty() {
+            if !chunk.so().is_empty() {
                 let p = self.dictionary.get_term(ip);
-                Box::from(chunk[0].iter().map(move |[si, oi]| {
+                Box::from(chunk.so().iter().map(move |[si, oi]| {
                     Ok(StreamedTriple::by_term_refs(
                         self.dictionary.get_term(*si),
                         p,
@@ -118,14 +118,14 @@ impl Graph for InfGraph {
                     .elem
                     .iter()
                     .enumerate()
-                    .filter(|(_, chunk)| !chunk[1].is_empty())
+                    .filter(|(_, chunk)| !chunk.os().is_empty())
                     .map(move |(pi, chunk)| {
                         let p = self
                             .dictionary
                             .get_term(NodeDictionary::idx_to_prop_idx(pi));
-                        let len = chunk[1].len();
-                        let start_index = first(&chunk[1], oi, 0, len - 1, len, 0);
-                        chunk[1][start_index..]
+                        let len = chunk.os().len();
+                        let start_index = first(&chunk.os(), oi, 0, len - 1, len, 0);
+                        chunk.os()[start_index..]
                             .iter()
                             .take_while(move |[io, _]| oi == *io)
                             .map(move |[_, si]| {
@@ -155,13 +155,13 @@ impl Graph for InfGraph {
         if let (Some(si), Some(pi)) = (self.dictionary.get_index(s), self.dictionary.get_index(p)) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
             let chunk = &self.dictionary.ts.elem[idx];
-            if !chunk[0].is_empty() {
+            if !chunk.so().is_empty() {
                 let s = self.dictionary.get_term(si);
                 let p = self.dictionary.get_term(pi);
-                let len = chunk[0].len();
-                let start_index = first(&chunk[0], si, 0, len - 1, len, 0);
+                let len = chunk.so().len();
+                let start_index = first(&chunk.so(), si, 0, len - 1, len, 0);
                 Box::from(
-                    chunk[0][start_index..]
+                    chunk.so()[start_index..]
                         .iter()
                         .take_while(move |[is, _]| *is == si)
                         .map(move |[_, oi]| {
@@ -199,10 +199,10 @@ impl Graph for InfGraph {
                     .iter()
                     .enumerate()
                     .filter_map(move |(pi, chunk)| {
-                        if chunk[0].is_empty() {
+                        if chunk.so().is_empty() {
                             None
                         } else {
-                            if binary_search_pair(&chunk[0], [si, oi]) {
+                            if binary_search_pair(&chunk.so(), [si, oi]) {
                                 Some(Ok(StreamedTriple::by_term_refs(
                                     s,
                                     self.dictionary
@@ -233,13 +233,13 @@ impl Graph for InfGraph {
         if let (Some(pi), Some(oi)) = (self.dictionary.get_index(p), self.dictionary.get_index(o)) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
             let chunk = &self.dictionary.ts.elem[idx];
-            if !chunk[1].is_empty() {
+            if !chunk.os().is_empty() {
                 let p = self.dictionary.get_term(pi);
                 let o = self.dictionary.get_term(oi);
-                let len = chunk[1].len();
-                let start_index = first(&chunk[1], oi, 0, len - 1, len, 0);
+                let len = chunk.os().len();
+                let start_index = first(&chunk.os(), oi, 0, len - 1, len, 0);
                 Box::from(
-                    chunk[1][start_index..]
+                    chunk.os()[start_index..]
                         .iter()
                         .take_while(move |[io, _]| *io == oi)
                         .map(move |[_, si]| {
@@ -276,10 +276,10 @@ impl Graph for InfGraph {
         ) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
             let chunk = &self.dictionary.ts.elem[idx];
-            if chunk[0].is_empty() {
+            if chunk.so().is_empty() {
                 Box::from(std::iter::empty())
             } else {
-                if binary_search_pair(&chunk[0], [si, oi]) {
+                if binary_search_pair(&chunk.so(), [si, oi]) {
                     let s = self.dictionary.get_term(si);
                     let o = self.dictionary.get_term(oi);
                     let p = self.dictionary.get_term(pi);
@@ -378,7 +378,7 @@ impl InfGraph {
         if pairs == None {
             return;
         }
-        let pairs = pairs.unwrap()[0].clone();
+        let pairs = pairs.unwrap().so().clone();
         if pairs.is_empty() {
             return;
         }
@@ -398,7 +398,8 @@ impl InfGraph {
         if let Some(pairs) = self.dictionary.ts.elem.get(NodeDictionary::prop_idx_to_idx(
             NodeDictionary::rdftype as u64,
         )) {
-            pairs[0]
+            pairs
+                .so()
                 .iter()
                 .filter(|pair| pair[1] == NodeDictionary::owltransitiveProperty as u64)
                 .map(|pair| pair[0] as u32)

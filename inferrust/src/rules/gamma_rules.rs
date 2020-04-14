@@ -34,13 +34,13 @@ fn apply_gamma_rule(
     if pairs1 == None {
         return output;
     }
-    let pairs1 = &pairs1.unwrap()[0];
+    let pairs1 = pairs1.unwrap().so();
     for pair1 in pairs1 {
         let pairs2 = ts.elem.get(NodeDictionary::prop_idx_to_idx(pair1[0]));
         if pairs2 == None {
             break;
         }
-        let pairs2 = &pairs2.unwrap()[0];
+        let pairs2 = pairs2.unwrap().so();
         for pair2 in pairs2 {
             if raw_idx {
                 output.add_triple([pair2[if subject { 0 } else { 1 }], output_prop, pair1[1]]);
@@ -90,14 +90,14 @@ pub fn PRP_SYMP(ts: &mut TripleStore) -> TripleStore {
     if pairs1 == None {
         return output;
     }
-    let pairs1 = &pairs1.unwrap()[1]; // os sorted copy
-    for pair1 in pairs1 {
+    let pairs1 = pairs1.unwrap().os(); // os sorted copy
+    for pair1 in &*pairs1 {
         if pair1[0] == expected_io {
             let pairs2 = ts.elem.get(NodeDictionary::prop_idx_to_idx(pair1[1]));
             if pairs2 == None {
                 break;
             }
-            let pairs2 = &pairs2.unwrap()[0];
+            let pairs2 = pairs2.unwrap().so();
             for pair2 in pairs2 {
                 output.add_triple([pair2[1], pair1[1], pair2[0]]);
             }
@@ -119,8 +119,8 @@ pub fn EQ_TRANS(ts: &mut TripleStore) -> TripleStore {
     let pairs1 = pairs.unwrap();
     let pairs2 = pairs.unwrap();
     let mut output = TripleStore::new();
-    for pair1 in &pairs1[0] {
-        for pair2 in &pairs2[0] {
+    for pair1 in pairs1.so() {
+        for pair2 in pairs2.so() {
             if pair1[1] == pair2[0] {
                 if pair1[0] != pair2[1] {
                     output.add_triple([pair1[0], NodeDictionary::owlsameAs as u64, pair2[1]]);
