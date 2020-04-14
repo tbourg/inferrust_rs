@@ -18,7 +18,7 @@ use crate::inferray::{NodeDictionary, TripleStore};
 //  *
 //  *         Dec. 13
 //  */
-fn apply_same_as_rule(ts: &mut TripleStore) -> TripleStore {
+fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::owlsameAs as u64,
@@ -79,6 +79,6 @@ fn apply_same_as_rule(ts: &mut TripleStore) -> TripleStore {
     }
 }
 
-pub fn SAME_AS(ts: &mut TripleStore) -> TripleStore {
+pub fn SAME_AS(ts: &TripleStore) -> TripleStore {
     apply_same_as_rule(ts)
 }

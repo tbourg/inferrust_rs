@@ -25,7 +25,7 @@ use crate::inferray::TripleStore;
 //        :bart         :type         :mammal
 
 pub fn apply_alpha_rule(
-    ts: &mut TripleStore,
+    ts: &TripleStore,
     id_1: u64,
     id_2: u64,
     id_s: u64,
@@ -70,43 +70,43 @@ pub fn apply_alpha_rule(
     output
 }
 
-pub fn CAX_SCO(ts: &mut TripleStore) -> TripleStore {
+pub fn CAX_SCO(ts: &TripleStore) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
-pub fn CAX_EQC1(ts: &mut TripleStore) -> TripleStore {
+pub fn CAX_EQC1(ts: &TripleStore) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2, 0, 5)
 }
 
-pub fn CAX_EQC2(ts: &mut TripleStore) -> TripleStore {
+pub fn CAX_EQC2(ts: &TripleStore) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 0, 2, 5)
 }
 
-pub fn SCM_DOM1(ts: &mut TripleStore) -> TripleStore {
+pub fn SCM_DOM1(ts: &TripleStore) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 0, 1, 5, 2, 3)
 }
 
-pub fn SCM_DOM2(ts: &mut TripleStore) -> TripleStore {
+pub fn SCM_DOM2(ts: &TripleStore) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2, 0, 5)
 }
 
-pub fn SCM_RNG1(ts: &mut TripleStore) -> TripleStore {
+pub fn SCM_RNG1(ts: &TripleStore) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 0, 1, 5, 2, 3)
 }
 
-pub fn SCM_RNG2(ts: &mut TripleStore) -> TripleStore {
+pub fn SCM_RNG2(ts: &TripleStore) -> TripleStore {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2, 0, 5)

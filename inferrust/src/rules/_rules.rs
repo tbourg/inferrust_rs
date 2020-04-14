@@ -1,8 +1,12 @@
 use crate::inferray::*;
 use crate::rules::*;
 
+use std::sync::*;
+
+use rayon::prelude::*;
+
 /// A type alias  to unify all the rules of the reasoner
-pub type Rule = fn(&mut TripleStore) -> TripleStore;
+pub type Rule = fn(&TripleStore) -> TripleStore;
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
@@ -15,11 +19,11 @@ impl RuleSet for Vec<Box<Rule>> {
         if self.is_empty() {
             return;
         }
-        let mut outputs = TripleStore::new();
-        for rule in self.iter_mut() {
-            outputs.add_all(rule(&mut graph.dictionary.ts));
-        }
-        graph.dictionary.ts.add_all(outputs);
+        let outputs = Mutex::new(TripleStore::new());
+        let ts = &mut graph.dictionary.ts;
+        self.par_iter_mut()
+            .for_each(|rule| outputs.lock().unwrap().add_all(rule(ts)));
+        graph.dictionary.ts.add_all(outputs.into_inner().unwrap());
         graph.dictionary.ts.sort();
     }
 
@@ -244,7 +248,7 @@ impl RuleProfile {
     }
 }
 
-pub fn PRP_FP(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs_mut = ts.elem.get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
@@ -291,7 +295,7 @@ pub fn PRP_FP(ts: &mut TripleStore) -> TripleStore {
     output
 }
 
-pub fn PRP_IFP(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs = ts.elem.get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,

@@ -23,7 +23,7 @@ use crate::inferray::{NodeDictionary, TripleStore};
  */
 
 fn apply_gamma_rule(
-    ts: &mut TripleStore,
+    ts: &TripleStore,
     head_prop: usize,
     output_prop: u64,
     subject: bool,
@@ -52,7 +52,7 @@ fn apply_gamma_rule(
     output
 }
 
-pub fn PRP_DOM(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_DOM(ts: &TripleStore) -> TripleStore {
     apply_gamma_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64),
@@ -62,7 +62,7 @@ pub fn PRP_DOM(ts: &mut TripleStore) -> TripleStore {
     )
 }
 
-pub fn PRP_RNG(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_RNG(ts: &TripleStore) -> TripleStore {
     apply_gamma_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64),
@@ -72,7 +72,7 @@ pub fn PRP_RNG(ts: &mut TripleStore) -> TripleStore {
     )
 }
 
-pub fn PRP_SPO1(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_SPO1(ts: &TripleStore) -> TripleStore {
     apply_gamma_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64),
@@ -82,7 +82,7 @@ pub fn PRP_SPO1(ts: &mut TripleStore) -> TripleStore {
     )
 }
 
-pub fn PRP_SYMP(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_SYMP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let expected_ip = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
     let expected_io = NodeDictionary::owlsymmetricProperty as u64;
@@ -109,7 +109,7 @@ pub fn PRP_SYMP(ts: &mut TripleStore) -> TripleStore {
     output
 }
 
-pub fn EQ_TRANS(ts: &mut TripleStore) -> TripleStore {
+pub fn EQ_TRANS(ts: &TripleStore) -> TripleStore {
     let pairs = ts.elem.get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::owlsameAs as u64,
     ));

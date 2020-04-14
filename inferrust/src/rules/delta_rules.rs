@@ -25,7 +25,7 @@
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 
-fn apply_delta_rule(ts: &mut TripleStore, prop_idx: usize, invert: bool) -> TripleStore {
+fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleStore {
     let mut output = TripleStore::new();
     if let Some(pairs) = ts.elem.get(prop_idx) {
         for pair in pairs.so() {
@@ -67,7 +67,7 @@ fn apply_delta_rule(ts: &mut TripleStore, prop_idx: usize, invert: bool) -> Trip
     output
 }
 
-pub fn PRP_INV_1_2(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_INV_1_2(ts: &TripleStore) -> TripleStore {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlinverseOf as u64),
@@ -75,7 +75,7 @@ pub fn PRP_INV_1_2(ts: &mut TripleStore) -> TripleStore {
     )
 }
 
-pub fn PRP_EQP_1_2(ts: &mut TripleStore) -> TripleStore {
+pub fn PRP_EQP_1_2(ts: &TripleStore) -> TripleStore {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentProperty as u64),

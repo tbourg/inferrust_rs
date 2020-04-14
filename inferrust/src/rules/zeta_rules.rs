@@ -1,7 +1,7 @@
 use crate::inferray::{NodeDictionary, TripleStore};
 
 fn apply_zeta_rule(
-    ts: &mut TripleStore,
+    ts: &TripleStore,
     input_o: u64,
     output_p: u64,
     output_o: u64,
@@ -33,40 +33,40 @@ fn apply_zeta_rule(
     output
 }
 
-pub fn RDFS6(ts: &mut TripleStore) -> TripleStore {
+pub fn RDFS6(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
-pub fn RDFS8(ts: &mut TripleStore) -> TripleStore {
+pub fn RDFS8(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdftype as u64;
     let output_o = NodeDictionary::rdfsResource;
     apply_zeta_rule(ts, input_o, output_p, output_o, false)
 }
 
-pub fn RDFS10(ts: &mut TripleStore) -> TripleStore {
+pub fn RDFS10(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
-pub fn RDFS12(ts: &mut TripleStore) -> TripleStore {
+pub fn RDFS12(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsContainerMembershipProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
     let output_o = NodeDictionary::rdfsMember as u64;
     apply_zeta_rule(ts, input_o, output_p, output_o, false)
 }
 
-pub fn RDFS13(ts: &mut TripleStore) -> TripleStore {
+pub fn RDFS13(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsDatatype;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
     let output_o = NodeDictionary::rdfsLiteral;
     apply_zeta_rule(ts, input_o, output_p, output_o, false)
 }
 
-pub fn SCM_DP_OP(ts: &mut TripleStore) -> TripleStore {
+pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     for object in [
         NodeDictionary::owldataTypeProperty as u64,
@@ -101,7 +101,7 @@ pub fn SCM_DP_OP(ts: &mut TripleStore) -> TripleStore {
     output
 }
 
-pub fn SCM_CLS(ts: &mut TripleStore) -> TripleStore {
+pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
@@ -140,7 +140,7 @@ pub fn SCM_CLS(ts: &mut TripleStore) -> TripleStore {
     output
 }
 
-pub fn RDFS4(ts: &mut TripleStore) -> TripleStore {
+pub fn RDFS4(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let mut resources_idx = Vec::new();
     let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
