@@ -1,4 +1,4 @@
-use crate::inferray::{InfGraph, NodeDictionary, TripleStore};
+use crate::inferray::{NodeDictionary, TripleStore};
 
 fn apply_zeta_rule(
     ts: &mut TripleStore,

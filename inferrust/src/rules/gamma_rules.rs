@@ -1,4 +1,4 @@
-use crate::inferray::{InfGraph, NodeDictionary, TripleStore};
+use crate::inferray::{NodeDictionary, TripleStore};
 
 /**
  * Gamma rules are of the following form :

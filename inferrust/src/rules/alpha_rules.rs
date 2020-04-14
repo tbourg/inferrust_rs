@@ -15,7 +15,6 @@
 //! <li>Inferred triple contains only s,p,o from the head</li>
 //! </ol>
 
-use crate::inferray::InfGraph;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 

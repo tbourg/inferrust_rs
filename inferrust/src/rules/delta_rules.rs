@@ -22,7 +22,6 @@
  *
  *         Feb. 14
  */
-use crate::inferray::InfGraph;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 

@@ -1,4 +1,4 @@
-use crate::inferray::{InfGraph, NodeDictionary, TripleStore};
+use crate::inferray::{NodeDictionary, TripleStore};
 
 // /**
 //  * Same-as special Rule

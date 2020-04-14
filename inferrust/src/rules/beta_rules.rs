@@ -11,7 +11,6 @@
 //! <li>same predicate in both parts</li>
 //! </ol>
 
-use crate::inferray::InfGraph;
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 
