@@ -11,8 +11,7 @@ pub struct TripleStore {
 #[derive(PartialEq)]
 pub struct Chunk {
     so: Vec<[u64; 2]>,
-    os: Vec<[u64; 2]>,
-    os_sorted: bool,
+    os: Option<Vec<[u64; 2]>>,
 }
 
 unsafe impl Send for Chunk {}
@@ -27,15 +26,18 @@ impl Chunk {
         max: u64,
         width: usize,
     ) -> usize {
-        self.os_sorted = false;
+        self.os = None;
         bucket_sort_pairs(&mut self.so, hist, hist2, cumul, min, max, width)
     }
 
     unsafe fn os_sort(&self) {
         // TODO
-        if !self.os.is_empty() {
+        let content = &self.os as *const Option<Vec<[u64; 2]>> as *mut Option<Vec<[u64; 2]>>;
+        let content = content.as_mut().unwrap();
+        std::mem::replace(content, Some(self.so.clone()));
+        if !self.so.is_empty() {
             let (min, max) = self
-                .os
+                .so
                 .iter()
                 .flat_map(|pair| pair.iter())
                 .fold((u64::max_value(), 0), |acc, &x| {
@@ -45,10 +47,8 @@ impl Chunk {
             let mut hist: Vec<usize> = vec![0; width];
             let mut hist2: Vec<usize> = Vec::with_capacity(width);
             let mut cumul: Vec<usize> = vec![0; width];
-            let content = &self.os as *const Vec<[u64; 2]> as *mut Vec<[u64; 2]>;
             let mut content = content.as_mut().unwrap();
-            // content.foo();
-            bucket_sort_pairs(
+            bucket_sort_pairs_os(
                 &mut content,
                 &mut hist,
                 &mut hist2,
@@ -58,33 +58,22 @@ impl Chunk {
                 width,
             );
         }
-        *(&self.os_sorted as *const bool as *mut bool)
-            .as_mut()
-            .unwrap() = true;
     }
-
     pub fn so(&self) -> &Vec<[u64; 2]> {
         &self.so
     }
-
     pub fn os(&self) -> &Vec<[u64; 2]> {
-        if !self.os_sorted {
+        if self.os.is_none() {
             unsafe {
                 self.os_sort();
             }
+            assert!(!self.os.is_none());
         }
-        &self.os
+        self.os.as_ref().unwrap()
     }
 
     fn res_to_prop(&mut self, res: u64, prop: u64) {
         for pair in self.so.iter_mut() {
-            for i in 0..=1 {
-                if pair[i] == res {
-                    pair[i] = prop;
-                }
-            }
-        }
-        for pair in self.os.iter_mut() {
             for i in 0..=1 {
                 if pair[i] == res {
                     pair[i] = prop;
@@ -96,18 +85,13 @@ impl Chunk {
     pub fn add_so(&mut self, so: [u64; 2]) {
         self.so.push(so);
     }
-
-    pub fn add_os(&mut self, os: [u64; 2]) {
-        self.os.push(os);
-    }
 }
 
 impl Default for Chunk {
     fn default() -> Self {
         Self {
             so: Vec::new(),
-            os: Vec::new(),
-            os_sorted: false,
+            os: None,
         }
     }
 }
@@ -145,7 +129,6 @@ impl TripleStore {
     #[inline]
     pub fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
         self.elem[ip].add_so([is, io]);
-        self.elem[ip].add_os([io, is]);
         self.size += 1;
     }
 
@@ -261,4 +244,48 @@ fn build_cumul(hist: &[usize], cumul: &mut Vec<usize>) {
     for i in 1..hist.len() {
         cumul[i] = cumul[i - 1] + hist[i - 1];
     }
+}
+
+/// Reverse the pairs and sort them
+pub fn bucket_sort_pairs_os(
+    pairs: &mut Vec<[u64; 2]>,
+    hist: &mut Vec<usize>,
+    hist2: &mut Vec<usize>,
+    cumul: &mut Vec<usize>,
+    min: u64,
+    _max: u64,
+    width: usize,
+) -> usize {
+    if pairs.is_empty() {
+        return 0;
+    }
+    build_hist(pairs, min, hist);
+    mem::replace(hist2, hist.to_vec());
+    build_cumul(&hist, cumul);
+    let len = pairs.len();
+    let mut objects = vec![0; len];
+    for i in 0..len {
+        let pos = cumul[(pairs[i][0] - min) as usize];
+        let remaining = hist[(pairs[i][0] - min) as usize];
+        hist[(pairs[i][0] - min) as usize] -= 1;
+        objects[(pos + remaining - 1) as usize] = pairs[i][1];
+    }
+    for i in 0..(width - 1) {
+        insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
+    }
+    insertion_sort_slice(&mut objects, cumul[width - 1], len);
+    let mut j = 0;
+    let mut l = 0;
+    for i in 0..width {
+        let val = hist2[i];
+        for _ in 0..val {
+            let o = objects[l];
+            l += 1;
+            let s = min + i as u64;
+            pairs[j] = [o, s];
+            j += 1;
+        }
+    }
+    pairs.truncate(j);
+    j
 }

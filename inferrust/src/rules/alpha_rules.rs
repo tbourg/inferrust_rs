@@ -55,8 +55,6 @@ pub fn apply_alpha_rule(
                     NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
                     values[id_o],
                 ]);
-                // } else if values[5] > values[0] {
-                //     break;
             }
         }
     }
