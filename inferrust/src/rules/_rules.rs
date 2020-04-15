@@ -124,6 +124,36 @@ impl RuleProfile {
             name: "RDFS".to_string(),
         }
     }
+    pub fn Test() -> Self {
+        let rules: Vec<Box<Rule>> = vec![
+            /// Alpha class
+            Box::new(CAX_SCO),
+            Box::new(CAX_EQC1),
+            Box::new(SCM_DOM1),
+            Box::new(SCM_DOM2),
+            Box::new(SCM_RNG1),
+            Box::new(SCM_RNG2),
+        ];
+        Self {
+            cl_profile: ClosureProfile {
+                on_sa: false,
+                on_sco: false,
+                on_spo: false,
+                on_trp: false,
+            },
+            axiomatic_triples: false,
+            before_rules: StaticRuleSet {
+                rules: Box::new(vec![]),
+            },
+            rules: FixPointRuleSet {
+                rules: StaticRuleSet {
+                    rules: Box::new(rules),
+                },
+            },
+            after_rules: None,
+            name: "Test".to_string(),
+        }
+    }
     pub fn RDFSDefault() -> Self {
         Self {
             axiomatic_triples: false,
@@ -197,7 +227,6 @@ impl RuleProfile {
             /// Alpha class
             Box::new(CAX_SCO),
             Box::new(CAX_EQC1),
-            Box::new(CAX_EQC2),
             Box::new(SCM_DOM1),
             Box::new(SCM_DOM2),
             Box::new(SCM_RNG1),
@@ -238,7 +267,7 @@ impl RuleProfile {
                     rules: Box::new(rules),
                 },
             },
-            after_rules: Some(Box::new(finalize)),
+            after_rules: None, // Some(Box::new(finalize)),
             name: "RDFS+".to_string(),
         }
     }

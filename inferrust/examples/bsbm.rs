@@ -13,8 +13,8 @@ use sophia::serializer::*;
 fn main() {
     let mut profiles = [
         RuleProfile::RDFS(),
-        RuleProfile::RhoDF(),
-        RuleProfile::RDFSPlus(),
+        // RuleProfile::RhoDF(),
+        // RuleProfile::RDFSPlus(),
     ];
     fs::read_dir("inferrust/res/bsbm")
         .unwrap()

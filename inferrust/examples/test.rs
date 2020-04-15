@@ -11,12 +11,9 @@ fn main() {
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
  
-    :parent :qq :ancetre . 
-    :parent rdfs:subPropertyOf :ancetre . 
-    :Toto rdf:type :animal .  
-    :ancetre rdfs:domain :human . 
-    :ancetre rdfs:range :human .
-    :Bart :parent :Lisa .
+    :human rdfs:subClassOf :animal .
+    :parent rdfs:range :human . 
+    :pere rdfs:subPropertyOf :parent . 
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
     // dbg!(&graph.dictionary.ts.elem);
@@ -25,13 +22,13 @@ fn main() {
         graph.size(),
         graph.dictionary.ts.elem.len()
     );
-    graph.process(&mut RuleProfile::RDFS());
+    graph.process(&mut RuleProfile::Test());
     println!(
         "{} triples and {} p",
         graph.size(),
         graph.dictionary.ts.elem.len()
     );
-    // let mut nt_stringifier = NtSerializer::new_stringifier();
-    // let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
-    // println!("The resulting graph\n{}", example2);
+    let mut nt_stringifier = NtSerializer::new_stringifier();
+    let example2 = nt_stringifier.serialize_graph(&mut graph).unwrap().as_str();
+    println!("The resulting graph\n{}", example2);
 }
