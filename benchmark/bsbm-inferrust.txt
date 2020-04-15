@@ -1,0 +1,55 @@
+file: Ok(
+    DirEntry(
+        "inferrust/res/bsbm\\sample10.nt",
+    ),
+)
+graph size: 4987
+profile: RDFS, graph size: 8112, time: 0.0060772
+graph size: 4987
+profile: RhoDF, graph size: 4991, time: 0.001435
+graph size: 4987
+profile: RDFS+, graph size: 4991, time: 0.0017958
+file: Ok(
+    DirEntry(
+        "inferrust/res/bsbm\\sample100.nt",
+    ),
+)
+graph size: 40177
+profile: RDFS, graph size: 56808, time: 0.0299514
+graph size: 40177
+profile: RhoDF, graph size: 40193, time: 0.0103297
+graph size: 40177
+profile: RDFS+, graph size: 40193, time: 0.0107411
+file: Ok(
+    DirEntry(
+        "inferrust/res/bsbm\\sample20.nt",
+    ),
+)
+graph size: 8458
+profile: RDFS, graph size: 12762, time: 0.0065417
+graph size: 8458
+profile: RhoDF, graph size: 8462, time: 0.0023655
+graph size: 8458
+profile: RDFS+, graph size: 8462, time: 0.0019887
+file: Ok(
+    DirEntry(
+        "inferrust/res/bsbm\\sample50.nt",
+    ),
+)
+graph size: 22629
+profile: RDFS, graph size: 33888, time: 0.0154964
+graph size: 22629
+profile: RhoDF, graph size: 22645, time: 0.0041722
+graph size: 22629
+profile: RDFS+, graph size: 22645, time: 0.0039381
+file: Ok(
+    DirEntry(
+        "inferrust/res/bsbm\\sample500.nt",
+    ),
+)
+graph size: 190496
+profile: RDFS, graph size: 258296, time: 0.1702783
+graph size: 190496
+profile: RhoDF, graph size: 190544, time: 0.0657215
+graph size: 190496
+profile: RDFS+, graph size: 190544, time: 0.0577776
