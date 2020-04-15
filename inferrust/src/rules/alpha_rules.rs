@@ -46,15 +46,17 @@ pub fn apply_alpha_rule(
     for property_1_pair in property_1_pairs.so() {
         values[0] = property_1_pair[0];
         values[2] = property_1_pair[1];
-        for property_2_pair in property_2_pairs.so() {
-            values[3] = property_2_pair[0];
-            values[5] = property_2_pair[1];
+        for property_2_pair in property_2_pairs.os() {
+            values[3] = property_2_pair[1];
+            values[5] = property_2_pair[0];
             if values[5] == values[0] {
                 output.add_triple([
                     values[id_s],
                     NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
                     values[id_o],
                 ]);
+            } else if values[5] > values[0] {
+                break;
             }
         }
     }

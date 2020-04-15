@@ -19,10 +19,11 @@ impl RuleSet for Vec<Box<Rule>> {
         if self.is_empty() {
             return;
         }
-        let outputs = Mutex::new(TripleStore::new());
+        let mut outputs = Mutex::new(TripleStore::new());
         let ts = &mut graph.dictionary.ts;
         self.par_iter_mut()
             .for_each(|rule| outputs.lock().unwrap().add_all(rule(ts)));
+        outputs.get_mut().unwrap().sort();
         graph.dictionary.ts.add_all(outputs.into_inner().unwrap());
         graph.dictionary.ts.sort();
     }
