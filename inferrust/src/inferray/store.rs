@@ -1,5 +1,6 @@
 use rayon::prelude::*;
 use std::mem;
+use time::*;
 
 use super::NodeDictionary;
 
@@ -8,7 +9,7 @@ pub struct TripleStore {
     size: usize,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Chunk {
     so: Vec<[u64; 2]>,
     os: Option<Vec<[u64; 2]>>,
@@ -34,21 +35,31 @@ impl Chunk {
         // TODO
         let content = &self.os as *const Option<Vec<[u64; 2]>> as *mut Option<Vec<[u64; 2]>>;
         let content = content.as_mut().unwrap();
-        std::mem::replace(content, Some(self.so.clone()));
+        std::mem::replace(
+            content,
+            Some(
+                self.so
+                    .clone()
+                    .iter_mut()
+                    .map(|pair| {
+                        pair.reverse();
+                        *pair
+                    })
+                    .collect(),
+            ),
+        );
+        // dbg!(&content);
         if !self.so.is_empty() {
-            let (min, max) = self
-                .so
+            let mut content = content.as_mut().unwrap();
+            let (min, max) = content
                 .iter()
-                .flat_map(|pair| pair.iter())
-                .fold((u64::max_value(), 0), |acc, &x| {
-                    (acc.0.min(x), acc.1.max(x))
-                });
+                .map(|pair| pair[0])
+                .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
             let width = (max - min + 1) as usize;
             let mut hist: Vec<usize> = vec![0; width];
             let mut hist2: Vec<usize> = Vec::with_capacity(width);
             let mut cumul: Vec<usize> = vec![0; width];
-            let mut content = content.as_mut().unwrap();
-            bucket_sort_pairs_os(
+            bucket_sort_pairs(
                 &mut content,
                 &mut hist,
                 &mut hist2,
@@ -133,6 +144,9 @@ impl TripleStore {
     }
 
     pub fn sort(&mut self) {
+        if self.elem.is_empty() {
+            return;
+        }
         let (min, max, width) = self.width();
         self.size = self
             .elem
@@ -166,10 +180,8 @@ impl TripleStore {
             .iter()
             .map(|chunk| chunk.so())
             .flat_map(|pairs| pairs.iter())
-            .flat_map(|pair| pair.iter())
-            .fold((u64::max_value(), 0), |acc, &x| {
-                (acc.0.min(x), acc.1.max(x))
-            });
+            .map(|pair| pair[0])
+            .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
         (min, max, (max - min + 1) as usize)
     }
 }
@@ -187,21 +199,68 @@ pub fn bucket_sort_pairs(
     if pairs.is_empty() {
         return 0;
     }
+    let t0 = precise_time_ns();
     build_hist(pairs, min, hist);
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("hist: {}", time);
+    let t0 = precise_time_ns();
     mem::replace(hist2, hist.to_vec());
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("hist copy: {}", time);
+    let t0 = precise_time_ns();
     build_cumul(&hist, cumul);
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("cumul: {}", time);
+    let mut access = 0.0;
+    let mut calc = 0.0;
+    let mut assign = 0.0;
+    let t0 = precise_time_ns();
     let len = pairs.len();
     let mut objects = vec![0; len];
     for i in 0..len {
-        let pos = cumul[(pairs[i][0] - min) as usize];
-        let remaining = hist[(pairs[i][0] - min) as usize];
-        hist[(pairs[i][0] - min) as usize] -= 1;
-        objects[(pos + remaining - 1) as usize] = pairs[i][1];
+        // let t0 = precise_time_ns();
+        let val = pairs[i][0];
+        // let t1 = precise_time_ns();
+        // let time = (t1 - t0) as f64 / 1e9;
+        // access += time;
+        // let t0 = precise_time_ns();
+        let idx = (val - min) as usize;
+        // let t1 = precise_time_ns();
+        // let time = (t1 - t0) as f64 / 1e9;
+        // calc += time;
+        // let t0 = precise_time_ns();
+        let pos = cumul[idx];
+        let remaining = hist[idx];
+        // let t1 = precise_time_ns();
+        // let time = (t1 - t0) as f64 / 1e9;
+        // access += time;
+        // let t0 = precise_time_ns();
+        let obj_idx = (pos + remaining - 1) as usize;
+        // let t1 = precise_time_ns();
+        // let time = (t1 - t0) as f64 / 1e9;
+        // calc += time;
+        // let t0 = precise_time_ns();
+        hist[idx] -= 1;
+        objects[obj_idx] = val;
+        // let t1 = precise_time_ns();
+        // let time = (t1 - t0) as f64 / 1e9;
+        // assign += time;
     }
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("obj creation: {}({}, {}, {})", time, access, calc, assign);
+    let t0 = precise_time_ns();
     for i in 0..(width - 1) {
         insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
     }
     insertion_sort_slice(&mut objects, cumul[width - 1], len);
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("obj sorting: {}", time);
+    let t0 = precise_time_ns();
     let mut j = 0;
     let mut l = 0;
     let mut last = 0;
@@ -218,7 +277,14 @@ pub fn bucket_sort_pairs(
             last = o;
         }
     }
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("output creation: {}", time);
+    let t0 = precise_time_ns();
     pairs.truncate(j);
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("truncation: {}", time);
     j
 }
 
@@ -234,24 +300,24 @@ fn insertion_sort_slice(v: &mut [u64], from: usize, to: usize) {
     }
 }
 
-fn build_hist(pairs: &[[u64; 2]], min: u64, hist: &mut Vec<usize>) {
+fn build_hist(pairs: &[[u64; 2]], min: u64, hist: &mut [usize]) {
     for pair in pairs {
         hist[(pair[0] - min) as usize] += 1;
     }
 }
 
-fn build_cumul(hist: &[usize], cumul: &mut Vec<usize>) {
+fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
     for i in 1..hist.len() {
         cumul[i] = cumul[i - 1] + hist[i - 1];
     }
 }
 
 /// Reverse the pairs and sort them
-pub fn bucket_sort_pairs_os(
-    pairs: &mut Vec<[u64; 2]>,
-    hist: &mut Vec<usize>,
-    hist2: &mut Vec<usize>,
-    cumul: &mut Vec<usize>,
+fn _bucket_sort_pairs_os(
+    pairs: &mut [[u64; 2]],
+    hist: &mut [usize],
+    hist2: &mut [usize],
+    cumul: &mut [usize],
     min: u64,
     _max: u64,
     width: usize,
@@ -260,7 +326,8 @@ pub fn bucket_sort_pairs_os(
         return 0;
     }
     build_hist(pairs, min, hist);
-    mem::replace(hist2, hist.to_vec());
+    dbg!(&pairs, &hist);
+    // mem::replace(hist2, hist.to_vec());
     build_cumul(&hist, cumul);
     let len = pairs.len();
     let mut objects = vec![0; len];
@@ -270,10 +337,12 @@ pub fn bucket_sort_pairs_os(
         hist[(pairs[i][0] - min) as usize] -= 1;
         objects[(pos + remaining - 1) as usize] = pairs[i][1];
     }
+    dbg!(&objects, &cumul);
     for i in 0..(width - 1) {
         insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
     }
     insertion_sort_slice(&mut objects, cumul[width - 1], len);
+    dbg!(&hist2, &objects);
     let mut j = 0;
     let mut l = 0;
     for i in 0..width {
@@ -286,6 +355,6 @@ pub fn bucket_sort_pairs_os(
             j += 1;
         }
     }
-    pairs.truncate(j);
+    // pairs.truncate(j);
     j
 }

@@ -158,6 +158,7 @@ impl RuleProfile {
     pub fn RDFSDefault() -> Self {
         Self {
             axiomatic_triples: false,
+            // after_rules: None,
             ..Self::RDFS()
         }
     }

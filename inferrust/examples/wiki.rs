@@ -2,6 +2,7 @@ use inferrust::closure::ClosureGraph;
 use inferrust::inferray::*;
 use inferrust::rules::*;
 
+use rand::Rng;
 use time::precise_time_ns;
 
 use std::fs;
@@ -11,6 +12,28 @@ use sophia::serializer::nt::*;
 use sophia::serializer::*;
 
 fn main() {
+    let mut pairs: Vec<[u64; 2]> = Vec::new();
+    let mut max = 0;
+    let mut min = 1000000000;
+    for _ in 0..5000000 {
+        let a = rand::thread_rng().gen_range(0, 1000000);
+        let b = rand::thread_rng().gen_range(0, 1000000);
+        max = max.max(a);
+        min = min.min(a);
+        pairs.push([a, b]);
+    }
+    dbg!(max, min);
+    let w = max - min + 1;
+    let w = w as usize;
+    let mut hist = vec![0; w];
+    let mut histt = vec![0; w];
+    let mut cumul = vec![0; w];
+    let t0 = precise_time_ns();
+    bucket_sort_pairs(&mut pairs, &mut hist, &mut histt, &mut cumul, min, max, w);
+    let t1 = precise_time_ns();
+    let time = (t1 - t0) as f64 / 1e9;
+    println!("sorting: {}", time);
+    std::process::exit(127);
     let mut profiles = [
         RuleProfile::RDFS(),
         RuleProfile::RhoDF(),
@@ -32,7 +55,6 @@ fn main() {
                 let t1 = precise_time_ns();
                 let time = (t1 - t0) as f64 / 1e9;
                 println!("creation: {}", time);
-                std::process::exit(127);
                 println!("graph size: {}", i_graph.size());
                 let t0 = precise_time_ns();
                 i_graph.process(profile);
