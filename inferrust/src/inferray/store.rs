@@ -199,25 +199,25 @@ pub fn bucket_sort_pairs(
     if pairs.is_empty() {
         return 0;
     }
-    let t0 = precise_time_ns();
+    // let t0 = precise_time_ns();
     build_hist(pairs, min, hist);
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("hist: {}", time);
-    let t0 = precise_time_ns();
+    // let t1 = precise_time_ns();
+    // let time = (t1 - t0) as f64 / :1e9;
+    // println!("hist: {}", time);
+    // let t0 = precise_time_ns();
     mem::replace(hist2, hist.to_vec());
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("hist copy: {}", time);
-    let t0 = precise_time_ns();
+    // let t1 = precise_time_ns();
+    // let time = (t1 - t0) as f64 / 1e9;
+    // println!("hist copy: {}", time);
+    // let t0 = precise_time_ns();
     build_cumul(&hist, cumul);
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("cumul: {}", time);
-    let mut access = 0.0;
-    let mut calc = 0.0;
-    let mut assign = 0.0;
-    let t0 = precise_time_ns();
+    // let t1 = precise_time_ns();
+    // let time = (t1 - t0) as f64 / 1e9;
+    // println!("cumul: {}", time);
+    // let mut access = 0.0;
+    // let mut calc = 0.0;
+    // let mut assign = 0.0;
+    // let t0 = precise_time_ns();
     let len = pairs.len();
     let mut objects = vec![0; len];
     for i in 0..len {
@@ -249,18 +249,18 @@ pub fn bucket_sort_pairs(
         // let time = (t1 - t0) as f64 / 1e9;
         // assign += time;
     }
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("obj creation: {}({}, {}, {})", time, access, calc, assign);
-    let t0 = precise_time_ns();
+    // let t1 = precise_time_ns();
+    // let time = (t1 - t0) as f64 / 1e9;
+    // println!("obj creation: {}({}, {}, {})", time, access, calc, assign);
+    // let t0 = precise_time_ns();
     for i in 0..(width - 1) {
         insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
     }
     insertion_sort_slice(&mut objects, cumul[width - 1], len);
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("obj sorting: {}", time);
-    let t0 = precise_time_ns();
+    // let t1 = precise_time_ns();
+    // let time = (t1 - t0) as f64 / 1e9;
+    // println!("obj sorting: {}", time);
+    // let t0 = precise_time_ns();
     let mut j = 0;
     let mut l = 0;
     let mut last = 0;
@@ -277,14 +277,14 @@ pub fn bucket_sort_pairs(
             last = o;
         }
     }
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("output creation: {}", time);
-    let t0 = precise_time_ns();
+    // let t1 = precise_time_ns();
+    // let time = (t1 - t0) as f64 / 1e9;
+    // println!("output creation: {}", time);
+    // let t0 = precise_time_ns();
     pairs.truncate(j);
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("truncation: {}", time);
+    // let t1 = precise_time_ns();
+    // let time = (t1 - t0) as f64 / 1e9;
+    // println!("truncation: {}", time);
     j
 }
 

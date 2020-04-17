@@ -12,27 +12,35 @@ use sophia::serializer::nt::*;
 use sophia::serializer::*;
 
 fn main() {
-    let mut pairs: Vec<[u64; 2]> = Vec::new();
-    let mut max = 0;
-    let mut min = 1000000000;
-    for _ in 0..5000000 {
-        let a = rand::thread_rng().gen_range(0, 1000000);
-        let b = rand::thread_rng().gen_range(0, 1000000);
-        max = max.max(a);
-        min = min.min(a);
-        pairs.push([a, b]);
+    let sizes = [10, 50, 100, 500, 1000, 10000, 1000000];
+    let ents = [0.1, 0.2, 0.5, 1.];
+    for size in sizes.iter() {
+        for ent in ents.iter() {
+            let rng = *size as f64 * *ent;
+            let rng = rng as u64;
+            let mut pairs: Vec<[u64; 2]> = Vec::new();
+            let mut max = 0;
+            let mut min = 1000000000;
+            for _ in 0..*size {
+                let a = rand::thread_rng().gen_range(0, rng);
+                let b = rand::thread_rng().gen_range(0, rng);
+                max = max.max(a);
+                min = min.min(a);
+                pairs.push([a, b]);
+            }
+            // dbg!(max, min);
+            let t0 = precise_time_ns();
+            let w = max - min + 1;
+            let w = w as usize;
+            let mut hist = vec![0; w];
+            let mut histt = vec![0; w];
+            let mut cumul = vec![0; w];
+            bucket_sort_pairs(&mut pairs, &mut hist, &mut histt, &mut cumul, min, max, w);
+            let t1 = precise_time_ns();
+            let time = (t1 - t0) as f64;
+            println!("inferrust,{},{},{}", *size, *ent, time);
+        }
     }
-    dbg!(max, min);
-    let w = max - min + 1;
-    let w = w as usize;
-    let mut hist = vec![0; w];
-    let mut histt = vec![0; w];
-    let mut cumul = vec![0; w];
-    let t0 = precise_time_ns();
-    bucket_sort_pairs(&mut pairs, &mut hist, &mut histt, &mut cumul, min, max, w);
-    let t1 = precise_time_ns();
-    let time = (t1 - t0) as f64 / 1e9;
-    println!("sorting: {}", time);
     std::process::exit(127);
     let mut profiles = [
         RuleProfile::RDFS(),
