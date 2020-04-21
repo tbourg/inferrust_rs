@@ -1,6 +1,5 @@
 use rayon::prelude::*;
 use std::mem;
-use time::*;
 
 use super::NodeDictionary;
 
@@ -222,12 +221,14 @@ pub fn bucket_sort_pairs(
     let mut objects = vec![0; len];
     for i in 0..len {
         // let t0 = precise_time_ns();
-        let val = pairs[i][0];
+        let val = pairs[i];
+        let val_s = val[0];
+        let val_o = val[1];
         // let t1 = precise_time_ns();
         // let time = (t1 - t0) as f64 / 1e9;
         // access += time;
         // let t0 = precise_time_ns();
-        let idx = (val - min) as usize;
+        let idx = (val_s - min) as usize;
         // let t1 = precise_time_ns();
         // let time = (t1 - t0) as f64 / 1e9;
         // calc += time;
@@ -244,7 +245,7 @@ pub fn bucket_sort_pairs(
         // calc += time;
         // let t0 = precise_time_ns();
         hist[idx] -= 1;
-        objects[obj_idx] = val;
+        objects[obj_idx] = val_o;
         // let t1 = precise_time_ns();
         // let time = (t1 - t0) as f64 / 1e9;
         // assign += time;
