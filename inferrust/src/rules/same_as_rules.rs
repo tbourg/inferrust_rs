@@ -40,15 +40,14 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
                 }
             } else {
                 for (idx, chunk) in ts.elem.iter().enumerate() {
+                    let pairs = chunk.so();
                     let pi = NodeDictionary::idx_to_prop_idx(idx);
                     if pi == NodeDictionary::owlsameAs as u64 {
                         continue;
                     }
-                    if !chunk.so().is_empty() {
-                        if chunk.so()[0][0] <= pair1[0]
-                            && chunk.so()[chunk.so().len() - 1][0] >= pair1[0]
-                        {
-                            for pair in chunk.so().iter() {
+                    if !pairs.is_empty() {
+                        if pairs[0][0] <= pair1[0] && pairs[pairs.len() - 1][0] >= pair1[0] {
+                            for pair in pairs.iter() {
                                 if pair[0] > pair1[0] {
                                     break;
                                 }
@@ -58,11 +57,10 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
                             }
                         }
                     }
-                    if !chunk.os().is_empty() {
-                        if chunk.os()[0][0] <= pair1[0]
-                            && chunk.os()[chunk.os().len() - 1][0] >= pair1[0]
-                        {
-                            for pair in chunk.os().iter() {
+                    let pairs = chunk.os();
+                    if !pairs.is_empty() {
+                        if pairs[0][0] <= pair1[0] && pairs[pairs.len() - 1][0] >= pair1[0] {
+                            for pair in pairs.iter() {
                                 if pair[0] > pair1[0] {
                                     break;
                                 }

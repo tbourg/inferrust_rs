@@ -68,23 +68,23 @@ pub fn RDFS13(ts: &TripleStore) -> TripleStore {
 
 pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    for object in [
-        NodeDictionary::owldataTypeProperty as u64,
-        NodeDictionary::owlobjectProperty as u64,
-    ]
-    .iter()
-    {
-        let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
-            NodeDictionary::rdftype as u64,
-        ));
-        if pairs1 == None {
-            break;
-        }
-        let pairs1 = pairs1.unwrap().os();
-        if pairs1.is_empty() {
-            break;
-        }
-        for pair1 in &*pairs1 {
+    let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::rdftype as u64,
+    ));
+    if pairs1 == None {
+        return output;
+    }
+    let pairs1 = pairs1.unwrap().os();
+    if pairs1.is_empty() {
+        return output;
+    }
+    for pair1 in pairs1 {
+        for object in [
+            NodeDictionary::owldataTypeProperty as u64,
+            NodeDictionary::owlobjectProperty as u64,
+        ]
+        .iter()
+        {
             if pair1[0] > *object {
                 break;
             }

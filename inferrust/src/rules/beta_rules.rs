@@ -19,13 +19,14 @@ fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> TripleSto
     if pairs == None {
         return TripleStore::new();
     }
+    let pairs = pairs.unwrap();
     let rule_p = NodeDictionary::idx_to_prop_idx(rule_p);
     let infer_p = NodeDictionary::idx_to_prop_idx(infer_p);
-    let pairs1 = pairs.unwrap();
-    let pairs2 = pairs.unwrap();
+    let pairs1 = pairs.so();
+    let pairs2 = pairs1;
     let mut output = TripleStore::new();
-    for pair1 in pairs1.so() {
-        for pair2 in pairs2.so() {
+    for pair1 in pairs1 {
+        for pair2 in pairs2 {
             if pair1[1] == pair2[0] {
                 if pair1[0] == pair2[1] {
                     output.add_triple([pair1[0], infer_p, pair1[1]]);

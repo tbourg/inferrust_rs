@@ -24,8 +24,8 @@ impl RuleSet for Vec<Box<Rule>> {
         self.par_iter_mut()
             .for_each(|rule| outputs.lock().unwrap().add_all(rule(ts)));
         outputs.get_mut().unwrap().sort();
-        graph.dictionary.ts.add_all(outputs.into_inner().unwrap());
-        graph.dictionary.ts.sort();
+        graph.dictionary.ts =
+            TripleStore::join(&graph.dictionary.ts, &outputs.into_inner().unwrap());
     }
 
     fn is_empty(&self) -> bool {

@@ -1,4 +1,5 @@
 use rayon::prelude::*;
+use std::cmp::Ordering;
 use std::mem;
 
 use super::NodeDictionary;
@@ -8,7 +9,7 @@ pub struct TripleStore {
     size: usize,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Chunk {
     so: Vec<[u64; 2]>,
     os: Option<Vec<[u64; 2]>>,
@@ -182,6 +183,130 @@ impl TripleStore {
             .map(|pair| pair[0])
             .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
         (min, max, (max - min + 1) as usize)
+    }
+
+    pub fn join(a: &Self, b: &Self) -> Self {
+        let len = std::cmp::max(a.elem.len(), b.elem.len());
+        let mut chunks: Vec<Chunk> = Vec::new();
+        let mut size = 0;
+        if b.elem.is_empty() {
+            chunks = a.elem.clone();
+            size = a.size;
+        } else {
+            for i in 0..len {
+                let mut new_so: Vec<[u64; 2]> = Vec::new();
+                // dbg!(a.elem.get(i), b.elem.get(i));
+                match (a.elem.get(i), b.elem.get(i)) {
+                    (Some(o_opt), Some(i_opt)) => {
+                        let original = o_opt.so();
+                        let inferred = i_opt.so();
+                        let mut index_o = 0;
+                        let mut index_i = 0;
+                        let mut new_o = true;
+                        let mut new_i = true;
+                        let mut s_o = 0;
+                        let mut o_o = 0;
+                        let mut s_i = 0;
+                        let mut o_i = 0;
+                        let mut last_case = 0;
+                        while index_o < original.len() && index_i < inferred.len() {
+                            if new_o {
+                                if index_o < original.len() {
+                                    let pair_o = original[index_o];
+                                    s_o = pair_o[0];
+                                    o_o = pair_o[1];
+                                }
+                                index_o += 1;
+                            }
+                            if new_i {
+                                if index_i < inferred.len() {
+                                    let pair_i = inferred[index_i];
+                                    s_i = pair_i[0];
+                                    o_i = pair_i[1];
+                                }
+                                index_i += 1;
+                            }
+                            new_o = false;
+                            new_i = false;
+                            // dbg!(s_o, o_o, s_i, o_i);
+                            match s_o.cmp(&s_i) {
+                                Ordering::Less => {
+                                    new_so.push([s_o, o_o]);
+                                    new_o = true;
+                                    last_case = 1;
+                                }
+                                Ordering::Greater => {
+                                    new_so.push([s_i, o_i]);
+                                    new_i = true;
+                                    last_case = 2;
+                                }
+                                Ordering::Equal => match o_o.cmp(&o_i) {
+                                    Ordering::Less => {
+                                        new_so.push([s_o, o_o]);
+                                        new_o = true;
+                                        last_case = 1;
+                                    }
+                                    Ordering::Greater => {
+                                        new_so.push([s_i, o_i]);
+                                        new_i = true;
+                                        last_case = 2;
+                                    }
+                                    Ordering::Equal => {
+                                        new_so.push([s_o, o_o]);
+                                        new_o = true;
+                                        new_i = true;
+                                        last_case = 3;
+                                    }
+                                },
+                            }
+                            // dbg!(&new_so);
+                        }
+                        if last_case == 1 {
+                            // Add the last of infered
+                            new_so.push([s_i, o_i]);
+                        } else if last_case == 2 {
+                            // Add the last of original
+                            new_so.push([s_o, o_o]);
+                        }
+                        let original_ended = index_o == original.len();
+                        let inferrred_ended = index_i == inferred.len();
+                        match (original_ended, inferrred_ended) {
+                            (true, true) => {
+                                // Both finished
+                            }
+                            (true, false) => {
+                                // Add the rest of infered
+                                for i in index_i..inferred.len() {
+                                    new_so.push(inferred[i]);
+                                }
+                            }
+                            (false, true) => {
+                                // Adds the rest of main
+                                for i in index_o..original.len() {
+                                    new_so.push(original[i]);
+                                }
+                            }
+                            (false, false) => (),
+                        }
+                    }
+                    (Some(o_opt), None) => {
+                        new_so = o_opt.so().clone();
+                    }
+                    (None, Some(i_opt)) => {
+                        new_so = i_opt.so().clone();
+                    }
+                    (None, None) => (),
+                }
+                // dbg!(&new_so);
+                // std::process::exit(83);
+                size += new_so.len();
+                chunks.push(Chunk {
+                    so: new_so,
+                    os: None,
+                });
+            }
+        }
+        Self { elem: chunks, size }
     }
 }
 
