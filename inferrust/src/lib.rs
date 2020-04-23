@@ -8,11 +8,9 @@
 //! Here a quick example on how to build a graph (using [Sophia parser]), and launch the reasoner.
 //!
 //! ```
-//! use sophia::serializer;
-//! use sophia::serializer::TripleStringifier;
 //!
 //! use inferrust::inferray::*;
-//! use inferrust::rules::{Rule, RuleSet};
+//! use inferrust::rules::*;
 //!
 //! fn main() {
 //!     let rep = r#"
@@ -27,19 +25,15 @@
 //!     :mammal rdfs:subClassOf :animal .
 //!     "#;
 //!     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
-//!
-//!     let mut rules = <Vec<Box<dyn Rule>> as RuleSet>::new();
-//!     rules.fire_all(&mut graph);
+//!     graph.process(&mut RuleProfile::RDFS());
 //! }
 //! ```
 //!
 //! [Sophia parser]:
 //!
 //! ## Citation
-//! ```
 //! Julien Subercaze, Christophe Gravier, Jules Chevalier, Frédérique Laforest:
 //! Inferray: fast in-memory RDF inference. PVLDB 9(6): 468-479 (2016)
-//! ```
 
 pub mod closure;
 pub mod inferray;

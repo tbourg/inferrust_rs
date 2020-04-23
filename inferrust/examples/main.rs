@@ -20,7 +20,7 @@ fn main() {
     :Bart :parent :Lisa .
     "#;
     let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(rep));
-    graph.process(&mut RuleProfile::RDFSDefault());
+    graph.process(&mut RuleProfile::RDFSPlus());
 
     // dbg!(&graph.dictionary.ts.elem);
 

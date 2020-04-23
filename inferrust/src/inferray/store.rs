@@ -4,6 +4,7 @@ use std::mem;
 
 use super::NodeDictionary;
 
+#[derive(PartialEq, Debug, Clone)]
 pub struct TripleStore {
     pub elem: Vec<Chunk>,
     size: usize,
@@ -195,11 +196,16 @@ impl TripleStore {
         } else {
             for i in 0..len {
                 let mut new_so: Vec<[u64; 2]> = Vec::new();
-                // dbg!(a.elem.get(i), b.elem.get(i));
-                match (a.elem.get(i), b.elem.get(i)) {
-                    (Some(o_opt), Some(i_opt)) => {
-                        let original = o_opt.so();
-                        let inferred = i_opt.so();
+                let mut original = &vec![];
+                let mut infered = &vec![];
+                if let Some(opt) = a.elem.get(i) {
+                    original = opt.so();
+                }
+                if let Some(opt) = b.elem.get(i) {
+                    infered = opt.so();
+                }
+                match (original.is_empty(), infered.is_empty()) {
+                    (false, false) => {
                         let mut index_o = 0;
                         let mut index_i = 0;
                         let mut new_o = true;
@@ -208,97 +214,66 @@ impl TripleStore {
                         let mut o_o = 0;
                         let mut s_i = 0;
                         let mut o_i = 0;
-                        let mut last_case = 0;
-                        while index_o < original.len() && index_i < inferred.len() {
+                        while index_o < original.len() || index_i < infered.len() {
                             if new_o {
                                 if index_o < original.len() {
                                     let pair_o = original[index_o];
                                     s_o = pair_o[0];
                                     o_o = pair_o[1];
+                                } else {
+                                    s_o = u64::max_value();
+                                    o_o = u64::max_value();
                                 }
                                 index_o += 1;
                             }
                             if new_i {
-                                if index_i < inferred.len() {
-                                    let pair_i = inferred[index_i];
+                                if index_i < infered.len() {
+                                    let pair_i = infered[index_i];
                                     s_i = pair_i[0];
                                     o_i = pair_i[1];
+                                } else {
+                                    s_i = u64::max_value();
+                                    o_i = u64::max_value();
                                 }
                                 index_i += 1;
                             }
                             new_o = false;
                             new_i = false;
-                            // dbg!(s_o, o_o, s_i, o_i);
                             match s_o.cmp(&s_i) {
                                 Ordering::Less => {
                                     new_so.push([s_o, o_o]);
                                     new_o = true;
-                                    last_case = 1;
                                 }
                                 Ordering::Greater => {
                                     new_so.push([s_i, o_i]);
                                     new_i = true;
-                                    last_case = 2;
                                 }
                                 Ordering::Equal => match o_o.cmp(&o_i) {
                                     Ordering::Less => {
                                         new_so.push([s_o, o_o]);
                                         new_o = true;
-                                        last_case = 1;
                                     }
                                     Ordering::Greater => {
                                         new_so.push([s_i, o_i]);
                                         new_i = true;
-                                        last_case = 2;
                                     }
                                     Ordering::Equal => {
                                         new_so.push([s_o, o_o]);
                                         new_o = true;
                                         new_i = true;
-                                        last_case = 3;
                                     }
                                 },
                             }
-                            // dbg!(&new_so);
-                        }
-                        if last_case == 1 {
-                            // Add the last of infered
-                            new_so.push([s_i, o_i]);
-                        } else if last_case == 2 {
-                            // Add the last of original
-                            new_so.push([s_o, o_o]);
-                        }
-                        let original_ended = index_o == original.len();
-                        let inferrred_ended = index_i == inferred.len();
-                        match (original_ended, inferrred_ended) {
-                            (true, true) => {
-                                // Both finished
-                            }
-                            (true, false) => {
-                                // Add the rest of infered
-                                for i in index_i..inferred.len() {
-                                    new_so.push(inferred[i]);
-                                }
-                            }
-                            (false, true) => {
-                                // Adds the rest of main
-                                for i in index_o..original.len() {
-                                    new_so.push(original[i]);
-                                }
-                            }
-                            (false, false) => (),
                         }
                     }
-                    (Some(o_opt), None) => {
-                        new_so = o_opt.so().clone();
+                    (false, true) => {
+                        new_so = original.clone();
                     }
-                    (None, Some(i_opt)) => {
-                        new_so = i_opt.so().clone();
+                    (true, false) => {
+                        new_so = infered.clone();
                     }
-                    (None, None) => (),
+                    (true, true) => (),
                 }
-                // dbg!(&new_so);
-                // std::process::exit(83);
                 size += new_so.len();
                 chunks.push(Chunk {
                     so: new_so,
@@ -483,4 +458,229 @@ fn _bucket_sort_pairs_os(
     }
     // pairs.truncate(j);
     j
+}
+
+#[test]
+fn test_sort() {
+    let mut hist = vec![0; 1000];
+    let mut hist2 = vec![0; 1000];
+    let mut cumul = vec![0; 1000];
+    let mut pairs = vec![[2, 1], [1, 3]];
+    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    let expected = [[1, 3], [2, 1]];
+    assert_eq!(pairs, expected);
+    let mut pairs = vec![[2, 1], [1, 3], [2, 1]];
+    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    let expected = [[1, 3], [2, 1]];
+    assert_eq!(pairs, expected);
+    let mut pairs = vec![[2, 1], [1, 3], [1, 3]];
+    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    let expected = [[1, 3], [2, 1]];
+    assert_eq!(pairs, expected);
+    let mut pairs = vec![[2, 3], [2, 1]];
+    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    let expected = [[2, 1], [2, 3]];
+    assert_eq!(pairs, expected);
+}
+
+#[test]
+fn test_join() {
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1], [1, 2]],
+            os: None,
+        }],
+        size: 2,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1]],
+            os: None,
+        }],
+        size: 1,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![[1, 1], [1, 2]],
+            os: None,
+        }],
+        size: 2,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk {
+            so: vec![],
+            os: None,
+        }],
+        size: 0,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
 }

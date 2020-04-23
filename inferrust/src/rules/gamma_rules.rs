@@ -1,27 +1,5 @@
 use crate::inferray::{NodeDictionary, TripleStore};
 
-/**
- * Gamma rules are of the following form :
- *
- * <pre>
- * p property c
- * x p y
- * ------------
- * ? ? c
- * </pre>
- *
- * Rules :
- * <ul>
- * <li>PRP-DOM</li>
- * <li>PRP-RNG</li>
- * <li>PRP-SPO1</li>
- * </ul>
- *
- * @author Julien Subercaze
- *
- *         Dec. 13
- */
-
 fn apply_gamma_rule(
     ts: &TripleStore,
     head_prop: usize,

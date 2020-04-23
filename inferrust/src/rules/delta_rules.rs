@@ -1,27 +1,3 @@
-/**
- * The Epsilon class covers :
- * <ul>
- * <li>PRP-INV1/2</li>
- * <li>PRP-EQP1/2</li>
- * <li></li>
- * </ul>
- *
- * These rules have the following template
- * <pre>
- * p1 property p2
- *  x p1 y
- * -----------
- * ? p1/p2 ?
- *
- *  Field with ?
- *  has indices :
- *  x p1 y
- *  0    1
- * </pre>
- * @author Julien Subercaze
- *
- *         Feb. 14
- */
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 
