@@ -5,17 +5,13 @@ use sophia::term::*;
 use sophia::triple::stream::*;
 
 use inferrust::inferray::*;
-use inferrust::rules::*;
 
 extern crate time;
 use time::precise_time_ns;
 
 use std::io::BufRead;
-use std::io::Write;
 
 fn main() {
-    let mut out = std::fs::File::create(std::path::Path::new("benchmark/result.csv")).unwrap();
-    out.write_all(b"program,triples(k),parsing time,time to access the first triple,time to end\n");
     rayon::ThreadPoolBuilder::new()
         .num_threads(4)
         .build_global()
@@ -58,13 +54,9 @@ fn main() {
         let time_rest = (t1 - t0) as f64 / 1e9;
         eprintln!("matching triple: {}\n", c);
         println!("sophia: {},{},{}", time_creation, time_first, time_rest);
-        out.write_fmt(format_args!(
-            "sophia,{},{},{},{}\n",
-            *len, time_creation, time_first, time_rest
-        ));
 
         let ts = sophia::parser::turtle::parse_str(&rep);
-        let mut i_graph = InfGraph::from(ts);
+        let i_graph = InfGraph::from(ts);
         let t1 = precise_time_ns();
         let time_creation = (t1 - t0) as f64 / 1e9;
 
@@ -84,9 +76,5 @@ fn main() {
         let time_rest = (t1 - t0) as f64 / 1e9;
         eprintln!("matching triple: {}\n", c);
         println!("inferray: {},{},{}", time_creation, time_first, time_rest);
-        out.write_fmt(format_args!(
-            "inferrust,{},{},{},{}\n",
-            *len, time_creation, time_first, time_rest
-        ));
     }
 }

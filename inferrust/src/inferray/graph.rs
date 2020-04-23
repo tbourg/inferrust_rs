@@ -85,7 +85,6 @@ impl Graph for InfGraph {
     where
         T: TermData,
     {
-        println!("My impl");
         if let Some(ip) = self.dictionary.get_index(p) {
             let idx = NodeDictionary::prop_idx_to_idx(ip);
             let chunk = &self.dictionary.ts.elem[idx];
@@ -229,7 +228,6 @@ impl Graph for InfGraph {
         T: TermData,
         U: TermData,
     {
-        println!("My impl",);
         if let (Some(pi), Some(oi)) = (self.dictionary.get_index(p), self.dictionary.get_index(o)) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
             let chunk = &self.dictionary.ts.elem[idx];
@@ -348,16 +346,13 @@ impl InfGraph {
     }
 
     pub fn close(&mut self, profile: &mut ClosureProfile) {
-        // eprintln!("SubClassOf");
         if profile.on_sco {
             self.close_on(NodeDictionary::rdfssubClassOf);
         }
         if profile.on_spo {
-            // eprintln!("SubPropertyOf");
             self.close_on(NodeDictionary::rdfssubPropertyOf);
         }
         if profile.on_sa {
-            // eprintln!("SameAs");
             self.close_on(NodeDictionary::owlsameAs);
         }
         if profile.on_trp {
@@ -373,7 +368,6 @@ impl InfGraph {
     }
 
     fn close_on_raw(&mut self, raw_index: usize) {
-        // dbg!(&self.dictionary.ts.elem);
         let pairs = self.dictionary.ts.elem.get(raw_index);
         if pairs == None {
             return;
@@ -389,9 +383,7 @@ impl InfGraph {
                 self.dictionary.ts.add_triple_raw(*s, raw_index, *o);
             }
         }
-        // let t = time::precise_time_ns();
         self.dictionary.ts.sort();
-        // dbg!((time::precise_time_ns() - t) as f64 / 1e9);
     }
 
     fn get_tr_idx(&mut self) -> Vec<u32> {
@@ -716,34 +708,19 @@ where
     TS: TripleSource,
 {
     fn from(mut ts: TS) -> Self {
-        let t0 = time::precise_time_ns();
         let store = TripleStore::new();
         let dictionary = NodeDictionary::new(store);
         let mut me = Self { dictionary };
-        let mut enc_time = 0.0;
-        let mut add_time = 0.0;
+
         ts.for_each_triple(|t| {
-            let t0 = time::precise_time_ns();
             let rep = me.encode_triple(&t);
-            let t1 = time::precise_time_ns();
-            let time = (t1 - t0) as f64 / 1e9;
-            enc_time += time;
-            //eprintln!("{:?}", rep);
-            let t0 = time::precise_time_ns();
+
             me.dictionary.ts.add_triple(rep);
-            let t1 = time::precise_time_ns();
-            let time = (t1 - t0) as f64 / 1e9;
-            add_time += time;
         })
         .expect("Streaming error");
-        let t1 = time::precise_time_ns();
-        let time = (t1 - t0) as f64 / 1e9;
-        println!("filling: {}({},{})", time, enc_time, add_time);
-        let t0 = time::precise_time_ns();
+
         me.dictionary.ts.sort();
-        let t1 = time::precise_time_ns();
-        let time = (t1 - t0) as f64 / 1e9;
-        println!("first sort: {}", time);
+
         me
     }
 }

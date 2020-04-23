@@ -1,15 +1,9 @@
-use inferrust::closure::ClosureGraph;
 use inferrust::inferray::*;
 use inferrust::rules::*;
 
-use rand::Rng;
 use time::precise_time_ns;
 
 use std::fs;
-use std::io::BufRead;
-
-use sophia::serializer::nt::*;
-use sophia::serializer::*;
 
 fn main() {
     fs::read_dir("inferrust/res/closure")

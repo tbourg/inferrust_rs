@@ -6,9 +6,6 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleSt
     if let Some(pairs) = ts.elem.get(prop_idx) {
         for pair in pairs.so() {
             if pair[0] != pair[1] {
-                // dbg!(pair);
-                // dbg!(.get_term(pair[0]));
-                // dbg!(.get_term(pair[1]));
                 let prop_idx = NodeDictionary::prop_idx_to_idx(pair[0]);
                 if let Some(usable_pairs) = ts.elem.get(prop_idx) {
                     let usable_pairs = if invert {
@@ -17,9 +14,6 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleSt
                         usable_pairs.so()
                     };
                     for usable_pair in usable_pairs {
-                        // dbg!(usable_pair);
-                        // dbg!(.get_term(usable_pair[0]));
-                        // dbg!(.get_term(usable_pair[1]));
                         output.add_triple([usable_pair[0], pair[1], usable_pair[1]]);
                     }
                 }
@@ -31,9 +25,6 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleSt
                         usable_pairs.so()
                     };
                     for usable_pair in usable_pairs {
-                        // dbg!(usable_pair);
-                        // dbg!(.get_term(usable_pair[0]));
-                        // dbg!(.get_term(usable_pair[1]));
                         output.add_triple([usable_pair[0], pair[0], usable_pair[1]]);
                     }
                 }

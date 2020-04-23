@@ -7,7 +7,7 @@ use std::collections::HashSet;
 pub fn graph_tc(g: &ClosureGraph) {
     let mut stack = Vec::new();
     let mut num = 0;
-    // dbg!(&g.edges);
+
     fn node_tc(v: &Node, stack: &mut Vec<u64>, g: &ClosureGraph, num: &mut usize) {
         v.set_num(*num);
         *num += 1;

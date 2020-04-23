@@ -1,6 +1,6 @@
 use inferrust::closure::*;
 use rand::Rng;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 struct MyStruct {
     elem: Vec<u64>,

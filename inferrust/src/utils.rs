@@ -35,10 +35,9 @@ pub fn first(
     n: usize,
     key_pos: usize,
 ) -> usize {
-    // dbg!(low, high);
     if high >= low {
         let mid = low + (high - low) / 2;
-        // dbg!(low, high, mid);
+
         if mid == low && mid == high {
             if vec[mid][key_pos] != x {
                 return n;

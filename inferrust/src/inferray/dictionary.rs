@@ -195,7 +195,7 @@ impl NodeDictionary {
     }
 
     pub fn prop_idx_to_idx(prop_idx: u64) -> usize {
-        (/*dbg!(*/Self::START_INDEX as u64 - prop_idx - 1/*)*/)
+        (Self::START_INDEX as u64 - prop_idx - 1)
             .try_into()
             .expect("Err converting index")
     }

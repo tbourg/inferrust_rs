@@ -49,7 +49,7 @@ impl Chunk {
                     .collect(),
             ),
         );
-        // dbg!(&content);
+
         if !self.so.is_empty() {
             let mut content = content.as_mut().unwrap();
             let (min, max) = content
@@ -117,8 +117,7 @@ impl TripleStore {
     pub fn add_triple(&mut self, triple: [u64; 3]) {
         let [is, ip, io] = triple;
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
-        // dbg!(is, ip, io);
-        // dbg!(is, ip_to_store, io);
+
         if ip_to_store >= self.elem.len() {
             self.elem.resize_with(ip_to_store + 1, Default::default);
         }
@@ -298,70 +297,40 @@ pub fn bucket_sort_pairs(
     if pairs.is_empty() {
         return 0;
     }
-    // let t0 = precise_time_ns();
+
     build_hist(pairs, min, hist);
-    // let t1 = precise_time_ns();
-    // let time = (t1 - t0) as f64 / :1e9;
-    // println!("hist: {}", time);
-    // let t0 = precise_time_ns();
+
     mem::replace(hist2, hist.to_vec());
-    // let t1 = precise_time_ns();
-    // let time = (t1 - t0) as f64 / 1e9;
-    // println!("hist copy: {}", time);
-    // let t0 = precise_time_ns();
+
     build_cumul(&hist, cumul);
-    // let t1 = precise_time_ns();
-    // let time = (t1 - t0) as f64 / 1e9;
-    // println!("cumul: {}", time);
+
     // let mut access = 0.0;
     // let mut calc = 0.0;
     // let mut assign = 0.0;
-    // let t0 = precise_time_ns();
+
     let len = pairs.len();
     let mut objects = vec![0; len];
     for i in 0..len {
-        // let t0 = precise_time_ns();
         let val = pairs[i];
         let val_s = val[0];
         let val_o = val[1];
-        // let t1 = precise_time_ns();
-        // let time = (t1 - t0) as f64 / 1e9;
-        // access += time;
-        // let t0 = precise_time_ns();
+
         let idx = (val_s - min) as usize;
-        // let t1 = precise_time_ns();
-        // let time = (t1 - t0) as f64 / 1e9;
-        // calc += time;
-        // let t0 = precise_time_ns();
+
         let pos = cumul[idx];
         let remaining = hist[idx];
-        // let t1 = precise_time_ns();
-        // let time = (t1 - t0) as f64 / 1e9;
-        // access += time;
-        // let t0 = precise_time_ns();
+
         let obj_idx = (pos + remaining - 1) as usize;
-        // let t1 = precise_time_ns();
-        // let time = (t1 - t0) as f64 / 1e9;
-        // calc += time;
-        // let t0 = precise_time_ns();
+
         hist[idx] -= 1;
         objects[obj_idx] = val_o;
-        // let t1 = precise_time_ns();
-        // let time = (t1 - t0) as f64 / 1e9;
-        // assign += time;
     }
-    // let t1 = precise_time_ns();
-    // let time = (t1 - t0) as f64 / 1e9;
-    // println!("obj creation: {}({}, {}, {})", time, access, calc, assign);
-    // let t0 = precise_time_ns();
+
     for i in 0..(width - 1) {
         insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
     }
     insertion_sort_slice(&mut objects, cumul[width - 1], len);
-    // let t1 = precise_time_ns();
-    // let time = (t1 - t0) as f64 / 1e9;
-    // println!("obj sorting: {}", time);
-    // let t0 = precise_time_ns();
+
     let mut j = 0;
     let mut l = 0;
     let mut last = 0;
@@ -378,14 +347,9 @@ pub fn bucket_sort_pairs(
             last = o;
         }
     }
-    // let t1 = precise_time_ns();
-    // let time = (t1 - t0) as f64 / 1e9;
-    // println!("output creation: {}", time);
-    // let t0 = precise_time_ns();
+
     pairs.truncate(j);
-    // let t1 = precise_time_ns();
-    // let time = (t1 - t0) as f64 / 1e9;
-    // println!("truncation: {}", time);
+
     j
 }
 
@@ -427,7 +391,7 @@ fn _bucket_sort_pairs_os(
         return 0;
     }
     build_hist(pairs, min, hist);
-    dbg!(&pairs, &hist);
+
     // mem::replace(hist2, hist.to_vec());
     build_cumul(&hist, cumul);
     let len = pairs.len();
@@ -438,12 +402,12 @@ fn _bucket_sort_pairs_os(
         hist[(pairs[i][0] - min) as usize] -= 1;
         objects[(pos + remaining - 1) as usize] = pairs[i][1];
     }
-    dbg!(&objects, &cumul);
+
     for i in 0..(width - 1) {
         insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
     }
     insertion_sort_slice(&mut objects, cumul[width - 1], len);
-    dbg!(&hist2, &objects);
+
     let mut j = 0;
     let mut l = 0;
     for i in 0..width {
