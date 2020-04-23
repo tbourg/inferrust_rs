@@ -1,16 +1,15 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use inferrust::inferray::*;
-use inferrust::rules::{Rule, RuleSet};
+use inferrust::rules::*;
 
 pub fn simpsons_total(c: &mut Criterion) {
     c.bench_function("simpsons_total", |b| {
         b.iter(|| {
             let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(SIMPSONS));
             assert_eq!(graph.size(), 11);
-            let mut rules = <Vec<Box<Rule>> as RuleSet>::new();
-            rules.fire_all(&mut graph);
-            assert_eq!(graph.size(), 23);
+            graph.process(&mut RuleProfile::RDFSPlus());
+            assert_eq!(graph.size(), 36);
         })
     });
 }
