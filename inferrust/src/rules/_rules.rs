@@ -85,19 +85,19 @@ pub struct RuleProfile {
 impl RuleProfile {
     pub fn RDFS() -> Self {
         let rules: Vec<Box<Rule>> = vec![
-            /// Alpha class
+            // Alpha class
             Box::new(CAX_SCO),
             Box::new(SCM_DOM1),
             Box::new(SCM_DOM2),
             Box::new(SCM_RNG1),
             Box::new(SCM_RNG2),
-            /// Gamma class
+            // Gamma class
             Box::new(PRP_DOM),
             Box::new(PRP_RNG),
             Box::new(PRP_SPO1),
         ];
         let before_rules: Vec<Box<Rule>> = vec![
-            /// Zeta class (trivial rules)
+            // Zeta class (trivial rules)
             Box::new(RDFS4),
             Box::new(RDFS6),
             Box::new(RDFS8),
@@ -127,7 +127,7 @@ impl RuleProfile {
     }
     pub fn Test() -> Self {
         let rules: Vec<Box<Rule>> = vec![
-            /// Alpha class
+            // Alpha class
             Box::new(CAX_SCO),
             Box::new(CAX_EQC1),
             Box::new(SCM_DOM1),
@@ -164,15 +164,15 @@ impl RuleProfile {
     }
     pub fn RhoDF() -> Self {
         let before_rules: Vec<Box<Rule>> = vec![
-            /// Zeta class (trivial rules)
+            // Zeta class (trivial rules)
             Box::new(RDFS4),
         ];
         let rules: Vec<Box<Rule>> = vec![
-            /// Alpha class
+            // Alpha class
             Box::new(CAX_SCO),
             Box::new(SCM_DOM2),
             Box::new(SCM_RNG2),
-            /// Gamma class
+            // Gamma class
             Box::new(PRP_DOM),
             Box::new(PRP_RNG),
             Box::new(PRP_SPO1),
@@ -220,36 +220,36 @@ impl RuleProfile {
     }
     pub fn RDFSPlus() -> Self {
         let before_rules: Vec<Box<Rule>> = vec![
-            /// Zeta class (trivial rules)
+            // Zeta class (trivial rules)
             Box::new(RDFS4),
             Box::new(SCM_DP_OP),
             Box::new(SCM_CLS),
         ];
         let rules: Vec<Box<Rule>> = vec![
-            /// Alpha class
+            // Alpha class
             Box::new(CAX_SCO),
             Box::new(CAX_EQC1),
             Box::new(SCM_DOM1),
             Box::new(SCM_DOM2),
             Box::new(SCM_RNG1),
             Box::new(SCM_RNG2),
-            /// Beta class
+            // Beta class
             Box::new(SCM_SCO_EQC2),
             Box::new(SCM_SPO_EQP2),
             Box::new(SCM_EQC1),
             Box::new(SCM_EQP1),
-            /// Delta class
+            // Delta class
             Box::new(PRP_INV_1_2),
             Box::new(PRP_EQP_1_2),
-            /// Gamma class
+            // Gamma class
             Box::new(PRP_DOM),
             Box::new(PRP_RNG),
             Box::new(PRP_SPO1),
             Box::new(PRP_SYMP),
             Box::new(EQ_TRANS),
-            /// Same as class
+            // Same as class
             Box::new(SAME_AS),
-            /// Other rules
+            // Other rules
             Box::new(PRP_FP),
             Box::new(PRP_IFP),
         ];
@@ -269,7 +269,7 @@ impl RuleProfile {
                     rules: Box::new(rules),
                 },
             },
-            after_rules: None, // Some(Box::new(finalize)),
+            after_rules: Some(Box::new(finalize)),
             name: "RDFS+".to_string(),
         }
     }

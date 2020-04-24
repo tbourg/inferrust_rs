@@ -31,10 +31,9 @@ fn main() {
             rep.push_str(&lines.next().unwrap().unwrap());
             rep.push_str("\r\n");
         }
-        let mut ts = sophia::parser::turtle::parse_str(&rep);
+        let ts = sophia::parser::turtle::parse_str(&rep);
         let t0 = precise_time_ns();
-        let mut s_graph = FastGraph::new();
-        ts.in_graph(&mut s_graph).unwrap();
+        let s_graph: FastGraph = ts.collect_triples().unwrap();
         let t1 = precise_time_ns();
         let time_creation = (t1 - t0) as f64 / 1e9;
 

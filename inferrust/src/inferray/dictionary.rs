@@ -176,7 +176,9 @@ impl NodeDictionary {
     where
         T: TermData,
     {
-        let inner_term = RcTerm::from(t);
+        let inner_term = unsafe {
+            (&mut *(&self.factory as *const RcTermFactory as *mut RcTermFactory)).clone_term(t)
+        };
         if self.properties.contains_left(&inner_term) {
             Some(*self.properties.get_by_left(&inner_term).unwrap() as u64)
         } else if self.resources.contains_left(&inner_term) {
