@@ -19,17 +19,9 @@ pub struct Chunk {
 unsafe impl Send for Chunk {}
 
 impl Chunk {
-    pub fn so_sort(
-        &mut self,
-        hist: &mut Vec<usize>,
-        hist2: &mut Vec<usize>,
-        cumul: &mut Vec<usize>,
-        min: u64,
-        max: u64,
-        width: usize,
-    ) -> usize {
+    pub fn so_sort(&mut self) -> usize {
         self.os = None;
-        bucket_sort_pairs(&mut self.so, hist, hist2, cumul, min, max, width)
+        bucket_sort_pairs(&mut self.so)
     }
 
     unsafe fn os_sort(&self) {
@@ -52,23 +44,7 @@ impl Chunk {
 
         if !self.so.is_empty() {
             let mut content = content.as_mut().unwrap();
-            let (min, max) = content
-                .iter()
-                .map(|pair| pair[0])
-                .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
-            let width = (max - min + 1) as usize;
-            let mut hist: Vec<usize> = vec![0; width];
-            let mut hist2: Vec<usize> = Vec::with_capacity(width);
-            let mut cumul: Vec<usize> = vec![0; width];
-            bucket_sort_pairs(
-                &mut content,
-                &mut hist,
-                &mut hist2,
-                &mut cumul,
-                min,
-                max,
-                width,
-            );
+            bucket_sort_pairs(&mut content);
         }
     }
     pub fn so(&self) -> &Vec<[u64; 2]> {
@@ -113,17 +89,14 @@ impl TripleStore {
         let elem = Vec::new();
         Self { elem, size: 0 }
     }
-
     pub fn add_triple(&mut self, triple: [u64; 3]) {
         let [is, ip, io] = triple;
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
-
         if ip_to_store >= self.elem.len() {
             self.elem.resize_with(ip_to_store + 1, Default::default);
         }
         self.add_triple_raw(is, ip_to_store, io);
     }
-
     pub fn add_all(&mut self, other: Self) {
         if other.elem.len() > self.elem.len() {
             self.elem.resize_with(other.elem.len(), Default::default);
@@ -134,7 +107,6 @@ impl TripleStore {
             }
         }
     }
-
     /// # Pre-condition
     /// `self.elem` must have an element at index `ip`
     #[inline]
@@ -142,25 +114,11 @@ impl TripleStore {
         self.elem[ip].add_so([is, io]);
         self.size += 1;
     }
-
     pub fn sort(&mut self) {
         if self.elem.is_empty() {
             return;
         }
-        let (min, max, width) = self.width();
-        self.size = self
-            .elem
-            .par_iter_mut()
-            .map_init(
-                || {
-                    let hist: Vec<usize> = vec![0; width];
-                    let hist2: Vec<usize> = Vec::with_capacity(width);
-                    let cumul: Vec<usize> = vec![0; width];
-                    (hist, hist2, cumul)
-                },
-                |(hist, hist2, cumul), chunk| chunk.so_sort(hist, hist2, cumul, min, max, width),
-            )
-            .sum();
+        self.size = self.elem.par_iter_mut().map(|chunk| chunk.so_sort()).sum();
     }
 
     pub fn res_to_prop(&mut self, res: u64, prop: u32) {
@@ -172,17 +130,6 @@ impl TripleStore {
 
     pub fn size(&mut self) -> usize {
         self.size
-    }
-
-    pub fn width(&mut self) -> (u64, u64, usize) {
-        let (min, max) = self
-            .elem
-            .iter()
-            .map(|chunk| chunk.so())
-            .flat_map(|pairs| pairs.iter())
-            .map(|pair| pair[0])
-            .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
-        (min, max, (max - min + 1) as usize)
     }
 
     pub fn join(a: &Self, b: &Self) -> Self {
@@ -285,29 +232,22 @@ impl TripleStore {
 }
 
 /// Sort the pairs and remove duplicates
-pub fn bucket_sort_pairs(
-    pairs: &mut Vec<[u64; 2]>,
-    hist: &mut Vec<usize>,
-    hist2: &mut Vec<usize>,
-    cumul: &mut Vec<usize>,
-    min: u64,
-    _max: u64,
-    width: usize,
-) -> usize {
+pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     if pairs.is_empty() {
         return 0;
     }
+    let (min, max) = pairs
+        .iter()
+        .map(|pair| pair[0])
+        .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
+    let width = (max - min + 1) as usize;
+    let mut hist: Vec<usize> = vec![0; width];
+    let mut hist2: Vec<usize> = Vec::with_capacity(width);
+    let mut cumul: Vec<usize> = vec![0; width];
 
-    build_hist(pairs, min, hist);
-
-    mem::replace(hist2, hist.to_vec());
-
-    build_cumul(&hist, cumul);
-
-    // let mut access = 0.0;
-    // let mut calc = 0.0;
-    // let mut assign = 0.0;
-
+    build_hist(pairs, min, &mut hist);
+    mem::replace(&mut hist2, hist.to_vec());
+    build_cumul(&hist, &mut cumul);
     let len = pairs.len();
     let mut objects = vec![0; len];
     for i in 0..len {
@@ -365,12 +305,14 @@ fn insertion_sort_slice(v: &mut [u64], from: usize, to: usize) {
     }
 }
 
+#[inline]
 fn build_hist(pairs: &[[u64; 2]], min: u64, hist: &mut [usize]) {
     for pair in pairs {
         hist[(pair[0] - min) as usize] += 1;
     }
 }
 
+#[inline]
 fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
     for i in 1..hist.len() {
         cumul[i] = cumul[i - 1] + hist[i - 1];
@@ -426,23 +368,20 @@ fn _bucket_sort_pairs_os(
 
 #[test]
 fn test_sort() {
-    let mut hist = vec![0; 1000];
-    let mut hist2 = vec![0; 1000];
-    let mut cumul = vec![0; 1000];
     let mut pairs = vec![[2, 1], [1, 3]];
-    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    bucket_sort_pairs(&mut pairs);
     let expected = [[1, 3], [2, 1]];
     assert_eq!(pairs, expected);
     let mut pairs = vec![[2, 1], [1, 3], [2, 1]];
-    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    bucket_sort_pairs(&mut pairs);
     let expected = [[1, 3], [2, 1]];
     assert_eq!(pairs, expected);
     let mut pairs = vec![[2, 1], [1, 3], [1, 3]];
-    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    bucket_sort_pairs(&mut pairs);
     let expected = [[1, 3], [2, 1]];
     assert_eq!(pairs, expected);
     let mut pairs = vec![[2, 3], [2, 1]];
-    bucket_sort_pairs(&mut pairs, &mut hist, &mut hist2, &mut cumul, 1, 3, 2);
+    bucket_sort_pairs(&mut pairs);
     let expected = [[2, 1], [2, 3]];
     assert_eq!(pairs, expected);
 }
