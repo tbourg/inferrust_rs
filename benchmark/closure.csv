@@ -1,16 +1,23 @@
 program,size,time
 inferrust,10,0.0000805
 inferray,10,0.097
+rdfox,10,0.105
 inferrust,20,0.0001782
 inferray,20,0.005
+rdfox,20,0.112
 inferrust,50,0.0004361
 inferray,50,0.021
+rdfox,50,0.107
 inferrust,100,0.0010852
 inferray,100,0.025
+rdfox,100,0.114
 inferrust,200,0.0035043
 inferray,200,0.062
+rdfox,200,0.163
 inferrust,500,0.0226161
 inferray,500,0.027
+rdfox,500,0.967
 inferrust,1000,0.1165428
 inferray,1000,0.14
+rdfox,1000,14.8
 
