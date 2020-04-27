@@ -4,52 +4,52 @@ file: Ok(
     ),
 )
 graph size: 4987
-profile: RDFS, graph size: 8112, time: 0.0060772
+profile: RDFS, graph size: 8134, time: 0.0043264
 graph size: 4987
-profile: RhoDF, graph size: 4991, time: 0.001435
+profile: RhoDF, graph size: 5011, time: 0.0007723
 graph size: 4987
-profile: RDFS+, graph size: 4991, time: 0.0017958
+profile: RDFS+, graph size: 7393, time: 0.0007399
 file: Ok(
     DirEntry(
         "inferrust/res/bsbm\\sample100.nt",
     ),
 )
 graph size: 40177
-profile: RDFS, graph size: 56808, time: 0.0299514
+profile: RDFS, graph size: 57010, time: 0.0448118
 graph size: 40177
-profile: RhoDF, graph size: 40193, time: 0.0103297
+profile: RhoDF, graph size: 40393, time: 0.007019
 graph size: 40177
-profile: RDFS+, graph size: 40193, time: 0.0107411
+profile: RDFS+, graph size: 54611, time: 0.0088094
 file: Ok(
     DirEntry(
         "inferrust/res/bsbm\\sample20.nt",
     ),
 )
 graph size: 8458
-profile: RDFS, graph size: 12762, time: 0.0065417
+profile: RDFS, graph size: 12804, time: 0.0056752
 graph size: 8458
-profile: RhoDF, graph size: 8462, time: 0.0023655
+profile: RhoDF, graph size: 8502, time: 0.0010331
 graph size: 8458
-profile: RDFS+, graph size: 8462, time: 0.0019887
+profile: RDFS+, graph size: 12042, time: 0.0011214
 file: Ok(
     DirEntry(
         "inferrust/res/bsbm\\sample50.nt",
     ),
 )
 graph size: 22629
-profile: RDFS, graph size: 33888, time: 0.0154964
+profile: RDFS, graph size: 33990, time: 0.0249816
 graph size: 22629
-profile: RhoDF, graph size: 22645, time: 0.0041722
+profile: RhoDF, graph size: 22745, time: 0.0030502
 graph size: 22629
-profile: RDFS+, graph size: 22645, time: 0.0039381
+profile: RDFS+, graph size: 31695, time: 0.0036634
 file: Ok(
     DirEntry(
         "inferrust/res/bsbm\\sample500.nt",
     ),
 )
 graph size: 190496
-profile: RDFS, graph size: 258296, time: 0.1702783
+profile: RDFS, graph size: 259298, time: 0.615155
 graph size: 190496
-profile: RhoDF, graph size: 190544, time: 0.0657215
+profile: RhoDF, graph size: 191544, time: 0.101021
 graph size: 190496
-profile: RDFS+, graph size: 190544, time: 0.0577776
+profile: RDFS+, graph size: 252226, time: 0.1178944
