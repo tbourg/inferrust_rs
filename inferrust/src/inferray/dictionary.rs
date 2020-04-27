@@ -1,7 +1,6 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
-use sophia::term::factory::{RcTermFactory, TermFactory};
 use sophia::term::{RcTerm, Term, TermData};
 
 use std::convert::TryInto;
@@ -17,7 +16,6 @@ pub struct NodeDictionary {
     resources: BiHashMap<RcTerm, u64>,
     properties: BiHashMap<RcTerm, u32>,
     pub ts: TripleStore,
-    factory: RcTermFactory,
 }
 
 impl NodeDictionary {
@@ -103,14 +101,13 @@ impl NodeDictionary {
             resources: BiHashMap::<RcTerm, u64>::new(),
             properties: BiHashMap::<RcTerm, u32>::new(),
             ts,
-            factory: RcTermFactory::new(),
         };
         me.init_const();
         me
     }
 
     pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
-        let t = self.factory.clone_term(term);
+        let t: RcTerm = term.clone_into();
         if self.properties.contains_left(&t) {
             return *self.properties.get_by_left(&t).expect("Err") as u64;
         }
@@ -124,7 +121,7 @@ impl NodeDictionary {
     }
 
     pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> u32 {
-        let t = self.factory.clone_term(term);
+        let t: RcTerm = term.clone_into();
         if self.resources.contains_left(&t) {
             self.remap_res_to_prop(t)
         } else if self.properties.contains_left(&t) {
@@ -137,14 +134,14 @@ impl NodeDictionary {
     }
 
     pub fn add_with<TD: TermData>(&mut self, term: &Term<TD>, id: u64) {
-        let t = self.factory.clone_term(term);
+        let t: RcTerm = term.clone_into();
         if !self.properties.contains_left(&t) && !self.resources.contains_left(&t) {
             self.resources.insert(t, id);
         }
     }
 
     pub fn add_property_with<TD: TermData>(&mut self, term: &Term<TD>, id: u32) {
-        let t = self.factory.clone_term(term);
+        let t: RcTerm = term.clone_into();
         if !self.properties.contains_left(&t) && !self.resources.contains_left(&t) {
             self.properties.insert(t, id);
         }
@@ -176,9 +173,7 @@ impl NodeDictionary {
     where
         T: TermData,
     {
-        let inner_term = unsafe {
-            (&mut *(&self.factory as *const RcTermFactory as *mut RcTermFactory)).clone_term(t)
-        };
+        let inner_term: RcTerm = t.clone_into();
         if self.properties.contains_left(&inner_term) {
             Some(*self.properties.get_by_left(&inner_term).unwrap() as u64)
         } else if self.resources.contains_left(&inner_term) {
