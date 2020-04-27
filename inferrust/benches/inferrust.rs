@@ -9,7 +9,7 @@ pub fn simpsons_total(c: &mut Criterion) {
             let mut graph = InfGraph::from(sophia::parser::turtle::parse_str(SIMPSONS));
             assert_eq!(graph.size(), 11);
             graph.process(&mut RuleProfile::RDFSPlus());
-            assert_eq!(graph.size(), 36);
+            assert_eq!(graph.size(), 58);
         })
     });
 }

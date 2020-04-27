@@ -708,33 +708,19 @@ where
     TS: TripleSource,
 {
     fn from(mut ts: TS) -> Self {
-        let t0 = time::precise_time_ns();
         let store = TripleStore::new();
         let dictionary = NodeDictionary::new(store);
         let mut me = Self { dictionary };
-        let mut enc_time = 0.0;
-        let mut add_time = 0.0;
+
         ts.for_each_triple(|t| {
-            let t0 = time::precise_time_ns();
             let rep = me.encode_triple(&t);
-            let t1 = time::precise_time_ns();
-            let time = (t1 - t0) as f64 / 1e9;
-            enc_time += time;
-            let t0 = time::precise_time_ns();
+
             me.dictionary.ts.add_triple(rep);
-            let t1 = time::precise_time_ns();
-            let time = (t1 - t0) as f64 / 1e9;
-            add_time += time;
         })
         .expect("Streaming error");
-        let t1 = time::precise_time_ns();
-        let time = (t1 - t0) as f64 / 1e9;
-        println!("filling: {}({},{})", time, enc_time, add_time);
-        let t0 = time::precise_time_ns();
+
         me.dictionary.ts.sort();
-        let t1 = time::precise_time_ns();
-        let time = (t1 - t0) as f64 / 1e9;
-        println!("first sort: {}", time);
+
         me
     }
 }
