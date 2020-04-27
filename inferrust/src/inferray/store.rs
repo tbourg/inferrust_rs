@@ -28,23 +28,11 @@ impl Chunk {
         // TODO
         let content = &self.os as *const Option<Vec<[u64; 2]>> as *mut Option<Vec<[u64; 2]>>;
         let content = content.as_mut().unwrap();
-        std::mem::replace(
-            content,
-            Some(
-                self.so
-                    .clone()
-                    .iter_mut()
-                    .map(|pair| {
-                        pair.reverse();
-                        *pair
-                    })
-                    .collect(),
-            ),
-        );
+        std::mem::replace(content, Some(self.so.clone()));
 
         if !self.so.is_empty() {
             let mut content = content.as_mut().unwrap();
-            bucket_sort_pairs(&mut content);
+            bucket_sort_pairs_os(&mut content);
         }
     }
     pub fn so(&self) -> &Vec<[u64; 2]> {
@@ -321,28 +309,35 @@ fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
 
 /// Reverse the pairs and sort them
 fn _bucket_sort_pairs_os(
-    pairs: &mut [[u64; 2]],
-    hist: &mut [usize],
-    hist2: &mut [usize],
-    cumul: &mut [usize],
-    min: u64,
-    _max: u64,
-    width: usize,
-) -> usize {
-    if pairs.is_empty() {
-        return 0;
-    }
-    build_hist(pairs, min, hist);
+fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
+    let (min, max) = pairs
+        .iter()
+        .map(|pair| pair[0])
+        .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
+    let width = (max - min + 1) as usize;
+    let mut hist: Vec<usize> = vec![0; width];
+    let mut hist2: Vec<usize> = Vec::with_capacity(width);
+    let mut cumul: Vec<usize> = vec![0; width];
+    build_hist(pairs, min, &mut hist);
 
-    // mem::replace(hist2, hist.to_vec());
-    build_cumul(&hist, cumul);
+    mem::replace(&mut hist2, hist.to_vec());
+    build_cumul(&hist, &mut cumul);
     let len = pairs.len();
     let mut objects = vec![0; len];
     for i in 0..len {
-        let pos = cumul[(pairs[i][0] - min) as usize];
-        let remaining = hist[(pairs[i][0] - min) as usize];
-        hist[(pairs[i][0] - min) as usize] -= 1;
-        objects[(pos + remaining - 1) as usize] = pairs[i][1];
+        let val = pairs[i];
+        let val_s = val[0];
+        let val_o = val[1];
+
+        let idx = (val_s - min) as usize;
+
+        let pos = cumul[idx];
+        let remaining = hist[idx];
+
+        let obj_idx = (pos + remaining - 1) as usize;
+
+        hist[idx] -= 1;
+        objects[obj_idx] = val_o;
     }
 
     for i in 0..(width - 1) {
@@ -362,8 +357,6 @@ fn _bucket_sort_pairs_os(
             j += 1;
         }
     }
-    // pairs.truncate(j);
-    j
 }
 
 #[test]
