@@ -20,12 +20,20 @@ pub struct Chunk {
 }
 
 impl Chunk {
+    // # Pre-condition
+    // so must be sorted.
     fn new(so: Vec<[u64; 2]>) -> Chunk {
+        #[cfg(debug_assertions)]
+        {
+            for i in 1..so.len() {
+                assert!(so[i] >= so[i-1]);
+            }
+        }
         Chunk {
             so,
             os: OnceCell::new(),
             #[cfg(debug_assertions)]
-            so_dirty: true,
+            so_dirty: false,
         }
     }
 
