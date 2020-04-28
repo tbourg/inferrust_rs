@@ -10,7 +10,12 @@ pub type Rule = fn(&TripleStore) -> TripleStore;
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
+    /// Process this ruleset in a single thread
     fn process(&mut self, graph: &mut InfGraph);
+    /// Process this ruleset, possibly using multiple threads
+    fn process_par(&mut self, graph: &mut InfGraph) {
+        self.process(graph);
+    }
     fn is_empty(&self) -> bool;
 }
 
@@ -19,10 +24,26 @@ impl RuleSet for Vec<Box<Rule>> {
         if self.is_empty() {
             return;
         }
+        let mut outputs = TripleStore::new();
+        let ts = &mut graph.dictionary.ts;
+        self.iter()
+            .for_each(|rule| outputs.add_all(rule(ts)));
+        outputs.sort();
+        graph.dictionary.ts =
+            TripleStore::join(&graph.dictionary.ts, &outputs);
+    }
+
+    fn process_par(&mut self, graph: &mut InfGraph) {
+        if self.is_empty() {
+            return;
+        }
         let mut outputs = Mutex::new(TripleStore::new());
         let ts = &mut graph.dictionary.ts;
         self.par_iter_mut()
-            .for_each(|rule| outputs.lock().unwrap().add_all(rule(ts)));
+            .for_each(|rule| {
+                let inferred = rule(ts);
+                outputs.lock().unwrap().add_all(inferred);
+            });
         outputs.get_mut().unwrap().sort();
         graph.dictionary.ts =
             TripleStore::join(&graph.dictionary.ts, &outputs.into_inner().unwrap());
@@ -37,11 +58,13 @@ pub struct StaticRuleSet {
     rules: Box<dyn RuleSet>,
 }
 
-impl StaticRuleSet {
-    pub fn process(&mut self, graph: &mut InfGraph) {
-        self.rules.process(graph);
+impl RuleSet for StaticRuleSet {
+    fn process(&mut self, graph: &mut InfGraph) {
+        self.rules.process(graph)
     }
-
+    fn process_par(&mut self, graph: &mut InfGraph) {
+        self.rules.process_par(graph)
+    }
     fn is_empty(&self) -> bool {
         self.rules.is_empty()
     }
@@ -52,7 +75,7 @@ pub struct FixPointRuleSet {
 }
 
 impl FixPointRuleSet {
-    pub fn process(&mut self, graph: &mut InfGraph) {
+    fn fixpoint<F: FnMut(&mut StaticRuleSet, &mut InfGraph)>(&mut self, graph: &mut InfGraph, mut process: F) {
         if self.rules.is_empty() {
             return;
         }
@@ -60,9 +83,21 @@ impl FixPointRuleSet {
         let mut prev_size = size + 1;
         while prev_size != size {
             prev_size = size;
-            self.rules.process(graph);
+            process(&mut self.rules, graph);
             size = graph.size();
         }
+    }
+}
+
+impl RuleSet for FixPointRuleSet {
+    fn process(&mut self, graph: &mut InfGraph) {
+        self.fixpoint(graph, <StaticRuleSet as RuleSet>::process)
+    }
+    fn process_par(&mut self, graph: &mut InfGraph) {
+        self.fixpoint(graph, <StaticRuleSet as RuleSet>::process_par)
+    }
+    fn is_empty(&self) -> bool {
+        self.rules.is_empty()
     }
 }
 

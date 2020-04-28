@@ -345,6 +345,21 @@ impl InfGraph {
         }
     }
 
+    pub fn process_par(&mut self, profile: &mut RuleProfile) {
+        self.close(&mut profile.cl_profile);
+        profile.before_rules.process_par(self);
+        if profile.axiomatic_triples {
+            self.init_axiomatic_triples();
+        }
+        profile.rules.process_par(self);
+        match &profile.after_rules {
+            Some(rule) => {
+                rule(self);
+            }
+            None => (),
+        }
+    }
+
     pub fn close(&mut self, profile: &mut ClosureProfile) {
         if profile.on_sco {
             self.close_on(NodeDictionary::rdfssubClassOf);
