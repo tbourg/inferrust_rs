@@ -308,7 +308,6 @@ fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
 }
 
 /// Reverse the pairs and sort them
-fn _bucket_sort_pairs_os(
 fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
     let (min, max) = pairs
         .iter()
