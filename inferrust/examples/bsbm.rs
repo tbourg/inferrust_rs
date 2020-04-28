@@ -6,6 +6,7 @@ use time::precise_time_ns;
 use std::fs;
 
 fn main() {
+    let par = std::env::args().skip(1).next() == Some("par".to_string());
     let mut profiles = [
         RuleProfile::RDFS(),
         RuleProfile::RhoDF(),
@@ -22,7 +23,11 @@ fn main() {
                 let mut i_graph = InfGraph::from(ts);
                 println!("graph size: {}", i_graph.size());
                 let t1 = precise_time_ns();
-                i_graph.process(profile);
+                if par {
+                    i_graph.process_par(profile);
+                } else {
+                    i_graph.process(profile);
+                }
                 let t2 = precise_time_ns();
                 let load_time = (t1 - t0) as f64 / 1e9;
                 let process_time = (t2 - t1) as f64 / 1e9;
