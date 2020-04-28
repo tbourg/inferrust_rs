@@ -715,6 +715,7 @@ impl InfGraph {
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfssubClassOf as u64,
         ]);
+        self.dictionary.ts.sort();
     }
 }
 

@@ -26,11 +26,9 @@ impl RuleSet for Vec<Box<Rule>> {
         }
         let mut outputs = TripleStore::new();
         let ts = &mut graph.dictionary.ts;
-        self.iter()
-            .for_each(|rule| outputs.add_all(rule(ts)));
+        self.iter().for_each(|rule| outputs.add_all(rule(ts)));
         outputs.sort();
-        graph.dictionary.ts =
-            TripleStore::join(&graph.dictionary.ts, &outputs);
+        graph.dictionary.ts = TripleStore::join(&graph.dictionary.ts, &outputs);
     }
 
     fn process_par(&mut self, graph: &mut InfGraph) {
@@ -39,11 +37,10 @@ impl RuleSet for Vec<Box<Rule>> {
         }
         let mut outputs = Mutex::new(TripleStore::new());
         let ts = &mut graph.dictionary.ts;
-        self.par_iter_mut()
-            .for_each(|rule| {
-                let inferred = rule(ts);
-                outputs.lock().unwrap().add_all(inferred);
-            });
+        self.par_iter_mut().for_each(|rule| {
+            let inferred = rule(ts);
+            outputs.lock().unwrap().add_all(inferred);
+        });
         outputs.get_mut().unwrap().sort();
         graph.dictionary.ts =
             TripleStore::join(&graph.dictionary.ts, &outputs.into_inner().unwrap());
@@ -75,7 +72,11 @@ pub struct FixPointRuleSet {
 }
 
 impl FixPointRuleSet {
-    fn fixpoint<F: FnMut(&mut StaticRuleSet, &mut InfGraph)>(&mut self, graph: &mut InfGraph, mut process: F) {
+    fn fixpoint<F: FnMut(&mut StaticRuleSet, &mut InfGraph)>(
+        &mut self,
+        graph: &mut InfGraph,
+        mut process: F,
+    ) {
         if self.rules.is_empty() {
             return;
         }

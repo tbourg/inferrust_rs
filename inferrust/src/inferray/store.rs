@@ -1,7 +1,7 @@
+use once_cell::sync::OnceCell;
 use rayon::prelude::*;
 use std::cmp::Ordering;
 use std::mem;
-use once_cell::sync::OnceCell;
 
 use super::NodeDictionary;
 
@@ -26,7 +26,7 @@ impl Chunk {
         #[cfg(debug_assertions)]
         {
             for i in 1..so.len() {
-                assert!(so[i] >= so[i-1]);
+                assert!(so[i] >= so[i - 1]);
             }
         }
         Chunk {
@@ -49,6 +49,10 @@ impl Chunk {
     pub fn so(&self) -> &Vec<[u64; 2]> {
         #[cfg(debug_assertions)]
         debug_assert!(!self.so_dirty);
+        &self.so
+    }
+
+    fn so_unsorted(&self) -> &Vec<[u64; 2]> {
         &self.so
     }
 
@@ -99,7 +103,7 @@ impl TripleStore {
             self.elem.resize_with(other.elem.len(), Default::default);
         }
         for ip in 0..other.elem.len() {
-            for [is, io] in other.elem[ip].so() {
+            for [is, io] in other.elem[ip].so_unsorted() {
                 self.add_triple_raw(*is, ip, *io);
             }
         }
@@ -449,58 +453,6 @@ fn test_join() {
     let expected = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
         size: 2,
-    };
-    assert_eq!(TripleStore::join(&a, &b), expected);
-    let a = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let b = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let expected = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    assert_eq!(TripleStore::join(&a, &b), expected);
-    let a = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let b = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let expected = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    assert_eq!(TripleStore::join(&a, &b), expected);
-    let a = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let b = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let expected = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    assert_eq!(TripleStore::join(&a, &b), expected);
-    let a = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let b = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
-    };
-    let expected = TripleStore {
-        elem: vec![Chunk::default()],
-        size: 0,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
 }
