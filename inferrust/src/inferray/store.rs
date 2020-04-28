@@ -1,6 +1,7 @@
 use rayon::prelude::*;
 use std::cmp::Ordering;
 use std::mem;
+use once_cell::sync::OnceCell;
 
 use super::NodeDictionary;
 
@@ -10,42 +11,47 @@ pub struct TripleStore {
     size: usize,
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(Default, PartialEq, Debug, Clone)]
 pub struct Chunk {
     so: Vec<[u64; 2]>,
-    os: Option<Vec<[u64; 2]>>,
+    os: OnceCell<Vec<[u64; 2]>>,
+    #[cfg(debug_assertions)]
+    so_dirty: bool,
 }
 
-unsafe impl Send for Chunk {}
-
 impl Chunk {
-    pub fn so_sort(&mut self) -> usize {
-        self.os = None;
+    fn new(so: Vec<[u64; 2]>) -> Chunk {
+        Chunk {
+            so,
+            os: OnceCell::new(),
+            #[cfg(debug_assertions)]
+            so_dirty: true,
+        }
+    }
+
+    fn so_sort(&mut self) -> usize {
+        #[cfg(debug_assertions)]
+        {
+            self.so_dirty = false;
+        }
+        self.os = OnceCell::new();
         bucket_sort_pairs(&mut self.so)
     }
 
-    unsafe fn os_sort(&self) {
-        // TODO
-        let content = &self.os as *const Option<Vec<[u64; 2]>> as *mut Option<Vec<[u64; 2]>>;
-        let content = content.as_mut().unwrap();
-        std::mem::replace(content, Some(self.so.clone()));
-
-        if !self.so.is_empty() {
-            let mut content = content.as_mut().unwrap();
-            bucket_sort_pairs_os(&mut content);
-        }
-    }
     pub fn so(&self) -> &Vec<[u64; 2]> {
+        #[cfg(debug_assertions)]
+        debug_assert!(!self.so_dirty);
         &self.so
     }
+
     pub fn os(&self) -> &Vec<[u64; 2]> {
-        if self.os.is_none() {
-            unsafe {
-                self.os_sort();
-            }
-            assert!(!self.os.is_none());
-        }
-        self.os.as_ref().unwrap()
+        #[cfg(debug_assertions)]
+        debug_assert!(!self.so_dirty);
+        self.os.get_or_init(|| {
+            let mut v = self.so.clone();
+            bucket_sort_pairs_os(&mut v);
+            v
+        })
     }
 
     fn res_to_prop(&mut self, res: u64, prop: u64) {
@@ -58,17 +64,12 @@ impl Chunk {
         }
     }
 
-    pub fn add_so(&mut self, so: [u64; 2]) {
-        self.so.push(so);
-    }
-}
-
-impl Default for Chunk {
-    fn default() -> Self {
-        Self {
-            so: Vec::new(),
-            os: None,
+    fn add_so(&mut self, so: [u64; 2]) {
+        #[cfg(debug_assertions)]
+        {
+            self.so_dirty = true;
         }
+        self.so.push(so);
     }
 }
 
@@ -209,10 +210,7 @@ impl TripleStore {
                     (true, true) => (),
                 }
                 size += new_so.len();
-                chunks.push(Chunk {
-                    so: new_so,
-                    os: None,
-                });
+                chunks.push(Chunk::new(new_so));
             }
         }
         Self { elem: chunks, size }
@@ -381,200 +379,119 @@ fn test_sort() {
 #[test]
 fn test_join() {
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1], [1, 2]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
         size: 2,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![[1, 1], [1, 2]],
-            os: None,
-        }],
+        elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
         size: 2,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let b = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     let expected = TripleStore {
-        elem: vec![Chunk {
-            so: vec![],
-            os: None,
-        }],
+        elem: vec![Chunk::default()],
         size: 0,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
