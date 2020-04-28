@@ -1,0 +1,16 @@
+﻿profile,file,inferray,inferrust
+RDFS,bsbm10,206,3.4
+RhoDF,bsbm10,15,0.3
+RDFS+,bsbm10,66,0.5
+RhoDF,bsbm20,5,0.4
+RDFS,bsbm20,14,3
+RDFS+,bsbm20,12,0.7
+RDFS,bsbm50,14,9
+RhoDF,bsbm50,5,0.8
+RDFS+,bsbm50,12,2.3
+RDFS,bsbm100,320,12
+RhoDF,bsbm100,13,2
+RDFS+,bsbm100,9,3
+RDFS,bsbm500,54,59
+RhoDF,bsbm500,11,12
+RDFS+,bsbm500,16,19

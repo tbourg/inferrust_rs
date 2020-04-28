@@ -10,7 +10,7 @@ pub struct TripleStore {
     size: usize,
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, Default)]
 pub struct Chunk {
     so: Vec<[u64; 2]>,
     os: Option<Vec<[u64; 2]>>,
@@ -60,15 +60,6 @@ impl Chunk {
 
     pub fn add_so(&mut self, so: [u64; 2]) {
         self.so.push(so);
-    }
-}
-
-impl Default for Chunk {
-    fn default() -> Self {
-        Self {
-            so: Vec::new(),
-            os: None,
-        }
     }
 }
 
@@ -308,7 +299,6 @@ fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
 }
 
 /// Reverse the pairs and sort them
-fn _bucket_sort_pairs_os(
 fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
     let (min, max) = pairs
         .iter()
