@@ -410,11 +410,11 @@ pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
 }
 
 pub fn finalize(graph: &mut InfGraph) {
-    let type_ = NodeDictionary::rdftype as u64;
+    let type_index = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
     let res = NodeDictionary::rdfsResource;
     ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dictionary.get_res_ctr()).for_each(|e| {
         if !graph.dictionary.was_removed(&e) {
-            graph.dictionary.ts.add_triple([e, type_, res]);
+            graph.dictionary.ts.add_triple_raw(e, type_index, res);
         }
     });
     graph.dictionary.ts.sort();

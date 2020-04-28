@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
-use sophia::term::{RcTerm, Term, TermData};
+use sophia::term::{BoxTerm, Term, TermData};
 
 use std::convert::TryInto;
 
@@ -13,8 +13,8 @@ pub struct NodeDictionary {
     res_ctr: u64,
     prop_ctr: u32,
     removed_val: Vec<u64>,
-    resources: BiHashMap<RcTerm, u64>,
-    properties: BiHashMap<RcTerm, u32>,
+    resources: BiHashMap<BoxTerm, u64>,
+    properties: BiHashMap<BoxTerm, u32>,
     pub ts: TripleStore,
 }
 
@@ -98,8 +98,8 @@ impl NodeDictionary {
             res_ctr: Self::res_start,
             prop_ctr: Self::prop_start,
             removed_val: vec![],
-            resources: BiHashMap::<RcTerm, u64>::new(),
-            properties: BiHashMap::<RcTerm, u32>::new(),
+            resources: BiHashMap::<BoxTerm, u64>::new(),
+            properties: BiHashMap::<BoxTerm, u32>::new(),
             ts,
         };
         me.init_const();
@@ -107,7 +107,7 @@ impl NodeDictionary {
     }
 
     pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
-        let t: RcTerm = term.clone_into();
+        let t: BoxTerm = term.clone_into();
         if self.properties.contains_left(&t) {
             return *self.properties.get_by_left(&t).expect("Err") as u64;
         }
@@ -121,7 +121,7 @@ impl NodeDictionary {
     }
 
     pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> u32 {
-        let t: RcTerm = term.clone_into();
+        let t: BoxTerm = term.clone_into();
         if self.resources.contains_left(&t) {
             self.remap_res_to_prop(t)
         } else if self.properties.contains_left(&t) {
@@ -134,20 +134,20 @@ impl NodeDictionary {
     }
 
     pub fn add_with<TD: TermData>(&mut self, term: &Term<TD>, id: u64) {
-        let t: RcTerm = term.clone_into();
+        let t: BoxTerm = term.clone_into();
         if !self.properties.contains_left(&t) && !self.resources.contains_left(&t) {
             self.resources.insert(t, id);
         }
     }
 
     pub fn add_property_with<TD: TermData>(&mut self, term: &Term<TD>, id: u32) {
-        let t: RcTerm = term.clone_into();
+        let t: BoxTerm = term.clone_into();
         if !self.properties.contains_left(&t) && !self.resources.contains_left(&t) {
             self.properties.insert(t, id);
         }
     }
 
-    fn remap_res_to_prop(&mut self, t: RcTerm) -> u32 {
+    fn remap_res_to_prop(&mut self, t: BoxTerm) -> u32 {
         let old = self.resources.remove_by_left(&t).expect("Err").1;
         self.prop_ctr -= 1;
         let p = self.prop_ctr;
@@ -157,7 +157,7 @@ impl NodeDictionary {
         p
     }
 
-    pub fn get_term(&self, index: u64) -> &RcTerm {
+    pub fn get_term(&self, index: u64) -> &BoxTerm {
         if index < Self::START_INDEX as u64 {
             self.properties
                 .get_by_right(&(index as u32))
@@ -173,7 +173,7 @@ impl NodeDictionary {
     where
         T: TermData,
     {
-        let inner_term: RcTerm = t.clone_into();
+        let inner_term: BoxTerm = t.clone_into();
         if self.properties.contains_left(&inner_term) {
             Some(*self.properties.get_by_left(&inner_term).unwrap() as u64)
         } else if self.resources.contains_left(&inner_term) {

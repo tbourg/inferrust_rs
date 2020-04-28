@@ -17,10 +17,10 @@ pub struct InfGraph {
 }
 
 impl Graph for InfGraph {
-    type Triple = ByTermRefs<std::rc::Rc<str>>;
+    type Triple = ByTermRefs<Box<str>>;
     type Error = Infallible;
 
-    fn triples(&self) -> GTripleSource<Self> {
+        fn triples(&self) -> GTripleSource<Self> {
         Box::from(
             self.dictionary
                 .ts
@@ -44,7 +44,7 @@ impl Graph for InfGraph {
         )
     }
 
-    fn triples_with_s<'s, T>(&'s self, s: &'s Term<T>) -> GTripleSource<'s, Self>
+        fn triples_with_s<'s, T>(&'s self, s: &'s Term<T>) -> GTripleSource<'s, Self>
     where
         T: TermData,
     {
@@ -81,7 +81,7 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_p<'s, T>(&'s self, p: &'s Term<T>) -> GTripleSource<'s, Self>
+        fn triples_with_p<'s, T>(&'s self, p: &'s Term<T>) -> GTripleSource<'s, Self>
     where
         T: TermData,
     {
@@ -105,7 +105,7 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_o<'s, T>(&'s self, o: &'s Term<T>) -> GTripleSource<'s, Self>
+        fn triples_with_o<'s, T>(&'s self, o: &'s Term<T>) -> GTripleSource<'s, Self>
     where
         T: TermData,
     {
@@ -142,7 +142,7 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_sp<'s, T, U>(
+        fn triples_with_sp<'s, T, U>(
         &'s self,
         s: &'s Term<T>,
         p: &'s Term<U>,
@@ -179,7 +179,7 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_so<'s, T, U>(
+        fn triples_with_so<'s, T, U>(
         &'s self,
         s: &'s Term<T>,
         o: &'s Term<U>,
@@ -219,7 +219,7 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_po<'s, T, U>(
+        fn triples_with_po<'s, T, U>(
         &'s self,
         p: &'s Term<T>,
         o: &'s Term<U>,
@@ -256,7 +256,7 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_spo<'s, T, U, V>(
+        fn triples_with_spo<'s, T, U, V>(
         &'s self,
         s: &'s Term<T>,
         p: &'s Term<U>,
@@ -293,7 +293,7 @@ impl Graph for InfGraph {
 }
 
 impl InfGraph {
-    fn encode_triple<TD>(&mut self, t: &dyn Triple<TermData = TD>) -> [u64; 3]
+        fn encode_triple<TD>(&mut self, t: &dyn Triple<TermData = TD>) -> [u64; 3]
     where
         TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,
     {
@@ -326,11 +326,11 @@ impl InfGraph {
         [s, p as u64, o]
     }
 
-    pub fn size(&mut self) -> usize {
+        pub fn size(&mut self) -> usize {
         self.dictionary.ts.size()
     }
 
-    pub fn process(&mut self, profile: &mut RuleProfile) {
+        pub fn process(&mut self, profile: &mut RuleProfile) {
         self.close(&mut profile.cl_profile);
         profile.before_rules.process(self);
         if profile.axiomatic_triples {
@@ -377,12 +377,12 @@ impl InfGraph {
         }
     }
 
-    fn close_on(&mut self, index: u32) {
+        fn close_on(&mut self, index: u32) {
         let ip_to_store = NodeDictionary::prop_idx_to_idx(index as u64);
         self.close_on_raw(ip_to_store);
     }
 
-    fn close_on_raw(&mut self, raw_index: usize) {
+        fn close_on_raw(&mut self, raw_index: usize) {
         let pairs = self.dictionary.ts.elem.get(raw_index);
         if pairs == None {
             return;
@@ -401,7 +401,7 @@ impl InfGraph {
         self.dictionary.ts.sort();
     }
 
-    fn get_tr_idx(&mut self) -> Vec<u32> {
+        fn get_tr_idx(&mut self) -> Vec<u32> {
         if let Some(pairs) = self.dictionary.ts.elem.get(NodeDictionary::prop_idx_to_idx(
             NodeDictionary::rdftype as u64,
         )) {
@@ -416,7 +416,7 @@ impl InfGraph {
         }
     }
 
-    pub fn init_axiomatic_triples(&mut self) {
+        pub fn init_axiomatic_triples(&mut self) {
         self.dictionary.ts.add_triple([
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdftype as u64,
@@ -723,7 +723,7 @@ impl<TS> From<TS> for InfGraph
 where
     TS: TripleSource,
 {
-    fn from(mut ts: TS) -> Self {
+        fn from(mut ts: TS) -> Self {
         let store = TripleStore::new();
         let dictionary = NodeDictionary::new(store);
         let mut me = Self { dictionary };
