@@ -11,11 +11,26 @@ pub type Rule = fn(&TripleStore) -> TripleStore;
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
     fn process(&mut self, graph: &mut InfGraph);
+    fn process_par(&mut self, graph: &mut InfGraph);
     fn is_empty(&self) -> bool;
 }
 
 impl RuleSet for Vec<Box<Rule>> {
+
     fn process(&mut self, graph: &mut InfGraph) {
+        if self.is_empty() {
+            return;
+        }
+        let mut outputs = TripleStore::new();
+        let ts = &mut graph.dictionary.ts;
+        self.iter()
+            .for_each(|rule| outputs.add_all(rule(ts)));
+        outputs.sort();
+        graph.dictionary.ts =
+            TripleStore::join(&graph.dictionary.ts, &outputs);
+    }
+
+    fn process_par(&mut self, graph: &mut InfGraph) {
         if self.is_empty() {
             return;
         }
