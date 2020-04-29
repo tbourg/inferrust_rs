@@ -1,20 +1,20 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
-use sophia::term::{BoxTerm, Term, TermData};
+use sophia::term::factory::{ArcTermFactory, TermFactory};
+use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
 
-use std::convert::TryInto;
-
-use bimap::hash::BiHashMap;
+use std::borrow::Borrow;
+use std::collections::HashMap;
 
 use super::TripleStore;
 
 pub struct NodeDictionary {
-    res_ctr: u64,
-    prop_ctr: u32,
+    factory: ArcTermFactory,
+    resources: Vec<ArcTerm>,
+    properties: Vec<ArcTerm>,
+    indexes: HashMap<StaticTerm, u64>,
     removed_val: Vec<u64>,
-    resources: BiHashMap<BoxTerm, u64>,
-    properties: BiHashMap<BoxTerm, u32>,
     pub ts: TripleStore,
 }
 
@@ -95,11 +95,11 @@ impl NodeDictionary {
 
     pub fn new(ts: TripleStore) -> Self {
         let mut me = Self {
-            res_ctr: Self::res_start,
-            prop_ctr: Self::prop_start,
+            factory: ArcTermFactory::new(),
+            resources: Vec::with_capacity((Self::res_start - Self::START_INDEX as u64) as usize),
+            properties: Vec::with_capacity((Self::START_INDEX - Self::prop_start) as usize),
+            indexes: HashMap::new(),
             removed_val: vec![],
-            resources: BiHashMap::<BoxTerm, u64>::new(),
-            properties: BiHashMap::<BoxTerm, u32>::new(),
             ts,
         };
         me.init_const();
@@ -107,65 +107,68 @@ impl NodeDictionary {
     }
 
     pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
-        let t: BoxTerm = term.clone_into();
-        if self.properties.contains_left(&t) {
-            return *self.properties.get_by_left(&t).expect("Err") as u64;
-        }
-        if self.resources.contains_left(&t) {
-            *self.resources.get_by_left(&t).expect("Err")
-        } else {
-            self.res_ctr += 1;
-            self.resources.insert(t, self.res_ctr);
-            self.res_ctr
+        let term: RefTerm = term.clone_into();
+        match self.indexes.get(&term) {
+            Some(idx) => *idx,
+            None => {
+                // NB: we could not use self.index.entry,
+                // because we do not want to allocate the term before we need it
+                let arcterm = self.factory.convert_term(term);
+                let refterm = unsafe { fake_static(&arcterm) };
+                self.resources.push(arcterm);
+                let idx = self.resources.len() as u64 + Self::START_INDEX as u64;
+                self.indexes.insert(refterm, idx);
+                idx
+            }
         }
     }
 
     pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> u32 {
-        let t: BoxTerm = term.clone_into();
-        if self.resources.contains_left(&t) {
-            self.remap_res_to_prop(t)
-        } else if self.properties.contains_left(&t) {
-            *self.properties.get_by_left(&t).expect("Err")
-        } else {
-            self.prop_ctr -= 1;
-            self.properties.insert(t, self.prop_ctr);
-            self.prop_ctr
+        let term: RefTerm = term.clone_into();
+        match self.indexes.get(&term).cloned() {
+            Some(idx) if idx < Self::START_INDEX as u64 => idx as u32,
+            Some(idx) => self.remap_res_to_prop(idx),
+            None => {
+                // NB: we could not use self.index.entry,
+                // because we do not want to allocate the term before we need it
+                let arcterm = self.factory.convert_term(term);
+                let refterm = unsafe { fake_static(&arcterm) };
+                self.properties.push(arcterm);
+                let idx = Self::START_INDEX as u32 - self.properties.len() as u32;
+                self.indexes.insert(refterm, idx as u64);
+                idx
+            }
         }
     }
 
-    pub fn add_with<TD: TermData>(&mut self, term: &Term<TD>, id: u64) {
-        let t: BoxTerm = term.clone_into();
-        if !self.properties.contains_left(&t) && !self.resources.contains_left(&t) {
-            self.resources.insert(t, id);
-        }
+    #[inline]
+    fn add_with<TD: TermData>(&mut self, term: &Term<TD>, id: u64) {
+        let idx = self.add(term);
+        debug_assert_eq!(idx, id);
     }
 
-    pub fn add_property_with<TD: TermData>(&mut self, term: &Term<TD>, id: u32) {
-        let t: BoxTerm = term.clone_into();
-        if !self.properties.contains_left(&t) && !self.resources.contains_left(&t) {
-            self.properties.insert(t, id);
-        }
+    #[inline]
+    fn add_property_with<TD: TermData>(&mut self, term: &Term<TD>, id: u32) {
+        let idx = self.add_property(term);
+        debug_assert_eq!(idx, id);
     }
 
-    fn remap_res_to_prop(&mut self, t: BoxTerm) -> u32 {
-        let old = self.resources.remove_by_left(&t).expect("Err").1;
-        self.prop_ctr -= 1;
-        let p = self.prop_ctr;
-        self.properties.insert(t, p);
-        self.removed_val.push(old);
-        self.ts.res_to_prop(old, p);
-        p
+    fn remap_res_to_prop(&mut self, old_idx: u64) -> u32 {
+        self.removed_val.push(old_idx);
+        let arcterm = &self.resources[(old_idx - Self::START_INDEX as u64 - 1) as usize];
+        let refterm = unsafe { fake_static(arcterm) };
+        self.properties.push(arcterm.clone());
+        let new_idx = Self::START_INDEX as u32 - self.properties.len() as u32;
+        self.indexes.insert(refterm, new_idx as u64);
+        self.ts.res_to_prop(old_idx, new_idx);
+        new_idx
     }
 
-    pub fn get_term(&self, index: u64) -> &BoxTerm {
+    pub fn get_term(&self, index: u64) -> &ArcTerm {
         if index < Self::START_INDEX as u64 {
-            self.properties
-                .get_by_right(&(index as u32))
-                .expect(&format!("No such properties {}", index))
+            &self.properties[Self::START_INDEX as usize - index as usize - 1]
         } else {
-            self.resources
-                .get_by_right(&index)
-                .expect(&format!("No such ressources {}", index))
+            &self.resources[index as usize - Self::START_INDEX as usize - 1]
         }
     }
 
@@ -173,14 +176,8 @@ impl NodeDictionary {
     where
         T: TermData,
     {
-        let inner_term: BoxTerm = t.clone_into();
-        if self.properties.contains_left(&inner_term) {
-            Some(*self.properties.get_by_left(&inner_term).unwrap() as u64)
-        } else if self.resources.contains_left(&inner_term) {
-            Some(*self.resources.get_by_left(&inner_term).unwrap())
-        } else {
-            None
-        }
+        let t: RefTerm = t.clone_into();
+        self.indexes.get(&t).cloned()
     }
 
     pub fn was_removed(&self, res: &u64) -> bool {
@@ -188,13 +185,11 @@ impl NodeDictionary {
     }
 
     pub fn get_res_ctr(&self) -> u64 {
-        self.res_ctr
+        self.resources.len() as u64
     }
 
     pub fn prop_idx_to_idx(prop_idx: u64) -> usize {
-        (Self::START_INDEX as u64 - prop_idx - 1)
-            .try_into()
-            .expect("Err converting index")
+        Self::START_INDEX as usize - prop_idx as usize - 1
     }
 
     pub fn idx_to_prop_idx(idx: usize) -> u64 {
@@ -299,4 +294,17 @@ impl NodeDictionary {
         self.add_property_with(&owl::targetValue, Self::targetValue);
         self.add_property_with(&owl::maxQualifiedCardinality, Self::maxQualifiedCardinality);
     }
+}
+
+/// Unsafely converts a term into a StaticTerm.
+/// This is to be used *only* when we can guarantee that the produced StaticTerm
+/// will not outlive the source term.
+/// We use this for keys in TermIndexMapU::t2i, when the owning term is in TermIndexMapU::i2t.
+#[inline]
+unsafe fn fake_static<S, T>(t: &T) -> StaticTerm
+where
+    S: TermData,
+    T: Borrow<Term<S>>,
+{
+    t.borrow().clone_map(|txt| &*(txt as *const str))
 }

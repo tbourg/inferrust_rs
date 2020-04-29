@@ -5,6 +5,7 @@ use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
 use sophia::triple::{stream::TripleSource, Triple};
 
 use std::convert::Infallible;
+use std::sync::Arc;
 
 use crate::closure::*;
 use crate::inferray::NodeDictionary;
@@ -17,7 +18,7 @@ pub struct InfGraph {
 }
 
 impl Graph for InfGraph {
-    type Triple = ByTermRefs<Box<str>>;
+    type Triple = ByTermRefs<Arc<str>>;
     type Error = Infallible;
 
     fn triples(&self) -> GTripleSource<Self> {
