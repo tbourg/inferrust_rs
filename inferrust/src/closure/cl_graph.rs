@@ -7,10 +7,10 @@ use crate::closure::utils;
 #[derive(Clone)]
 pub struct Node {
     pub id: u64,
-    pub dfs_num: RefCell<usize>,
-    pub in_comp: RefCell<bool>,
-    pub root: RefCell<Option<u64>>,
-    pub tc: RefCell<HashSet<u64>>,
+    dfs_num: RefCell<usize>,
+    in_comp: RefCell<bool>,
+    root: RefCell<Option<u64>>,
+    tc: RefCell<HashSet<u64>>,
 }
 
 impl Node {
@@ -27,6 +27,21 @@ impl Node {
     #[inline]
     pub fn set_num(&self, num: usize) {
         *self.dfs_num.borrow_mut() = num;
+    }
+
+    #[inline]
+    pub fn num(&self) -> usize {
+        *self.dfs_num.borrow()
+    }
+
+    #[inline]
+    pub fn in_comp(&self) -> bool {
+        *self.in_comp.borrow()
+    }
+
+    #[inline]
+    pub fn set_in_comp(&self, in_c: bool) {
+        *self.in_comp.borrow_mut() = in_c;
     }
 
     #[inline]
