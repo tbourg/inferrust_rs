@@ -33,8 +33,8 @@ pub fn apply_alpha_rule(
     id_p: usize,
     id_o: usize,
 ) -> TripleStore {
-    let property_1_pairs = ts.elem.get(id_1 as usize);
-    let property_2_pairs = ts.elem.get(id_2 as usize);
+    let property_1_pairs = ts.elem().get(id_1 as usize);
+    let property_2_pairs = ts.elem().get(id_2 as usize);
     if property_1_pairs == None || property_2_pairs == None {
         return TripleStore::new();
     }

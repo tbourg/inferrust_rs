@@ -21,7 +21,7 @@ use crate::inferray::{NodeDictionary, TripleStore};
 #[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::owlsameAs as u64,
     ));
     if pairs1 == None {
@@ -34,13 +34,13 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
         for pair1 in pairs1 {
             output.add_triple([pair1[1], NodeDictionary::owlsameAs as u64, pair1[0]]);
             if pair1[0] < NodeDictionary::START_INDEX as u64 {
-                if let Some(pairs2) = ts.elem.get(NodeDictionary::prop_idx_to_idx(pair1[0])) {
+                if let Some(pairs2) = ts.elem().get(NodeDictionary::prop_idx_to_idx(pair1[0])) {
                     for pair2 in pairs2.so() {
                         output.add_triple([pair2[0], pair1[1], pair2[1]]);
                     }
                 }
             } else {
-                for (idx, chunk) in ts.elem.iter().enumerate() {
+                for (idx, chunk) in ts.elem().iter().enumerate() {
                     let pairs = chunk.so();
                     let pi = NodeDictionary::idx_to_prop_idx(idx);
                     if pi == NodeDictionary::owlsameAs as u64 {

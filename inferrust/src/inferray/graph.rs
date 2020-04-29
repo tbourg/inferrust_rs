@@ -25,8 +25,8 @@ impl Graph for InfGraph {
     fn triples(&self) -> GTripleSource<Self> {
         Box::from(
             self.dictionary
-                .ts
-                .elem
+                .ts()
+                .elem()
                 .iter()
                 .enumerate()
                 .filter(|(_, chunk)| !chunk.so().is_empty())
@@ -55,8 +55,8 @@ impl Graph for InfGraph {
             let s = self.dictionary.get_term(si);
             Box::from(
                 self.dictionary
-                    .ts
-                    .elem
+                    .ts()
+                    .elem()
                     .iter()
                     .enumerate()
                     .filter(|(_, chunk)| !chunk.so().is_empty())
@@ -91,7 +91,7 @@ impl Graph for InfGraph {
     {
         if let Some(ip) = self.dictionary.get_index(p) {
             let idx = NodeDictionary::prop_idx_to_idx(ip);
-            let chunk = &self.dictionary.ts.elem[idx];
+            let chunk = &self.dictionary.ts().elem()[idx];
             if !chunk.so().is_empty() {
                 let p = self.dictionary.get_term(ip);
                 Box::from(chunk.so().iter().map(move |[si, oi]| {
@@ -118,8 +118,8 @@ impl Graph for InfGraph {
             let o = self.dictionary.get_term(oi);
             Box::from(
                 self.dictionary
-                    .ts
-                    .elem
+                    .ts()
+                    .elem()
                     .iter()
                     .enumerate()
                     .filter(|(_, chunk)| !chunk.os().is_empty())
@@ -159,7 +159,7 @@ impl Graph for InfGraph {
     {
         if let (Some(si), Some(pi)) = (self.dictionary.get_index(s), self.dictionary.get_index(p)) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
-            let chunk = &self.dictionary.ts.elem[idx];
+            let chunk = &self.dictionary.ts().elem()[idx];
             if !chunk.so().is_empty() {
                 let s = self.dictionary.get_term(si);
                 let p = self.dictionary.get_term(pi);
@@ -198,29 +198,24 @@ impl Graph for InfGraph {
         if let (Some(si), Some(oi)) = (self.dictionary.get_index(s), self.dictionary.get_index(o)) {
             let s = self.dictionary.get_term(si);
             let o = self.dictionary.get_term(oi);
-            Box::from(
-                self.dictionary
-                    .ts
-                    .elem
-                    .iter()
-                    .enumerate()
-                    .filter_map(move |(pi, chunk)| {
-                        if chunk.so().is_empty() {
-                            None
+            Box::from(self.dictionary.ts().elem().iter().enumerate().filter_map(
+                move |(pi, chunk)| {
+                    if chunk.so().is_empty() {
+                        None
+                    } else {
+                        if binary_search_pair(&chunk.so(), [si, oi]) {
+                            Some(Ok(StreamedTriple::by_term_refs(
+                                s,
+                                self.dictionary
+                                    .get_term(NodeDictionary::idx_to_prop_idx(pi)),
+                                o,
+                            )))
                         } else {
-                            if binary_search_pair(&chunk.so(), [si, oi]) {
-                                Some(Ok(StreamedTriple::by_term_refs(
-                                    s,
-                                    self.dictionary
-                                        .get_term(NodeDictionary::idx_to_prop_idx(pi)),
-                                    o,
-                                )))
-                            } else {
-                                None
-                            }
+                            None
                         }
-                    }),
-            )
+                    }
+                },
+            ))
         } else {
             Box::from(std::iter::empty())
         }
@@ -238,7 +233,7 @@ impl Graph for InfGraph {
     {
         if let (Some(pi), Some(oi)) = (self.dictionary.get_index(p), self.dictionary.get_index(o)) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
-            let chunk = &self.dictionary.ts.elem[idx];
+            let chunk = &self.dictionary.ts().elem()[idx];
             if !chunk.os().is_empty() {
                 let p = self.dictionary.get_term(pi);
                 let o = self.dictionary.get_term(oi);
@@ -282,7 +277,7 @@ impl Graph for InfGraph {
             self.dictionary.get_index(o),
         ) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
-            let chunk = &self.dictionary.ts.elem[idx];
+            let chunk = &self.dictionary.ts().elem()[idx];
             if chunk.so().is_empty() {
                 Box::from(std::iter::empty())
             } else {
@@ -338,7 +333,7 @@ impl InfGraph {
 
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn size(&mut self) -> usize {
-        self.dictionary.ts.size()
+        self.dictionary.ts_mut().size()
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
@@ -399,7 +394,7 @@ impl InfGraph {
 
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn close_on_raw(&mut self, raw_index: usize) {
-        let pairs = self.dictionary.ts.elem.get(raw_index);
+        let pairs = self.dictionary.ts_mut().elem().get(raw_index);
         if pairs == None {
             return;
         }
@@ -411,17 +406,22 @@ impl InfGraph {
         let closure = tc_g.close();
         for (s, os) in closure.iter() {
             for o in os.iter() {
-                self.dictionary.ts.add_triple_raw(*s, raw_index, *o);
+                self.dictionary.ts_mut().add_triple_raw(*s, raw_index, *o);
             }
         }
-        self.dictionary.ts.sort();
+        self.dictionary.ts_mut().sort();
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn get_tr_idx(&mut self) -> Vec<u32> {
-        if let Some(pairs) = self.dictionary.ts.elem.get(NodeDictionary::prop_idx_to_idx(
-            NodeDictionary::rdftype as u64,
-        )) {
+        if let Some(pairs) = self
+            .dictionary
+            .ts_mut()
+            .elem()
+            .get(NodeDictionary::prop_idx_to_idx(
+                NodeDictionary::rdftype as u64,
+            ))
+        {
             pairs
                 .so()
                 .iter()
@@ -435,305 +435,305 @@ impl InfGraph {
 
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn init_axiomatic_triples(&mut self) {
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsubject as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfpredicate as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfobject as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdffirst as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfrest as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfValue as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdf_1 as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfnil as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfList,
         ]);
         // Domain
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsubject as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfStatement,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfpredicate as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfStatement,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfobject as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfStatement,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsMember as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdffirst as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfList,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfrest as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfList,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsSeeAlso as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsisDefinedBy as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsComment as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsLabel as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfValue as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
         // Range
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsClass,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsClass,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsClass,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsClass,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsubject as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfpredicate as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfobject as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsMember as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdffirst as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfrest as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfList,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsSeeAlso as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsisDefinedBy as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsComment as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsLiteral,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsLabel as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsLiteral,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfValue as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
         // MISC
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfAlt,
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfsContainer,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfBag,
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfsContainer,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfSeq,
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfsContainer,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsContainerMembershipProperty as u64,
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdf_1 as u64,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfsContainerMembershipProperty as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdf_1 as u64,
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdf_1 as u64,
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfsResource,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsisDefinedBy as u64,
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfsSeeAlso as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfXMLLiteral,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfsDatatype,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfXMLLiteral,
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfsLiteral,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsDatatype,
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfsClass,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::xsdnonNegativeInteger,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfsDatatype,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::xsdstring,
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfsDatatype,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdftype as u64,
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdftype as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsdomain as u64,
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfsdomain as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfsrange as u64,
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfsrange as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfssubPropertyOf as u64,
         ]);
-        self.dictionary.ts.add_triple([
+        self.dictionary.ts_mut().add_triple([
             NodeDictionary::rdfssubClassOf as u64,
             NodeDictionary::rdfssubPropertyOf as u64,
             NodeDictionary::rdfssubClassOf as u64,
         ]);
-        self.dictionary.ts.sort();
+        self.dictionary.ts_mut().sort();
     }
 }
 
@@ -750,11 +750,11 @@ where
         ts.for_each_triple(|t| {
             let rep = me.encode_triple(&t);
 
-            me.dictionary.ts.add_triple(rep);
+            me.dictionary.ts_mut().add_triple(rep);
         })
         .expect("Streaming error");
 
-        me.dictionary.ts.sort();
+        me.dictionary.ts_mut().sort();
 
         me
     }

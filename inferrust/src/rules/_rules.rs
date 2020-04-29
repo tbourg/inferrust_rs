@@ -27,10 +27,12 @@ impl RuleSet for Vec<Box<Rule>> {
             return;
         }
         let mut outputs = TripleStore::new();
-        let ts = &mut graph.dictionary.ts;
+        let ts = graph.dictionary.ts_mut();
         self.iter().for_each(|rule| outputs.add_all(rule(ts)));
         outputs.sort();
-        graph.dictionary.ts = TripleStore::join(&graph.dictionary.ts, &outputs);
+        graph
+            .dictionary
+            .set_ts(TripleStore::join(graph.dictionary.ts(), &outputs));
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
@@ -39,14 +41,16 @@ impl RuleSet for Vec<Box<Rule>> {
             return;
         }
         let mut outputs = Mutex::new(TripleStore::new());
-        let ts = &mut graph.dictionary.ts;
+        let ts = graph.dictionary.ts_mut();
         self.par_iter_mut().for_each(|rule| {
             let inferred = rule(ts);
             outputs.lock().unwrap().add_all(inferred);
         });
         outputs.get_mut().unwrap().sort();
-        graph.dictionary.ts =
-            TripleStore::join(&graph.dictionary.ts, &outputs.into_inner().unwrap());
+        graph.dictionary.set_ts(TripleStore::join(
+            graph.dictionary.ts(),
+            &outputs.into_inner().unwrap(),
+        ));
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
@@ -336,7 +340,7 @@ impl RuleProfile {
 #[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs_mut = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs_mut = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs_mut == None {
@@ -351,7 +355,7 @@ pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
         if pair[0] == expected_o {
             let prop = pair[1];
             let raw_prop = NodeDictionary::prop_idx_to_idx(prop);
-            let pairs1 = ts.elem.get(raw_prop);
+            let pairs1 = ts.elem().get(raw_prop);
             if pairs1 == None {
                 break;
             }
@@ -384,7 +388,7 @@ pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
 #[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs == None {
@@ -399,7 +403,7 @@ pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
         if pair[0] == expected_o {
             let prop = pair[1];
             let raw_prop = NodeDictionary::prop_idx_to_idx(prop);
-            let pairs1 = ts.elem.get(raw_prop);
+            let pairs1 = ts.elem().get(raw_prop);
             if pairs1 == None {
                 break;
             }
@@ -435,8 +439,8 @@ pub fn finalize(graph: &mut InfGraph) {
     let res = NodeDictionary::rdfsResource;
     ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dictionary.get_res_ctr()).for_each(|e| {
         if !graph.dictionary.was_removed(&e) {
-            graph.dictionary.ts.add_triple_raw(e, type_index, res);
+            graph.dictionary.ts_mut().add_triple_raw(e, type_index, res);
         }
     });
-    graph.dictionary.ts.sort();
+    graph.dictionary.ts_mut().sort();
 }

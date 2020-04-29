@@ -9,7 +9,7 @@ fn apply_zeta_rule(
     object_is_subject: bool,
 ) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
@@ -75,7 +75,7 @@ pub fn RDFS13(ts: &TripleStore) -> TripleStore {
 #[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
@@ -111,7 +111,7 @@ pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
 #[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
-    let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
@@ -152,7 +152,7 @@ pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
 pub fn RDFS4(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let mut resources_idx = Vec::new();
-    let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
+    let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
@@ -171,7 +171,7 @@ pub fn RDFS4(ts: &TripleStore) -> TripleStore {
             resources_idx.push(pair1[1])
         }
     }
-    for pairs2 in &ts.elem {
+    for pairs2 in ts.elem() {
         for pair2 in pairs2.so() {
             if resources_idx.contains(&pair2[1]) {
                 output.add_triple([pair2[0], NodeDictionary::rdftype as u64, object]);

@@ -7,7 +7,7 @@ use super::NodeDictionary;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct TripleStore {
-    pub elem: Vec<Chunk>,
+    elem: Vec<Chunk>,
     size: usize,
 }
 
@@ -99,6 +99,24 @@ impl TripleStore {
     pub fn new() -> Self {
         let elem = Vec::new();
         Self { elem, size: 0 }
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn elem(&self) -> &Vec<Chunk> {
+        &self.elem
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn elem_mut(&mut self) -> &mut Vec<Chunk> {
+        &mut self.elem
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn set_elem(&mut self, elem: Vec<Chunk>) {
+        self.elem = elem;
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn add_triple(&mut self, triple: [u64; 3]) {

@@ -16,7 +16,7 @@ use crate::inferray::TripleStore;
 
 #[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> TripleStore {
-    let pairs = ts.elem.get(rule_p);
+    let pairs = ts.elem().get(rule_p);
     if pairs == None {
         return TripleStore::new();
     }
@@ -46,7 +46,7 @@ fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> TripleSto
 
 #[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_inverse_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> TripleStore {
-    let pairs = ts.elem.get(rule_p);
+    let pairs = ts.elem().get(rule_p);
     if pairs == None {
         return TripleStore::new();
     }

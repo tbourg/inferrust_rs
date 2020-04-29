@@ -15,7 +15,7 @@ pub struct NodeDictionary {
     properties: Vec<ArcTerm>,
     indexes: HashMap<StaticTerm, u64>,
     removed_val: Vec<u64>,
-    pub ts: TripleStore,
+    ts: TripleStore,
 }
 
 impl NodeDictionary {
@@ -41,7 +41,6 @@ impl NodeDictionary {
     pub const rdfSeq: u64 = Self::START_INDEX as u64 + 9;
     pub const rdfXMLLiteral: u64 = Self::START_INDEX as u64 + 10;
     pub const rdfStatement: u64 = Self::START_INDEX as u64 + 11;
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub const rdfnil: u64 = Self::START_INDEX as u64 + 12;
     pub const rdfProperty: u32 = Self::START_INDEX - 11;
     pub const rdftype: u32 = Self::START_INDEX - 12;
@@ -106,6 +105,24 @@ impl NodeDictionary {
         };
         me.init_const();
         me
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn ts(&self) -> &TripleStore {
+        &self.ts
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn ts_mut(&mut self) -> &mut TripleStore {
+        &mut self.ts
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn set_ts(&mut self, ts: TripleStore) {
+        self.ts = ts;
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
