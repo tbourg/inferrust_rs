@@ -2,8 +2,8 @@
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
 use sophia::term::factory::{ArcTermFactory, TermFactory};
-use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
 use sophia::term::iri::Normalization::LastGenDelim;
+use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
 
 use std::borrow::Borrow;
 use std::collections::HashMap;
@@ -188,7 +188,7 @@ impl NodeDictionary {
     }
 
     pub fn get_res_ctr(&self) -> u64 {
-        self.resources.len() as u64
+        self.resources.len() as u64 + Self::START_INDEX as u64
     }
 
     pub fn prop_idx_to_idx(prop_idx: u64) -> usize {
