@@ -12,6 +12,8 @@ rayon = "*"
 time = "0.1.4"
 itertools = "*"
 once_cell = "1.3.1"
+flamer = "*"
+flame = "*"
 
 [dev-dependencies]
 criterion = "0.3"

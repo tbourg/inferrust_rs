@@ -34,6 +34,13 @@
 //! ## Citation
 //! Julien Subercaze, Christophe Gravier, Jules Chevalier, Frédérique Laforest:
 //! Inferray: fast in-memory RDF inference. PVLDB 9(6): 468-479 (2016)
+//!
+#[cfg(debug_assertion)]
+extern crate flame;
+#[cfg(debug_assertion)]
+#[macro_use]
+#[cfg(debug_assertion)]
+extern crate flamer;
 
 pub mod closure;
 pub mod inferray;

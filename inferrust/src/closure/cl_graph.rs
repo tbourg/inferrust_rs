@@ -14,6 +14,7 @@ pub struct Node {
 }
 
 impl Node {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn new(id: u64) -> Self {
         Self {
             id,
@@ -25,61 +26,73 @@ impl Node {
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn set_num(&self, num: usize) {
         *self.dfs_num.borrow_mut() = num;
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn num(&self) -> usize {
         *self.dfs_num.borrow()
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn in_comp(&self) -> bool {
         *self.in_comp.borrow()
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn set_in_comp(&self, in_c: bool) {
         *self.in_comp.borrow_mut() = in_c;
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn root(&self) -> u64 {
         self.root.borrow().unwrap()
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn set_root(&self, r: u64) {
         *self.root.borrow_mut() = Some(r);
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn tc_contains(&self, val: u64) -> bool {
         self.tc.borrow().contains(&val)
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn tc_insert(&self, val: u64) {
         self.tc.borrow_mut().insert(val);
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn tc_extend<I: IntoIterator<Item = u64>>(&self, vals: I) {
         self.tc.borrow_mut().extend(vals);
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn tc_iter(&self) -> Vec<u64> {
         self.tc.borrow().iter().cloned().collect::<Vec<u64>>()
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn tc_clear(&self) {
         self.tc.borrow_mut().clear();
     }
 
     #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn tc_is_empty(&self) -> bool {
         self.tc.borrow().is_empty()
     }
@@ -92,6 +105,7 @@ pub struct ClosureGraph {
 }
 
 impl ClosureGraph {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn from(pairs: Vec<[u64; 2]>) -> Self {
         let mut offset = pairs[0][0];
         let maxv = pairs[pairs.len() - 1][0];
@@ -121,16 +135,18 @@ impl ClosureGraph {
     }
 
     /*
-    fn create_nodes(pairs: &Vec<[u64; 2]>) -> HashMap<u64, Node> {
-        let values: HashSet<u64> = pairs.iter().flat_map(|p| p.iter().cloned()).collect();
-        let mut map = HashMap::new();
-        for value in values {
-            map.insert(value, Node::new(value));
+    #[cfg_attr(debug_assertions, flamer::flame)]
+        fn create_nodes(pairs: &Vec<[u64; 2]>) -> HashMap<u64, Node> {
+            let values: HashSet<u64> = pairs.iter().flat_map(|p| p.iter().cloned()).collect();
+            let mut map = HashMap::new();
+            for value in values {
+                map.insert(value, Node::new(value));
+            }
+            map
         }
-        map
-    }
-    */
+        */
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn node(&self, id: u64) -> &Node {
         let idx = (id - self.offset) as usize;
         /*
@@ -142,10 +158,12 @@ impl ClosureGraph {
         self.nodes.get(idx).unwrap().as_ref().unwrap()
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn iter_nodes(&self) -> impl Iterator<Item = &Node> {
         self.nodes.iter().filter_map(|opt| opt.as_ref())
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn edges(&self, id: u64) -> Vec<u64> {
         let len = self.edges.len();
         let start_index = crate::utils::first(&self.edges, id, 0, len - 1, len, 0);
@@ -156,6 +174,7 @@ impl ClosureGraph {
             .collect()
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn close(&mut self) -> HashMap<u64, Rc<Vec<u64>>> {
         utils::graph_tc(self);
 

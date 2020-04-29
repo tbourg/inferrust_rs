@@ -13,6 +13,7 @@ pub trait RuleSet {
     /// Process this ruleset in a single thread
     fn process(&mut self, graph: &mut InfGraph);
     /// Process this ruleset, possibly using multiple threads
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process_par(&mut self, graph: &mut InfGraph) {
         self.process(graph);
     }
@@ -20,6 +21,7 @@ pub trait RuleSet {
 }
 
 impl RuleSet for Vec<Box<Rule>> {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process(&mut self, graph: &mut InfGraph) {
         if self.is_empty() {
             return;
@@ -31,6 +33,7 @@ impl RuleSet for Vec<Box<Rule>> {
         graph.dictionary.ts = TripleStore::join(&graph.dictionary.ts, &outputs);
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process_par(&mut self, graph: &mut InfGraph) {
         if self.is_empty() {
             return;
@@ -46,6 +49,7 @@ impl RuleSet for Vec<Box<Rule>> {
             TripleStore::join(&graph.dictionary.ts, &outputs.into_inner().unwrap());
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn is_empty(&self) -> bool {
         self.is_empty()
     }
@@ -56,12 +60,15 @@ pub struct StaticRuleSet {
 }
 
 impl RuleSet for StaticRuleSet {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process(&mut self, graph: &mut InfGraph) {
         self.rules.process(graph)
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process_par(&mut self, graph: &mut InfGraph) {
         self.rules.process_par(graph)
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn is_empty(&self) -> bool {
         self.rules.is_empty()
     }
@@ -72,6 +79,7 @@ pub struct FixPointRuleSet {
 }
 
 impl FixPointRuleSet {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn fixpoint<F: FnMut(&mut StaticRuleSet, &mut InfGraph)>(
         &mut self,
         graph: &mut InfGraph,
@@ -91,12 +99,15 @@ impl FixPointRuleSet {
 }
 
 impl RuleSet for FixPointRuleSet {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process(&mut self, graph: &mut InfGraph) {
         self.fixpoint(graph, <StaticRuleSet as RuleSet>::process)
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process_par(&mut self, graph: &mut InfGraph) {
         self.fixpoint(graph, <StaticRuleSet as RuleSet>::process_par)
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn is_empty(&self) -> bool {
         self.rules.is_empty()
     }
@@ -119,6 +130,7 @@ pub struct RuleProfile {
 }
 
 impl RuleProfile {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn RDFS() -> Self {
         let rules: Vec<Box<Rule>> = vec![
             // Alpha class
@@ -161,6 +173,7 @@ impl RuleProfile {
             name: "RDFS".to_string(),
         }
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn Test() -> Self {
         let rules: Vec<Box<Rule>> = vec![
             // Alpha class
@@ -191,6 +204,7 @@ impl RuleProfile {
             name: "Test".to_string(),
         }
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn RDFSDefault() -> Self {
         Self {
             axiomatic_triples: false,
@@ -198,6 +212,7 @@ impl RuleProfile {
             ..Self::RDFS()
         }
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn RhoDF() -> Self {
         let before_rules: Vec<Box<Rule>> = vec![
             // Zeta class (trivial rules)
@@ -233,6 +248,7 @@ impl RuleProfile {
             name: "RhoDF".to_string(),
         }
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn Closure() -> Self {
         Self {
             cl_profile: ClosureProfile {
@@ -254,6 +270,7 @@ impl RuleProfile {
             name: "Closure".to_string(),
         }
     }
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn RDFSPlus() -> Self {
         let before_rules: Vec<Box<Rule>> = vec![
             // Zeta class (trivial rules)
@@ -310,11 +327,13 @@ impl RuleProfile {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn name(&self) -> &str {
         &self.name
     }
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs_mut = ts.elem.get(NodeDictionary::prop_idx_to_idx(
@@ -362,6 +381,7 @@ pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
     output
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs = ts.elem.get(NodeDictionary::prop_idx_to_idx(
@@ -409,6 +429,7 @@ pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
     output
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn finalize(graph: &mut InfGraph) {
     let type_index = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
     let res = NodeDictionary::rdfsResource;

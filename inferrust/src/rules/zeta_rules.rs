@@ -1,5 +1,6 @@
 use crate::inferray::{NodeDictionary, TripleStore};
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_zeta_rule(
     ts: &TripleStore,
     input_o: u64,
@@ -33,12 +34,14 @@ fn apply_zeta_rule(
     output
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn RDFS6(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn RDFS8(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdftype as u64;
@@ -46,12 +49,14 @@ pub fn RDFS8(ts: &TripleStore) -> TripleStore {
     apply_zeta_rule(ts, input_o, output_p, output_o, false)
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn RDFS10(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn RDFS12(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsContainerMembershipProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
@@ -59,6 +64,7 @@ pub fn RDFS12(ts: &TripleStore) -> TripleStore {
     apply_zeta_rule(ts, input_o, output_p, output_o, false)
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn RDFS13(ts: &TripleStore) -> TripleStore {
     let input_o = NodeDictionary::rdfsDatatype;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
@@ -66,6 +72,7 @@ pub fn RDFS13(ts: &TripleStore) -> TripleStore {
     apply_zeta_rule(ts, input_o, output_p, output_o, false)
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
@@ -101,6 +108,7 @@ pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
     output
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
@@ -140,6 +148,7 @@ pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
     output
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn RDFS4(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let mut resources_idx = Vec::new();

@@ -4,10 +4,12 @@ use std::collections::HashSet;
 
 /// Source: https://pdfs.semanticscholar.org/47cc/a59310abee097af31d678d6cb2f8263dee37.pdf?_ga=2.26709177.588007852.1584345117-1155404888.1573749711
 /// Figure 4
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn graph_tc(g: &ClosureGraph) {
     let mut stack = Vec::new();
     let mut num = 0;
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn node_tc(v: &Node, stack: &mut Vec<u64>, g: &ClosureGraph, num: &mut usize) {
         v.set_num(*num);
         *num += 1;
@@ -72,6 +74,7 @@ pub fn graph_tc(g: &ClosureGraph) {
     }
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 fn minn(a: &Node, b: &Node) -> u64 {
     if a.num() <= b.num() {
         a.id

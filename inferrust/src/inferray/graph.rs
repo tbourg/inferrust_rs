@@ -21,6 +21,7 @@ impl Graph for InfGraph {
     type Triple = ByTermRefs<Arc<str>>;
     type Error = Infallible;
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples(&self) -> GTripleSource<Self> {
         Box::from(
             self.dictionary
@@ -45,6 +46,7 @@ impl Graph for InfGraph {
         )
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples_with_s<'s, T>(&'s self, s: &'s Term<T>) -> GTripleSource<'s, Self>
     where
         T: TermData,
@@ -82,6 +84,7 @@ impl Graph for InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples_with_p<'s, T>(&'s self, p: &'s Term<T>) -> GTripleSource<'s, Self>
     where
         T: TermData,
@@ -106,6 +109,7 @@ impl Graph for InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples_with_o<'s, T>(&'s self, o: &'s Term<T>) -> GTripleSource<'s, Self>
     where
         T: TermData,
@@ -143,6 +147,7 @@ impl Graph for InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples_with_sp<'s, T, U>(
         &'s self,
         s: &'s Term<T>,
@@ -180,6 +185,7 @@ impl Graph for InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples_with_so<'s, T, U>(
         &'s self,
         s: &'s Term<T>,
@@ -220,6 +226,7 @@ impl Graph for InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples_with_po<'s, T, U>(
         &'s self,
         p: &'s Term<T>,
@@ -257,6 +264,7 @@ impl Graph for InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn triples_with_spo<'s, T, U, V>(
         &'s self,
         s: &'s Term<T>,
@@ -294,6 +302,7 @@ impl Graph for InfGraph {
 }
 
 impl InfGraph {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn encode_triple<TD>(&mut self, t: &dyn Triple<TermData = TD>) -> [u64; 3]
     where
         TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,
@@ -327,10 +336,12 @@ impl InfGraph {
         [s, p as u64, o]
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn size(&mut self) -> usize {
         self.dictionary.ts.size()
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn process(&mut self, profile: &mut RuleProfile) {
         self.close(&mut profile.cl_profile);
         profile.before_rules.process(self);
@@ -346,6 +357,7 @@ impl InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn process_par(&mut self, profile: &mut RuleProfile) {
         self.close(&mut profile.cl_profile);
         profile.before_rules.process_par(self);
@@ -361,6 +373,7 @@ impl InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn close(&mut self, profile: &mut ClosureProfile) {
         if profile.on_sco {
             self.close_on(NodeDictionary::rdfssubClassOf);
@@ -378,11 +391,13 @@ impl InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn close_on(&mut self, index: u32) {
         let ip_to_store = NodeDictionary::prop_idx_to_idx(index as u64);
         self.close_on_raw(ip_to_store);
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn close_on_raw(&mut self, raw_index: usize) {
         let pairs = self.dictionary.ts.elem.get(raw_index);
         if pairs == None {
@@ -402,6 +417,7 @@ impl InfGraph {
         self.dictionary.ts.sort();
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn get_tr_idx(&mut self) -> Vec<u32> {
         if let Some(pairs) = self.dictionary.ts.elem.get(NodeDictionary::prop_idx_to_idx(
             NodeDictionary::rdftype as u64,
@@ -417,6 +433,7 @@ impl InfGraph {
         }
     }
 
+    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn init_axiomatic_triples(&mut self) {
         self.dictionary.ts.add_triple([
             NodeDictionary::rdftype as u64,
@@ -724,6 +741,7 @@ impl<TS> From<TS> for InfGraph
 where
     TS: TripleSource,
 {
+    #[cfg_attr(debug_assertions, flamer::flame)]
     fn from(mut ts: TS) -> Self {
         let store = TripleStore::new();
         let dictionary = NodeDictionary::new(store);
@@ -745,6 +763,7 @@ where
 // Should return -1 if both s and o are res,
 // 1 if s is prop and o is res,
 // and 3 if both s and o are prop
+#[cfg_attr(debug_assertions, flamer::flame)]
 fn contains_prop_in_s_or_o<TD>(property_index: u32, object: &Term<TD>) -> i8
 where
     TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,

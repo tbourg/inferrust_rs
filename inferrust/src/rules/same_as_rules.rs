@@ -18,6 +18,7 @@ use crate::inferray::{NodeDictionary, TripleStore};
 //  *
 //  *         Dec. 13
 //  */
+#[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
     let mut output = TripleStore::new();
     let pairs1 = ts.elem.get(NodeDictionary::prop_idx_to_idx(
@@ -77,6 +78,7 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
     }
 }
 
+#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SAME_AS(ts: &TripleStore) -> TripleStore {
     apply_same_as_rule(ts)
 }
