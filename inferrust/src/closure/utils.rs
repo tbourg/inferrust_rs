@@ -16,16 +16,16 @@ pub fn graph_tc(g: &ClosureGraph) {
         let mut adj_comp_roots = HashSet::new();
         for wi in g.edges(v.id) {
             let w = g.node(wi);
-            if *w.dfs_num.borrow() == usize::max_value() {
+            if w.num() == usize::max_value() {
                 node_tc(&w, stack, g, num);
                 let vroot = g.node(v.root());
                 let wroot = g.node(w.root());
                 v.set_root(minn(&vroot, &wroot));
-                if *w.in_comp.borrow() {
+                if w.in_comp() {
                     adj_comp_roots.insert(w.root());
                 }
-            } else if *v.dfs_num.borrow() > *w.dfs_num.borrow() {
-                if !*w.in_comp.borrow() {
+            } else if v.num() > w.num() {
+                if !w.in_comp() {
                     let vroot = g.node(v.root());
                     let wroot = g.node(w.root());
                     v.set_root(minn(&vroot, &wroot));
@@ -44,20 +44,20 @@ pub fn graph_tc(g: &ClosureGraph) {
         }
         if v.root() == v.id {
             let top = g.node(*stack.last().unwrap());
-            if *top.dfs_num.borrow() > *v.dfs_num.borrow() {
+            if top.num() > v.num() {
                 v.tc_insert(v.id);
             }
             let mut wid = stack.pop().unwrap();
             while wid != v.id {
                 let w = g.node(wid);
-                *w.in_comp.borrow_mut() = true;
+                w.set_in_comp(true);
                 if !w.tc_is_empty() {
                     v.tc_extend(w.tc_iter());
                 }
                 w.set_root(v.id);
                 wid = stack.pop().unwrap();
             }
-            *v.in_comp.borrow_mut() = true;
+            v.set_in_comp(true);
         } else {
             let root_v = g.node(v.root());
             root_v.tc_insert(v.id);
@@ -66,14 +66,14 @@ pub fn graph_tc(g: &ClosureGraph) {
         }
     }
     for v in g.iter_nodes() {
-        if *v.dfs_num.borrow() == usize::max_value() {
+        if v.num() == usize::max_value() {
             node_tc(v, &mut stack, g, &mut num);
         }
     }
 }
 
 fn minn(a: &Node, b: &Node) -> u64 {
-    if *a.dfs_num.borrow() <= *b.dfs_num.borrow() {
+    if a.num() <= b.num() {
         a.id
     } else {
         b.id
