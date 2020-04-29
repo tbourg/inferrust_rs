@@ -2,7 +2,6 @@
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
 use sophia::term::factory::{ArcTermFactory, TermFactory};
-use sophia::term::iri::Normalization::LastGenDelim;
 use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
 
 use std::borrow::Borrow;
@@ -114,8 +113,7 @@ impl NodeDictionary {
             None => {
                 // NB: we could not use self.index.entry,
                 // because we do not want to allocate the term before we need it
-                let normalized = term.normalized(LastGenDelim);
-                let arcterm = self.factory.convert_term(normalized.as_ref_str());
+                let arcterm = self.factory.convert_term(term);
                 let refterm = unsafe { fake_static(&arcterm) };
                 self.resources.push(arcterm);
                 let idx = self.resources.len() as u64 + Self::START_INDEX as u64;
@@ -133,8 +131,7 @@ impl NodeDictionary {
             None => {
                 // NB: we could not use self.index.entry,
                 // because we do not want to allocate the term before we need it
-                let normalized = term.normalized(LastGenDelim);
-                let arcterm = self.factory.convert_term(normalized.as_ref_str());
+                let arcterm = self.factory.convert_term(term);
                 let refterm = unsafe { fake_static(&arcterm) };
                 self.properties.push(arcterm);
                 let idx = Self::START_INDEX as u32 - self.properties.len() as u32;
