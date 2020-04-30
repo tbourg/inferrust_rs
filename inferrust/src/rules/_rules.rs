@@ -27,12 +27,11 @@ impl RuleSet for Vec<Box<Rule>> {
             return;
         }
         let mut outputs = TripleStore::new();
-        let ts = graph.dictionary.ts_mut();
+        let ts = graph.dict().ts();
         self.iter().for_each(|rule| outputs.add_all(rule(ts)));
         outputs.sort();
-        graph
-            .dictionary
-            .set_ts(TripleStore::join(graph.dictionary.ts(), &outputs));
+        let ts = TripleStore::join(graph.dict().ts(), &outputs);
+        graph.dict_mut().set_ts(ts);
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
@@ -41,16 +40,14 @@ impl RuleSet for Vec<Box<Rule>> {
             return;
         }
         let mut outputs = Mutex::new(TripleStore::new());
-        let ts = graph.dictionary.ts_mut();
+        let ts = graph.dict().ts();
         self.par_iter_mut().for_each(|rule| {
             let inferred = rule(ts);
             outputs.lock().unwrap().add_all(inferred);
         });
         outputs.get_mut().unwrap().sort();
-        graph.dictionary.set_ts(TripleStore::join(
-            graph.dictionary.ts(),
-            &outputs.into_inner().unwrap(),
-        ));
+        let ts = TripleStore::join(graph.dict().ts(), &outputs.into_inner().unwrap());
+        graph.dict_mut().set_ts(ts);
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
@@ -437,10 +434,10 @@ pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
 pub fn finalize(graph: &mut InfGraph) {
     let type_index = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
     let res = NodeDictionary::rdfsResource;
-    ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dictionary.get_res_ctr()).for_each(|e| {
-        if !graph.dictionary.was_removed(&e) {
-            graph.dictionary.ts_mut().add_triple_raw(e, type_index, res);
+    ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dict().get_res_ctr()).for_each(|e| {
+        if !graph.dict().was_removed(&e) {
+            graph.dict_mut().ts_mut().add_triple_raw(e, type_index, res);
         }
     });
-    graph.dictionary.ts_mut().sort();
+    graph.dict_mut().ts_mut().sort();
 }

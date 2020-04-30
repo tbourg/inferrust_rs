@@ -14,7 +14,7 @@ use crate::rules::*;
 use crate::utils::*;
 
 pub struct InfGraph {
-    pub dictionary: NodeDictionary,
+    dictionary: NodeDictionary,
 }
 
 impl Graph for InfGraph {
@@ -329,6 +329,24 @@ impl InfGraph {
             o = self.dictionary.add(to);
         }
         [s, p as u64, o]
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn dict(&self) -> &NodeDictionary {
+        &self.dictionary
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn dict_mut(&mut self) -> &mut NodeDictionary {
+        &mut self.dictionary
+    }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    #[inline]
+    pub fn set_dict(&mut self, dictionary: NodeDictionary) {
+        self.dictionary = dictionary;
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
