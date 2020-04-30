@@ -92,6 +92,15 @@ impl Chunk {
         }
         self.so.push(so);
     }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    fn add_sos(&mut self, sos: &Vec<[u64; 2]>) {
+        #[cfg(debug_assertions)]
+        {
+            self.so_dirty = true;
+        }
+        self.so.extend(sos);
+    }
 }
 
 impl TripleStore {
@@ -133,9 +142,8 @@ impl TripleStore {
             self.elem.resize_with(other.elem.len(), Default::default);
         }
         for ip in 0..other.elem.len() {
-            for [is, io] in other.elem[ip].so_unsorted() {
-                self.add_triple_raw(*is, ip, *io);
-            }
+            let triples_to_add = other.elem[ip].so_unsorted();
+            self.add_triples_raw(ip, triples_to_add);
         }
     }
     /// # Pre-condition
@@ -143,8 +151,24 @@ impl TripleStore {
     #[inline]
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
-        self.elem[ip].add_so([is, io]);
         self.size += 1;
+        self.elem[ip].add_so([is, io]);
+    }
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    pub fn add_triples(&mut self, ip: u64, sos: &Vec<[u64; 2]>) {
+        let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
+        if ip_to_store >= self.elem.len() {
+            self.elem.resize_with(ip_to_store + 1, Default::default);
+        }
+        self.add_triples_raw(ip_to_store, sos);
+    }
+    /// # Pre-condition
+    /// `self.elem` must have an element at index `ip`
+    #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    pub fn add_triples_raw(&mut self, ip: usize, sos: &Vec<[u64; 2]>) {
+        self.size += sos.len();
+        self.elem[ip].add_sos(sos);
     }
     #[cfg(not(debug_assertions))]
     pub fn sort(&mut self) {

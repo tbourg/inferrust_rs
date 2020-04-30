@@ -20,12 +20,12 @@ fn apply_gamma_rule(
             break;
         }
         let pairs2 = pairs2.unwrap().so();
-        for pair2 in pairs2 {
-            if raw_idx {
+        if raw_idx {
+            for pair2 in pairs2 {
                 output.add_triple([pair2[if subject { 0 } else { 1 }], output_prop, pair1[1]]);
-            } else {
-                output.add_triple([pair2[0], pair1[1], pair2[1]]);
             }
+        } else {
+            output.add_triples(pair1[1], pairs2);
         }
     }
     output
