@@ -246,7 +246,7 @@ impl RuleProfile {
                 },
             },
             after_rules: None,
-            name: "RhoDF".to_string(),
+            name: "RHODF".to_string(),
         }
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
@@ -324,7 +324,7 @@ impl RuleProfile {
                 },
             },
             after_rules: Some(Box::new(finalize)),
-            name: "RDFS+".to_string(),
+            name: "RDFSPLUS".to_string(),
         }
     }
 
