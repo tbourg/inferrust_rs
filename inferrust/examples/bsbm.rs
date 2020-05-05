@@ -22,7 +22,7 @@ fn main() {
                     let t0 = precise_time_ns();
                     let ts = sophia::parser::turtle::parse_str(&rep);
                     let mut i_graph = InfGraph::from(ts);
-                    // let len = i_graph.size();
+                    let len = i_graph.size();
                     // println!("graph size: {}", i_graph.size());
                     let t1 = precise_time_ns();
                     if par {
@@ -43,7 +43,8 @@ fn main() {
                     println!(
                         "rust,{},{},{},{}",
                         profile.name(),
-                        file.as_ref().unwrap().path().to_str().unwrap(),
+                        len,
+                        // file.as_ref().unwrap().path().to_str().unwrap(),
                         load_time,
                         process_time
                     );

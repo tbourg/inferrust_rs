@@ -6,7 +6,7 @@ use time::precise_time_ns;
 use std::fs;
 
 fn main() {
-    let profile = &mut RuleProfile::RDFS();
+    let profile = &mut RuleProfile::RDFSPlus();
     let path = "inferrust/res/flame.nt";
     let rep = fs::read_to_string(path).unwrap();
     let t0 = precise_time_ns();

@@ -15,7 +15,6 @@ pub struct TripleStore {
 pub struct Chunk {
     so: Vec<[u64; 2]>,
     os: OnceCell<Vec<[u64; 2]>>,
-    #[cfg(debug_assertions)]
     so_dirty: bool,
 }
 
@@ -33,19 +32,19 @@ impl Chunk {
         Chunk {
             so,
             os: OnceCell::new(),
-            #[cfg(debug_assertions)]
             so_dirty: false,
         }
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn so_sort(&mut self) -> usize {
-        #[cfg(debug_assertions)]
-        {
+        if self.so_dirty {
             self.so_dirty = false;
+            self.os = OnceCell::new();
+            bucket_sort_pairs(&mut self.so)
+        } else {
+            self.so.len()
         }
-        self.os = OnceCell::new();
-        bucket_sort_pairs(&mut self.so)
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
@@ -86,19 +85,13 @@ impl Chunk {
 
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn add_so(&mut self, so: [u64; 2]) {
-        #[cfg(debug_assertions)]
-        {
-            self.so_dirty = true;
-        }
+        self.so_dirty = true;
         self.so.push(so);
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn add_sos(&mut self, sos: &Vec<[u64; 2]>) {
-        #[cfg(debug_assertions)]
-        {
-            self.so_dirty = true;
-        }
+        self.so_dirty = true;
         self.so.extend(sos);
     }
 }
