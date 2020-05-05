@@ -9,3 +9,4 @@ Cargo.lock
 !*/res/bsbm/
 !*/examples/bsbm.rs
 !*/examples/flame.rs
+!*/examples/sort.rs

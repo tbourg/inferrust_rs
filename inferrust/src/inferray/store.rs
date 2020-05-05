@@ -291,7 +291,7 @@ impl TripleStore {
 
 /// Sort the pairs and remove duplicates
 #[cfg_attr(debug_assertions, flamer::flame)]
-fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
+pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     if pairs.is_empty() {
         return 0;
     }
