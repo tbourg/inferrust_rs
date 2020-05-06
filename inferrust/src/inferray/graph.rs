@@ -298,9 +298,9 @@ impl Graph for InfGraph {
 
 impl InfGraph {
     #[cfg_attr(debug_assertions, flamer::flame)]
-    fn encode_triple<TD>(&mut self, t: &dyn Triple<TermData = TD>) -> [u64; 3]
+    fn encode_triple<T>(&mut self, t: &T) -> [u64; 3]
     where
-        TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,
+        T: Triple,
     {
         let mut s: u64 = 0;
         let mut o: u64 = 0;
@@ -786,7 +786,7 @@ fn contains_prop_in_s_or_o<TD>(property_index: u32, object: &Term<TD>) -> i8
 where
     TD: std::convert::AsRef<str> + std::clone::Clone + std::cmp::Eq + std::hash::Hash,
 {
-    // Special case: if p a ...Property -> return 3
+    // Special case: if s a ...Property -> return 3
     if property_index == NodeDictionary::rdftype {
         let o_str = object.value();
         if o_str.to_lowercase().ends_with("property") {
