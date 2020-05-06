@@ -207,8 +207,8 @@ impl NodeDictionary {
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn was_removed(&self, res: &u64) -> bool {
-        self.removed_val.contains(res)
+    pub fn was_removed(&self, res: u64) -> bool {
+        self.removed_val.contains(&res)
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]

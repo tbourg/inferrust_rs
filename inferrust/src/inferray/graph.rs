@@ -761,7 +761,7 @@ where
 {
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn from(mut ts: TS) -> Self {
-        let store = TripleStore::new();
+        let store = TripleStore::default();
         let dictionary = NodeDictionary::new(store);
         let mut me = Self { dictionary };
 

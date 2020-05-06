@@ -26,7 +26,7 @@ impl RuleSet for Vec<Box<Rule>> {
         if self.is_empty() {
             return;
         }
-        let mut outputs = TripleStore::new();
+        let mut outputs = TripleStore::default();
         let ts = graph.dict().ts();
         self.iter().for_each(|rule| outputs.add_all(rule(ts)));
         outputs.sort();
@@ -39,7 +39,7 @@ impl RuleSet for Vec<Box<Rule>> {
         if self.is_empty() {
             return;
         }
-        let mut outputs = Mutex::new(TripleStore::new());
+        let mut outputs = Mutex::new(TripleStore::default());
         let ts = graph.dict().ts();
         self.par_iter_mut().for_each(|rule| {
             let inferred = rule(ts);
@@ -336,7 +336,7 @@ impl RuleProfile {
 
 #[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::new();
+    let mut output = TripleStore::default();
     let pairs_mut = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
@@ -384,7 +384,7 @@ pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
 
 #[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::new();
+    let mut output = TripleStore::default();
     let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
@@ -435,7 +435,7 @@ pub fn finalize(graph: &mut InfGraph) {
     let type_index = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
     let res = NodeDictionary::rdfsResource;
     ((NodeDictionary::START_INDEX as u64 + 1)..=graph.dict().get_res_ctr()).for_each(|e| {
-        if !graph.dict().was_removed(&e) {
+        if !graph.dict().was_removed(e) {
             graph.dict_mut().ts_mut().add_triple_raw(e, type_index, res);
         }
     });

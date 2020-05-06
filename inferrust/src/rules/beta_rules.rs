@@ -18,14 +18,14 @@ use crate::inferray::TripleStore;
 fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> TripleStore {
     let pairs = ts.elem().get(rule_p);
     if pairs == None {
-        return TripleStore::new();
+        return TripleStore::default();
     }
     let pairs = pairs.unwrap();
     let rule_p = NodeDictionary::idx_to_prop_idx(rule_p);
     let infer_p = NodeDictionary::idx_to_prop_idx(infer_p);
     let pairs1 = pairs.so();
     let pairs2 = pairs1;
-    let mut output = TripleStore::new();
+    let mut output = TripleStore::default();
     for pair1 in pairs1 {
         for pair2 in pairs2 {
             if pair1[1] == pair2[0] {
@@ -48,12 +48,12 @@ fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> TripleSto
 fn apply_inverse_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> TripleStore {
     let pairs = ts.elem().get(rule_p);
     if pairs == None {
-        return TripleStore::new();
+        return TripleStore::default();
     }
     let rule_p = NodeDictionary::idx_to_prop_idx(rule_p);
     let infer_p = NodeDictionary::idx_to_prop_idx(infer_p);
     let pairs1 = pairs.unwrap();
-    let mut output = TripleStore::new();
+    let mut output = TripleStore::default();
     for pair1 in pairs1.so() {
         output.add_triple([pair1[0], infer_p, pair1[1]]);
         output.add_triple([pair1[1], infer_p, pair1[0]]);

@@ -3,7 +3,7 @@ use crate::inferray::TripleStore;
 
 #[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleStore {
-    let mut output = TripleStore::new();
+    let mut output = TripleStore::default();
     if let Some(pairs) = ts.elem().get(prop_idx) {
         for pair in pairs.so() {
             if pair[0] != pair[1] {

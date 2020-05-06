@@ -5,7 +5,7 @@ use std::mem;
 
 use super::NodeDictionary;
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(Default, PartialEq, Debug, Clone)]
 pub struct TripleStore {
     elem: Vec<Chunk>,
     size: usize,
@@ -75,9 +75,9 @@ impl Chunk {
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn res_to_prop(&mut self, res: u64, prop: u64) {
         for pair in self.so.iter_mut() {
-            for i in 0..=1 {
-                if pair[i] == res {
-                    pair[i] = prop;
+            for val in pair.iter_mut() {
+                if *val == res {
+                    *val = prop;
                 }
             }
         }
@@ -90,19 +90,13 @@ impl Chunk {
     }
 
     #[cfg_attr(debug_assertions, flamer::flame)]
-    fn add_sos(&mut self, sos: &Vec<[u64; 2]>) {
+    fn add_sos(&mut self, sos: &[[u64; 2]]) {
         self.so_dirty = true;
         self.so.extend(sos);
     }
 }
 
 impl TripleStore {
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn new() -> Self {
-        let elem = Vec::new();
-        Self { elem, size: 0 }
-    }
-
     #[cfg_attr(debug_assertions, flamer::flame)]
     #[inline]
     pub fn elem(&self) -> &Vec<Chunk> {
@@ -148,7 +142,7 @@ impl TripleStore {
         self.elem[ip].add_so([is, io]);
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn add_triples(&mut self, ip: u64, sos: &Vec<[u64; 2]>) {
+    pub fn add_triples(&mut self, ip: u64, sos: &[[u64; 2]]) {
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
         if ip_to_store >= self.elem.len() {
             self.elem.resize_with(ip_to_store + 1, Default::default);
@@ -159,7 +153,7 @@ impl TripleStore {
     /// `self.elem` must have an element at index `ip`
     #[inline]
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn add_triples_raw(&mut self, ip: usize, sos: &Vec<[u64; 2]>) {
+    pub fn add_triples_raw(&mut self, ip: usize, sos: &[[u64; 2]]) {
         self.size += sos.len();
         self.elem[ip].add_sos(sos);
     }
@@ -295,6 +289,8 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     if pairs.is_empty() {
         return 0;
     }
+    #[cfg(debug_assertions)]
+    flame::start("init");
     let (min, max) = pairs
         .iter()
         .map(|pair| pair[0])
@@ -303,14 +299,15 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     let mut hist: Vec<usize> = vec![0; width];
     let mut hist2: Vec<usize> = Vec::with_capacity(width);
     let mut cumul: Vec<usize> = vec![0; width];
+    #[cfg(debug_assertions)]
+    flame::end("init");
 
     build_hist(pairs, min, 0, &mut hist);
     mem::replace(&mut hist2, hist.to_vec());
     build_cumul(&hist, &mut cumul);
     let len = pairs.len();
     let mut objects = vec![0; len];
-    for i in 0..len {
-        let val = pairs[i];
+    for val in pairs.iter() {
         let val_s = val[0];
         let val_o = val[1];
 
@@ -333,10 +330,9 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     let mut j = 0;
     let mut l = 0;
     let mut last = 0;
-    for i in 0..width {
-        let val = hist2[i];
+    for (i, val) in hist2.iter().enumerate() {
         let s = min + i as u64;
-        for k in 0..val {
+        for k in 0..*val {
             let o = objects[l];
             l += 1;
             if k == 0 || o != last {
@@ -384,6 +380,8 @@ fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
 /// Reverse the pairs and sort them
 #[cfg_attr(debug_assertions, flamer::flame)]
 fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
+    #[cfg(debug_assertions)]
+    flame::start("init_os");
     let (min, max) = pairs
         .iter()
         .map(|pair| pair[1])
@@ -392,13 +390,14 @@ fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
     let mut hist: Vec<usize> = vec![0; width];
     let mut hist2: Vec<usize> = Vec::with_capacity(width);
     let mut cumul: Vec<usize> = vec![0; width];
+    #[cfg(debug_assertions)]
+    flame::end("init_os");
     build_hist(pairs, min, 1, &mut hist);
     mem::replace(&mut hist2, hist.to_vec());
     build_cumul(&hist, &mut cumul);
     let len = pairs.len();
     let mut objects = vec![0; len];
-    for i in 0..len {
-        let val = pairs[i];
+    for val in pairs.iter() {
         let val_s = val[0];
         let val_o = val[1];
 
@@ -420,9 +419,8 @@ fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
 
     let mut j = 0;
     let mut l = 0;
-    for i in 0..width {
-        let val = hist2[i];
-        for _ in 0..val {
+    for (i, val) in hist2.iter().enumerate() {
+        for _ in 0..*val {
             let s = objects[l];
             l += 1;
             let o = min + i as u64;

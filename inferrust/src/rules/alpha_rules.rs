@@ -18,6 +18,8 @@
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 
+use std::cmp::Ordering;
+
 // :human rdfs:subclassof :mammal ||| :bart :type :human
 //  0           1            2           3    4      5
 //                        -->
@@ -36,11 +38,11 @@ pub fn apply_alpha_rule(
     let property_1_pairs = ts.elem().get(id_1 as usize);
     let property_2_pairs = ts.elem().get(id_2 as usize);
     if property_1_pairs == None || property_2_pairs == None {
-        return TripleStore::new();
+        return TripleStore::default();
     }
     let property_1_pairs = property_1_pairs.unwrap();
     let property_2_pairs = property_2_pairs.unwrap();
-    let mut output = TripleStore::new();
+    let mut output = TripleStore::default();
     let mut values: [u64; 6] = [0; 6];
     values[1] = id_1;
     values[4] = id_2;
@@ -50,14 +52,14 @@ pub fn apply_alpha_rule(
         for property_2_pair in property_2_pairs.os() {
             values[3] = property_2_pair[1];
             values[5] = property_2_pair[0];
-            if values[5] == values[0] {
-                output.add_triple([
+            match values[5].cmp(&values[0]) {
+                Ordering::Equal => output.add_triple([
                     values[id_s],
                     NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
                     values[id_o],
-                ]);
-            } else if values[5] > values[0] {
-                break;
+                ]),
+                Ordering::Greater => break,
+                Ordering::Less => (),
             }
         }
     }

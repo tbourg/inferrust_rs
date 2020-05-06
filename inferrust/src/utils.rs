@@ -1,7 +1,9 @@
+use std::cmp::Ordering;
+
 /// Pre-condition: vec is an array of pairs sorted on the first elem of each pair
 /// then on the second
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn binary_search_pair(vec: &Vec<[u64; 2]>, pair: [u64; 2]) -> bool {
+pub fn binary_search_pair(vec: &[[u64; 2]], pair: [u64; 2]) -> bool {
     let mut start = 0;
     let mut end = vec.len() - 1;
     while start <= end {
@@ -12,16 +14,16 @@ pub fn binary_search_pair(vec: &Vec<[u64; 2]>, pair: [u64; 2]) -> bool {
         if vec[mid] == pair {
             return true;
         }
-        if vec[mid][0] > pair[0] {
-            end = mid;
-        } else if vec[mid][0] == pair[0] {
-            if vec[mid][1] > pair[1] {
-                end = mid;
-            } else {
-                start = mid;
+        match vec[mid][0].cmp(&pair[0]) {
+            Ordering::Greater => end = mid,
+            Ordering::Equal => {
+                if vec[mid][1] > pair[1] {
+                    end = mid;
+                } else {
+                    start = mid;
+                }
             }
-        } else {
-            start = mid;
+            Ordering::Less => start = mid,
         }
     }
     false
@@ -29,14 +31,7 @@ pub fn binary_search_pair(vec: &Vec<[u64; 2]>, pair: [u64; 2]) -> bool {
 
 /// Pre-condition: vec is sorted on the first elem of each pair
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn first(
-    vec: &Vec<[u64; 2]>,
-    x: u64,
-    low: usize,
-    high: usize,
-    n: usize,
-    key_pos: usize,
-) -> usize {
+pub fn first(vec: &[[u64; 2]], x: u64, low: usize, high: usize, n: usize, key_pos: usize) -> usize {
     if high >= low {
         let mid = low + (high - low) / 2;
 
