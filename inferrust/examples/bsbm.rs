@@ -20,7 +20,7 @@ fn main() {
             profiles.iter_mut().for_each(|profile| {
                 for _ in 0..5 {
                     let t0 = precise_time_ns();
-                    let ts = sophia::parser::turtle::parse_str(&rep);
+                    let ts = sophia::parser::nt::parse_str(&rep);
                     let mut i_graph = InfGraph::from(ts);
                     let len = i_graph.size();
                     // println!("graph size: {}", i_graph.size());
