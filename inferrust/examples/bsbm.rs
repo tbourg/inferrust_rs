@@ -6,6 +6,10 @@ use time::precise_time_ns;
 use std::fs;
 
 fn main() {
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(4)
+        .build_global()
+        .unwrap();
     let par = true; //std::env::args().skip(1).next() == Some("par".to_string());
     let mut profiles = [
         RuleProfile::RDFS(),
