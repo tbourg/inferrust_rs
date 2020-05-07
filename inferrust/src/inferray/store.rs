@@ -323,9 +323,11 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     }
 
     for i in 0..(width - 1) {
-        insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
+        // insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
+        quickersort::sort(&mut objects[cumul[i]..cumul[i + 1]]);
     }
-    insertion_sort_slice(&mut objects, cumul[width - 1], len);
+    // insertion_sort_slice(&mut objects, cumul[width - 1], len);
+    quickersort::sort(&mut objects[cumul[width - 1]..len]);
 
     let mut j = 0;
     let mut l = 0;
