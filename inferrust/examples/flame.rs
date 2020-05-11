@@ -7,7 +7,7 @@ use std::fs;
 
 fn main() {
     let profile = &mut RuleProfile::RDFSPlus();
-    let path = "inferrust/res/flame.nt";
+    let path = "inferrust/res/bsbm/sample500.nt";
     let rep = fs::read_to_string(path).unwrap();
     let t0 = precise_time_ns();
     let ts = sophia::parser::turtle::parse_str(&rep);

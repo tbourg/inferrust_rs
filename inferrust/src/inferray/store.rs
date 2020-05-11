@@ -94,6 +94,14 @@ impl Chunk {
         self.so_dirty = true;
         self.so.extend(sos);
     }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    fn dupplicate_new_object(&mut self, o: u64, number: usize) {
+        let old_size = self.so.len();
+        for i in (old_size - number)..old_size {
+            self.so.push([self.so[i][0], o]);
+        }
+    }
 }
 
 impl TripleStore {
@@ -156,6 +164,22 @@ impl TripleStore {
     pub fn add_triples_raw(&mut self, ip: usize, sos: &[[u64; 2]]) {
         self.size += sos.len();
         self.elem[ip].add_sos(sos);
+    }
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    pub fn dupplicate_new_object(&mut self, ip: u64, o: u64, number: usize) {
+        let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
+        if ip_to_store >= self.elem.len() {
+            self.elem.resize_with(ip_to_store + 1, Default::default);
+        }
+        self.dupplicate_new_objects_raw(ip_to_store, o, number);
+    }
+    /// # Pre-condition
+    /// `self.elem` must have an element at index `ip`
+    #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    pub fn dupplicate_new_objects_raw(&mut self, ip: usize, o: u64, number: usize) {
+        self.size += number;
+        self.elem[ip].dupplicate_new_object(o, number);
     }
     #[cfg(not(debug_assertions))]
     pub fn sort(&mut self) {
@@ -328,7 +352,6 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     }
     // insertion_sort_slice(&mut objects, cumul[width - 1], len);
     quickersort::sort(&mut objects[cumul[width - 1]..len]);
-
     let mut j = 0;
     let mut l = 0;
     let mut last = 0;
@@ -344,7 +367,6 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
             last = o;
         }
     }
-
     pairs.truncate(j);
 
     j
@@ -402,22 +424,19 @@ fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
     for val in pairs.iter() {
         let val_s = val[0];
         let val_o = val[1];
-
         let idx = (val_o - min) as usize;
-
         let pos = cumul[idx];
         let remaining = hist[idx];
-
         let obj_idx = (pos + remaining - 1) as usize;
-
         hist[idx] -= 1;
         objects[obj_idx] = val_s;
     }
-
     for i in 0..(width - 1) {
-        insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
+        // insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
+        quickersort::sort(&mut objects[cumul[i]..cumul[i + 1]]);
     }
-    insertion_sort_slice(&mut objects, cumul[width - 1], len);
+    // insertion_sort_slice(&mut objects, cumul[width - 1], len);
+    quickersort::sort(&mut objects[cumul[width - 1]..len]);
 
     let mut j = 0;
     let mut l = 0;
