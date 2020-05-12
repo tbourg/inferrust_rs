@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use once_cell::sync::OnceCell;
 use rayon::prelude::*;
 use std::cmp::Ordering;
@@ -102,6 +103,20 @@ impl Chunk {
             self.so.push([self.so[i][0], o]);
         }
     }
+
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    fn dupplicate_new_subject_eq_check(&mut self, s: u64, number: usize) -> bool {
+        let mut matches = false;
+        let old_size = self.so.len();
+        for i in (old_size - number)..old_size {
+            let o = self.so[i][1];
+            matches = s == o;
+            if !matches {
+                self.so.push([s, o]);
+            }
+        }
+        matches
+    }
 }
 
 impl TripleStore {
@@ -165,14 +180,6 @@ impl TripleStore {
         self.size += sos.len();
         self.elem[ip].add_sos(sos);
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn dupplicate_new_object(&mut self, ip: u64, o: u64, number: usize) {
-        let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
-        if ip_to_store >= self.elem.len() {
-            self.elem.resize_with(ip_to_store + 1, Default::default);
-        }
-        self.dupplicate_new_objects_raw(ip_to_store, o, number);
-    }
     /// # Pre-condition
     /// `self.elem` must have an element at index `ip`
     #[inline]
@@ -180,6 +187,27 @@ impl TripleStore {
     pub fn dupplicate_new_objects_raw(&mut self, ip: usize, o: u64, number: usize) {
         self.size += number;
         self.elem[ip].dupplicate_new_object(o, number);
+    }
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    pub fn dupplicate_new_subject_eq_check(&mut self, ip: u64, s: u64, number: usize) -> bool {
+        let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
+        if ip_to_store >= self.elem.len() {
+            self.elem.resize_with(ip_to_store + 1, Default::default);
+        }
+        self.dupplicate_new_subject_eq_check_raw(ip_to_store, s, number)
+    }
+    /// # Pre-condition
+    /// `self.elem` must have an element at index `ip`
+    #[inline]
+    #[cfg_attr(debug_assertions, flamer::flame)]
+    pub fn dupplicate_new_subject_eq_check_raw(
+        &mut self,
+        ip: usize,
+        s: u64,
+        number: usize,
+    ) -> bool {
+        self.size += number;
+        self.elem[ip].dupplicate_new_subject_eq_check(s, number)
     }
     #[cfg(not(debug_assertions))]
     pub fn sort(&mut self) {
@@ -318,14 +346,15 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     let (min, max) = pairs
         .iter()
         .map(|pair| pair[0])
-        .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
+        .minmax()
+        .into_option()
+        .unwrap_or((0, 0));
     let width = (max - min + 1) as usize;
     let mut hist: Vec<usize> = vec![0; width];
     let mut hist2: Vec<usize> = Vec::with_capacity(width);
     let mut cumul: Vec<usize> = vec![0; width];
     #[cfg(debug_assertions)]
     flame::end("init");
-
     build_hist(pairs, min, 0, &mut hist);
     mem::replace(&mut hist2, hist.to_vec());
     build_cumul(&hist, &mut cumul);
@@ -334,23 +363,17 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     for val in pairs.iter() {
         let val_s = val[0];
         let val_o = val[1];
-
         let idx = (val_s - min) as usize;
-
         let pos = cumul[idx];
         let remaining = hist[idx];
-
         let obj_idx = (pos + remaining - 1) as usize;
-
         hist[idx] -= 1;
         objects[obj_idx] = val_o;
     }
 
     for i in 0..(width - 1) {
-        // insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
         quickersort::sort(&mut objects[cumul[i]..cumul[i + 1]]);
     }
-    // insertion_sort_slice(&mut objects, cumul[width - 1], len);
     quickersort::sort(&mut objects[cumul[width - 1]..len]);
     let mut j = 0;
     let mut l = 0;
@@ -368,21 +391,7 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
         }
     }
     pairs.truncate(j);
-
     j
-}
-
-#[cfg_attr(debug_assertions, flamer::flame)]
-fn insertion_sort_slice(v: &mut [u64], from: usize, to: usize) {
-    for i in from..to {
-        let mut j = i;
-        let tmp = v[i];
-        while j > from && v[j - 1] > tmp {
-            v[j] = v[j - 1];
-            j -= 1;
-        }
-        v[j] = tmp;
-    }
 }
 
 #[inline]
@@ -409,7 +418,9 @@ fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
     let (min, max) = pairs
         .iter()
         .map(|pair| pair[1])
-        .fold((u64::max_value(), 0), |acc, x| (acc.0.min(x), acc.1.max(x)));
+        .minmax()
+        .into_option()
+        .unwrap_or((0, 0));
     let width = (max - min + 1) as usize;
     let mut hist: Vec<usize> = vec![0; width];
     let mut hist2: Vec<usize> = Vec::with_capacity(width);
@@ -432,10 +443,8 @@ fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
         objects[obj_idx] = val_s;
     }
     for i in 0..(width - 1) {
-        // insertion_sort_slice(&mut objects, cumul[i], cumul[i + 1]);
         quickersort::sort(&mut objects[cumul[i]..cumul[i + 1]]);
     }
-    // insertion_sort_slice(&mut objects, cumul[width - 1], len);
     quickersort::sort(&mut objects[cumul[width - 1]..len]);
 
     let mut j = 0;

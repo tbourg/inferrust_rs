@@ -84,11 +84,11 @@ pub fn apply_alpha_rule(
             if !broke {
                 // Reached the end of second list - Check if subjects in
                 // first list remains the same. See example in the paper
-                if i < property_1_pairs.len() - 1 {
-                    i += 1;
+                if i < property_1_pairs.len() {
                     let property_1_pair = property_1_pairs[i];
                     values[0] = property_1_pair[0];
                     values[2] = property_1_pair[1];
+                    i += 1;
                     while values[0] == previous {
                         // Infer
                         output.dupplicate_new_objects_raw(
@@ -99,10 +99,10 @@ pub fn apply_alpha_rule(
                         if i == property_1_pairs.len() {
                             break;
                         }
-                        i += 1;
                         let property_1_pair = property_1_pairs[i];
                         values[0] = property_1_pair[0];
                         values[2] = property_1_pair[1];
+                        i += 1;
                     }
                 }
                 break;
