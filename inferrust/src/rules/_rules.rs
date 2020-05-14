@@ -177,9 +177,13 @@ impl RuleProfile {
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn Test() -> Self {
         let rules: Vec<Box<Rule>> = vec![
-            // Beta class
-            Box::new(SCM_SCO_EQC2),
-            // Box::new(SCM_SPO_EQP2),
+            // Alpha class
+            Box::new(CAX_SCO),
+            Box::new(CAX_EQC1),
+            Box::new(SCM_DOM1),
+            Box::new(SCM_DOM2),
+            Box::new(SCM_RNG1),
+            Box::new(SCM_RNG2),
         ];
         Self {
             cl_profile: ClosureProfile {

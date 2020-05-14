@@ -353,9 +353,9 @@ impl InfGraph {
     pub fn size(&mut self) -> usize {
         self.dictionary.ts_mut().size()
     }
-
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn process(&mut self, profile: &mut RuleProfile) {
+        self.dictionary.ts_mut().sort();
         self.close(&mut profile.cl_profile);
         profile.before_rules.process(self);
         if profile.axiomatic_triples {
@@ -369,9 +369,9 @@ impl InfGraph {
             None => (),
         }
     }
-
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn process_par(&mut self, profile: &mut RuleProfile) {
+        self.dictionary.ts_mut().sort();
         self.close(&mut profile.cl_profile);
         profile.before_rules.process_par(self);
         if profile.axiomatic_triples {
@@ -771,8 +771,6 @@ where
             me.dictionary.ts_mut().add_triple(rep);
         })
         .expect("Streaming error");
-
-        me.dictionary.ts_mut().sort();
 
         me
     }

@@ -103,20 +103,6 @@ impl Chunk {
             self.so.push([self.so[i][0], o]);
         }
     }
-
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    fn dupplicate_new_subject_eq_check(&mut self, s: u64, number: usize) -> bool {
-        let mut matches = false;
-        let old_size = self.so.len();
-        for i in (old_size - number)..old_size {
-            let o = self.so[i][1];
-            matches = s == o;
-            if !matches {
-                self.so.push([s, o]);
-            }
-        }
-        matches
-    }
 }
 
 impl TripleStore {
@@ -188,27 +174,6 @@ impl TripleStore {
         self.size += number;
         self.elem[ip].dupplicate_new_object(o, number);
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn dupplicate_new_subject_eq_check(&mut self, ip: u64, s: u64, number: usize) -> bool {
-        let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
-        if ip_to_store >= self.elem.len() {
-            self.elem.resize_with(ip_to_store + 1, Default::default);
-        }
-        self.dupplicate_new_subject_eq_check_raw(ip_to_store, s, number)
-    }
-    /// # Pre-condition
-    /// `self.elem` must have an element at index `ip`
-    #[inline]
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn dupplicate_new_subject_eq_check_raw(
-        &mut self,
-        ip: usize,
-        s: u64,
-        number: usize,
-    ) -> bool {
-        self.size += number;
-        self.elem[ip].dupplicate_new_subject_eq_check(s, number)
-    }
     #[cfg(not(debug_assertions))]
     pub fn sort(&mut self) {
         if self.elem.is_empty() {
@@ -277,7 +242,6 @@ impl TripleStore {
                                     s_o = u64::max_value();
                                     o_o = u64::max_value();
                                 }
-                                index_o += 1;
                             }
                             if new_i {
                                 if index_i < infered.len() {
@@ -288,31 +252,36 @@ impl TripleStore {
                                     s_i = u64::max_value();
                                     o_i = u64::max_value();
                                 }
-                                index_i += 1;
                             }
                             new_o = false;
                             new_i = false;
                             match s_o.cmp(&s_i) {
                                 Ordering::Less => {
                                     new_so.push([s_o, o_o]);
+                                    index_o += 1;
                                     new_o = true;
                                 }
                                 Ordering::Greater => {
                                     new_so.push([s_i, o_i]);
+                                    index_i += 1;
                                     new_i = true;
                                 }
                                 Ordering::Equal => match o_o.cmp(&o_i) {
                                     Ordering::Less => {
                                         new_so.push([s_o, o_o]);
+                                        index_o += 1;
                                         new_o = true;
                                     }
                                     Ordering::Greater => {
                                         new_so.push([s_i, o_i]);
+                                        index_i += 1;
                                         new_i = true;
                                     }
                                     Ordering::Equal => {
                                         new_so.push([s_o, o_o]);
+                                        index_o += 1;
                                         new_o = true;
+                                        index_i += 1;
                                         new_i = true;
                                     }
                                 },
@@ -538,6 +507,19 @@ fn test_join() {
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
+        size: 2,
+    };
+    let b = TripleStore {
+        elem: vec![Chunk::new(vec![[1, 1]])],
+        size: 1,
+    };
+    let expected = TripleStore {
+        elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
+        size: 2,
+    };
+    assert_eq!(TripleStore::join(&a, &b), expected);
+    let a = TripleStore {
+        elem: vec![Chunk::new(vec![[1, 2]])],
         size: 2,
     };
     let b = TripleStore {
