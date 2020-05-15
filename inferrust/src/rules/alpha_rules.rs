@@ -55,59 +55,59 @@ pub fn apply_alpha_rule(
         let property_1_pair = property_1_pairs[i];
         values[0] = property_1_pair[0];
         values[2] = property_1_pair[1];
-        // if values[0] == previous && last_number != 0 {
-        //     output.dupplicate_new_objects_raw(values[id_p] as usize, values[2], last_number);
-        // } else {
-        last_number = 0;
-        let mut broke = false;
-        for j in counter..property_2_pairs.len() {
-            let property_2_pair = property_2_pairs[j];
-            values[3] = property_2_pair[1];
-            values[5] = property_2_pair[0];
-            match values[5].cmp(&values[0]) {
-                Ordering::Equal => {
-                    output.add_triple([
-                        values[id_s],
-                        NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
-                        values[id_o],
-                    ]);
-                    last_number += 1;
+        if values[0] == previous && last_number != 0 {
+            output.dupplicate_new_objects_raw(values[id_p] as usize, values[2], last_number);
+        } else {
+            last_number = 0;
+            let mut broke = false;
+            for j in counter..property_2_pairs.len() {
+                let property_2_pair = property_2_pairs[j];
+                values[3] = property_2_pair[1];
+                values[5] = property_2_pair[0];
+                match values[5].cmp(&values[0]) {
+                    Ordering::Equal => {
+                        output.add_triple([
+                            values[id_s],
+                            NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
+                            values[id_o],
+                        ]);
+                        last_number += 1;
+                    }
+                    Ordering::Greater => {
+                        broke = true;
+                        counter = j;
+                        break;
+                    }
+                    Ordering::Less => (),
                 }
-                Ordering::Greater => {
-                    broke = true;
-                    // counter = j;
-                    break;
+            }
+            if !broke {
+                // Reached the end of second list - Check if subjects in
+                // first list remains the same. See example in the paper
+                if i < property_1_pairs.len() {
+                    let property_1_pair = property_1_pairs[i];
+                    values[0] = property_1_pair[0];
+                    values[2] = property_1_pair[1];
+                    i += 1;
+                    while values[0] == previous {
+                        // Infer
+                        output.dupplicate_new_objects_raw(
+                            values[id_p] as usize,
+                            values[2],
+                            last_number,
+                        );
+                        if i == property_1_pairs.len() {
+                            break;
+                        }
+                        let property_1_pair = property_1_pairs[i];
+                        values[0] = property_1_pair[0];
+                        values[2] = property_1_pair[1];
+                        i += 1;
+                    }
                 }
-                Ordering::Less => (),
+                break;
             }
         }
-        //     if !broke {
-        //         // Reached the end of second list - Check if subjects in
-        //         // first list remains the same. See example in the paper
-        //         if i < property_1_pairs.len() {
-        //             let property_1_pair = property_1_pairs[i];
-        //             values[0] = property_1_pair[0];
-        //             values[2] = property_1_pair[1];
-        //             i += 1;
-        //             while values[0] == previous {
-        //                 // Infer
-        //                 output.dupplicate_new_objects_raw(
-        //                     values[id_p] as usize,
-        //                     values[2],
-        //                     last_number,
-        //                 );
-        //                 if i == property_1_pairs.len() {
-        //                     break;
-        //                 }
-        //                 let property_1_pair = property_1_pairs[i];
-        //                 values[0] = property_1_pair[0];
-        //                 values[2] = property_1_pair[1];
-        //                 i += 1;
-        //             }
-        //         }
-        //         break;
-        //     }
-        // }
         previous = values[0];
     }
     output

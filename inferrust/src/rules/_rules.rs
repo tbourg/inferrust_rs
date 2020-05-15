@@ -187,10 +187,10 @@ impl RuleProfile {
         ];
         Self {
             cl_profile: ClosureProfile {
-                on_sa: false,
-                on_sco: false,
-                on_spo: false,
-                on_trp: false,
+                on_sa: true,
+                on_sco: true,
+                on_spo: true,
+                on_trp: true,
             },
             axiomatic_triples: false,
             before_rules: StaticRuleSet {
