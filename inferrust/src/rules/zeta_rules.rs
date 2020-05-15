@@ -7,8 +7,8 @@ fn apply_zeta_rule(
     output_p: u64,
     output_o: u64,
     object_is_subject: bool,
-) -> TripleStore {
-    let mut output = TripleStore::default();
+) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
@@ -25,9 +25,9 @@ fn apply_zeta_rule(
         }
         if pair1[0] == input_o {
             if !object_is_subject {
-                output.add_triple([pair1[1], output_p, output_o]);
+                output.push([pair1[1], output_p, output_o]);
             } else {
-                output.add_triple([pair1[1], output_p, pair1[1]]);
+                output.push([pair1[1], output_p, pair1[1]]);
             }
         }
     }
@@ -35,14 +35,14 @@ fn apply_zeta_rule(
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS6(ts: &TripleStore) -> TripleStore {
+pub fn RDFS6(ts: &TripleStore) -> Vec<[u64; 3]> {
     let input_o = NodeDictionary::rdfProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS8(ts: &TripleStore) -> TripleStore {
+pub fn RDFS8(ts: &TripleStore) -> Vec<[u64; 3]> {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdftype as u64;
     let output_o = NodeDictionary::rdfsResource;
@@ -50,14 +50,14 @@ pub fn RDFS8(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS10(ts: &TripleStore) -> TripleStore {
+pub fn RDFS10(ts: &TripleStore) -> Vec<[u64; 3]> {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS12(ts: &TripleStore) -> TripleStore {
+pub fn RDFS12(ts: &TripleStore) -> Vec<[u64; 3]> {
     let input_o = NodeDictionary::rdfsContainerMembershipProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
     let output_o = NodeDictionary::rdfsMember as u64;
@@ -65,7 +65,7 @@ pub fn RDFS12(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS13(ts: &TripleStore) -> TripleStore {
+pub fn RDFS13(ts: &TripleStore) -> Vec<[u64; 3]> {
     let input_o = NodeDictionary::rdfsDatatype;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
     let output_o = NodeDictionary::rdfsLiteral;
@@ -73,8 +73,8 @@ pub fn RDFS13(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::default();
+pub fn SCM_DP_OP(ts: &TripleStore) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
@@ -96,8 +96,8 @@ pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
                 break;
             }
             if pair1[0] == *object {
-                output.add_triple([pair1[1], NodeDictionary::rdfssubPropertyOf as u64, pair1[1]]);
-                output.add_triple([
+                output.push([pair1[1], NodeDictionary::rdfssubPropertyOf as u64, pair1[1]]);
+                output.push([
                     pair1[1],
                     NodeDictionary::owlequivalentProperty as u64,
                     pair1[1],
@@ -109,8 +109,8 @@ pub fn SCM_DP_OP(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::default();
+pub fn SCM_CLS(ts: &TripleStore) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
@@ -127,18 +127,18 @@ pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
             break;
         }
         if pair1[0] == object {
-            output.add_triple([pair1[1], NodeDictionary::rdfssubClassOf as u64, pair1[1]]);
-            output.add_triple([
+            output.push([pair1[1], NodeDictionary::rdfssubClassOf as u64, pair1[1]]);
+            output.push([
                 pair1[1],
                 NodeDictionary::owlequivalentClass as u64,
                 pair1[1],
             ]);
-            output.add_triple([
+            output.push([
                 pair1[1],
                 NodeDictionary::rdfssubClassOf as u64,
                 NodeDictionary::owlthing as u64,
             ]);
-            output.add_triple([
+            output.push([
                 NodeDictionary::nothing as u64,
                 NodeDictionary::rdfssubClassOf as u64,
                 pair1[1],
@@ -149,8 +149,8 @@ pub fn SCM_CLS(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS4(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::default();
+pub fn RDFS4(ts: &TripleStore) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     let mut resources_idx = Vec::new();
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
@@ -174,7 +174,7 @@ pub fn RDFS4(ts: &TripleStore) -> TripleStore {
     for pairs2 in ts.elem() {
         for pair2 in pairs2.so() {
             if resources_idx.contains(&pair2[1]) {
-                output.add_triple([pair2[0], NodeDictionary::rdftype as u64, object]);
+                output.push([pair2[0], NodeDictionary::rdftype as u64, object]);
             }
         }
     }

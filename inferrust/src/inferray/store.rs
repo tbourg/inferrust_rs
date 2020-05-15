@@ -54,12 +54,6 @@ impl Chunk {
         debug_assert!(!self.so_dirty);
         &self.so
     }
-
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    fn so_unsorted(&self) -> &Vec<[u64; 2]> {
-        &self.so
-    }
-
     #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn os(&self) -> &Vec<[u64; 2]> {
         #[cfg(debug_assertions)]
@@ -95,14 +89,6 @@ impl Chunk {
         self.so_dirty = true;
         self.so.extend(sos);
     }
-
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    fn dupplicate_new_object(&mut self, o: u64, number: usize) {
-        let old_size = self.so.len();
-        for i in (old_size - number)..old_size {
-            self.so.push([self.so[i][0], o]);
-        }
-    }
 }
 
 impl TripleStore {
@@ -133,13 +119,9 @@ impl TripleStore {
         self.add_triple_raw(is, ip_to_store, io);
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn add_all(&mut self, other: Self) {
-        if other.elem.len() > self.elem.len() {
-            self.elem.resize_with(other.elem.len(), Default::default);
-        }
-        for ip in 0..other.elem.len() {
-            let triples_to_add = other.elem[ip].so_unsorted();
-            self.add_triples_raw(ip, triples_to_add);
+    pub fn add_all(&mut self, other: Vec<Vec<[u64; 3]>>) {
+        for t in other.iter().flat_map(|e| e.iter()) {
+            self.add_triple(*t);
         }
     }
     /// # Pre-condition
@@ -165,14 +147,6 @@ impl TripleStore {
     pub fn add_triples_raw(&mut self, ip: usize, sos: &[[u64; 2]]) {
         self.size += sos.len();
         self.elem[ip].add_sos(sos);
-    }
-    /// # Pre-condition
-    /// `self.elem` must have an element at index `ip`
-    #[inline]
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn dupplicate_new_objects_raw(&mut self, ip: usize, o: u64, number: usize) {
-        self.size += number;
-        self.elem[ip].dupplicate_new_object(o, number);
     }
     #[cfg(not(debug_assertions))]
     pub fn sort(&mut self) {

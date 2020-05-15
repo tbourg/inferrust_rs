@@ -19,8 +19,8 @@ use crate::inferray::{NodeDictionary, TripleStore};
 //  *         Dec. 13
 //  */
 #[cfg_attr(debug_assertions, flamer::flame)]
-fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::default();
+fn apply_same_as_rule(ts: &TripleStore) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::owlsameAs as u64,
     ));
@@ -32,11 +32,11 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
         output
     } else {
         for pair1 in pairs1 {
-            output.add_triple([pair1[1], NodeDictionary::owlsameAs as u64, pair1[0]]);
+            output.push([pair1[1], NodeDictionary::owlsameAs as u64, pair1[0]]);
             if pair1[0] < NodeDictionary::START_INDEX as u64 {
                 if let Some(pairs2) = ts.elem().get(NodeDictionary::prop_idx_to_idx(pair1[0])) {
                     for pair2 in pairs2.so() {
-                        output.add_triple([pair2[0], pair1[1], pair2[1]]);
+                        output.push([pair2[0], pair1[1], pair2[1]]);
                     }
                 }
             } else {
@@ -53,7 +53,7 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
                                     break;
                                 }
                                 if pair[0] == pair1[0] {
-                                    output.add_triple([pair1[1], pi, pair[1]]);
+                                    output.push([pair1[1], pi, pair[1]]);
                                 }
                             }
                         }
@@ -66,7 +66,7 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
                                     break;
                                 }
                                 if pair[0] == pair1[0] {
-                                    output.add_triple([pair[1], pi, pair1[1]]);
+                                    output.push([pair[1], pi, pair1[1]]);
                                 }
                             }
                         }
@@ -79,6 +79,6 @@ fn apply_same_as_rule(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SAME_AS(ts: &TripleStore) -> TripleStore {
+pub fn SAME_AS(ts: &TripleStore) -> Vec<[u64; 3]> {
     apply_same_as_rule(ts)
 }

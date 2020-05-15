@@ -34,15 +34,22 @@ pub fn apply_alpha_rule(
     id_s: usize,
     id_p: usize,
     id_o: usize,
-) -> TripleStore {
+) -> Vec<[u64; 3]> {
+    fn same_s_new_o(output: &mut Vec<[u64; 3]>, o: u64, number: usize) {
+        let old_size = output.len();
+        let p = output[0][1];
+        for i in (old_size - number)..old_size {
+            output.push([output[i][0], p, o]);
+        }
+    }
     let property_1_pairs = ts.elem().get(id_1 as usize);
     let property_2_pairs = ts.elem().get(id_2 as usize);
     if property_1_pairs == None || property_2_pairs == None {
-        return TripleStore::default();
+        return vec![];
     }
     let property_1_pairs = property_1_pairs.unwrap();
     let property_2_pairs = property_2_pairs.unwrap();
-    let mut output = TripleStore::default();
+    let mut output = vec![];
     let mut counter = 0;
     let mut previous = 0;
     let mut last_number = 0;
@@ -56,7 +63,7 @@ pub fn apply_alpha_rule(
         values[0] = property_1_pair[0];
         values[2] = property_1_pair[1];
         if values[0] == previous && last_number != 0 {
-            output.dupplicate_new_objects_raw(values[id_p] as usize, values[2], last_number);
+            same_s_new_o(&mut output, values[2], last_number);
         } else {
             last_number = 0;
             let mut broke = false;
@@ -66,7 +73,7 @@ pub fn apply_alpha_rule(
                 values[5] = property_2_pair[0];
                 match values[5].cmp(&values[0]) {
                     Ordering::Equal => {
-                        output.add_triple([
+                        output.push([
                             values[id_s],
                             NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
                             values[id_o],
@@ -91,11 +98,7 @@ pub fn apply_alpha_rule(
                     i += 1;
                     while values[0] == previous {
                         // Infer
-                        output.dupplicate_new_objects_raw(
-                            values[id_p] as usize,
-                            values[2],
-                            last_number,
-                        );
+                        same_s_new_o(&mut output, values[2], last_number);
                         if i == property_1_pairs.len() {
                             break;
                         }
@@ -114,15 +117,14 @@ pub fn apply_alpha_rule(
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn CAX_SCO(ts: &TripleStore) -> TripleStore {
-    ts;
+pub fn CAX_SCO(ts: &TripleStore) -> Vec<[u64; 3]> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn CAX_EQC1(ts: &TripleStore) -> TripleStore {
+pub fn CAX_EQC1(ts: &TripleStore) -> Vec<[u64; 3]> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
@@ -131,28 +133,28 @@ pub fn CAX_EQC1(ts: &TripleStore) -> TripleStore {
 /// CAX-EQC2 is implied cause a = b -> b = a
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DOM1(ts: &TripleStore) -> TripleStore {
+pub fn SCM_DOM1(ts: &TripleStore) -> Vec<[u64; 3]> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DOM2(ts: &TripleStore) -> TripleStore {
+pub fn SCM_DOM2(ts: &TripleStore) -> Vec<[u64; 3]> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_RNG1(ts: &TripleStore) -> TripleStore {
+pub fn SCM_RNG1(ts: &TripleStore) -> Vec<[u64; 3]> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_RNG2(ts: &TripleStore) -> TripleStore {
+pub fn SCM_RNG2(ts: &TripleStore) -> Vec<[u64; 3]> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2)

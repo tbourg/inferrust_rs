@@ -1,12 +1,10 @@
 use crate::inferray::*;
 use crate::rules::*;
 
-use std::sync::*;
-
 use rayon::prelude::*;
 
 /// A type alias  to unify all the rules of the reasoner
-pub type Rule = fn(&TripleStore) -> TripleStore;
+pub type Rule = fn(&TripleStore) -> Vec<[u64; 3]>;
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
@@ -28,7 +26,7 @@ impl RuleSet for Vec<Box<Rule>> {
         }
         let mut outputs = TripleStore::default();
         let ts = graph.dict().ts();
-        self.iter().for_each(|rule| outputs.add_all(rule(ts)));
+        outputs.add_all(self.iter().map(|rule| rule(ts)).collect());
         outputs.sort();
         let ts = TripleStore::join(graph.dict().ts(), &outputs);
         graph.dict_mut().set_ts(ts);
@@ -39,14 +37,11 @@ impl RuleSet for Vec<Box<Rule>> {
         if self.is_empty() {
             return;
         }
-        let mut outputs = Mutex::new(TripleStore::default());
+        let mut outputs = TripleStore::default();
         let ts = graph.dict().ts();
-        self.par_iter_mut().for_each(|rule| {
-            let inferred = rule(ts);
-            outputs.lock().unwrap().add_all(inferred);
-        });
-        outputs.get_mut().unwrap().sort();
-        let ts = TripleStore::join(graph.dict().ts(), &outputs.into_inner().unwrap());
+        outputs.add_all(self.par_iter_mut().map(|rule| rule(ts)).collect());
+        outputs.sort();
+        let ts = TripleStore::join(graph.dict().ts(), &outputs);
         graph.dict_mut().set_ts(ts);
     }
 
@@ -335,8 +330,8 @@ impl RuleProfile {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::default();
+pub fn PRP_FP(ts: &TripleStore) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     let pairs_mut = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
@@ -368,11 +363,7 @@ pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
                     }
                     if pair1[0] == pair2[0] {
                         if pair1[1] != pair2[1] {
-                            output.add_triple([
-                                pair1[1],
-                                NodeDictionary::owlsameAs as u64,
-                                pair2[1],
-                            ])
+                            output.push([pair1[1], NodeDictionary::owlsameAs as u64, pair2[1]])
                         }
                     }
                 }
@@ -383,8 +374,8 @@ pub fn PRP_FP(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
-    let mut output = TripleStore::default();
+pub fn PRP_IFP(ts: &TripleStore) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
@@ -416,11 +407,7 @@ pub fn PRP_IFP(ts: &TripleStore) -> TripleStore {
                     }
                     if pair1[0] == pair2[0] {
                         if pair1[1] != pair2[1] {
-                            output.add_triple([
-                                pair1[1],
-                                NodeDictionary::owlsameAs as u64,
-                                pair2[1],
-                            ])
+                            output.push([pair1[1], NodeDictionary::owlsameAs as u64, pair2[1]])
                         }
                     }
                 }

@@ -2,8 +2,8 @@ use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleStore {
-    let mut output = TripleStore::default();
+fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> Vec<[u64; 3]> {
+    let mut output = vec![];
     if let Some(pairs) = ts.elem().get(prop_idx) {
         for pair in pairs.so() {
             if pair[0] != pair[1] {
@@ -15,7 +15,7 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleSt
                         usable_pairs.so()
                     };
                     for usable_pair in usable_pairs {
-                        output.add_triple([usable_pair[0], pair[1], usable_pair[1]]);
+                        output.push([usable_pair[0], pair[1], usable_pair[1]]);
                     }
                 }
                 let prop_idx = NodeDictionary::prop_idx_to_idx(pair[1]);
@@ -26,7 +26,7 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleSt
                         usable_pairs.so()
                     };
                     for usable_pair in usable_pairs {
-                        output.add_triple([usable_pair[0], pair[0], usable_pair[1]]);
+                        output.push([usable_pair[0], pair[0], usable_pair[1]]);
                     }
                 }
             }
@@ -36,7 +36,7 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> TripleSt
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_INV_1_2(ts: &TripleStore) -> TripleStore {
+pub fn PRP_INV_1_2(ts: &TripleStore) -> Vec<[u64; 3]> {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlinverseOf as u64),
@@ -45,7 +45,7 @@ pub fn PRP_INV_1_2(ts: &TripleStore) -> TripleStore {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_EQP_1_2(ts: &TripleStore) -> TripleStore {
+pub fn PRP_EQP_1_2(ts: &TripleStore) -> Vec<[u64; 3]> {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentProperty as u64),
