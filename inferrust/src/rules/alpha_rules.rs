@@ -14,7 +14,6 @@
 //! subject</li>
 //! <li>Inferred triple contains only s,p,o from the head</li>
 //! </ol>
-
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 
@@ -33,33 +32,48 @@ pub fn apply_alpha_rule(
     id_p: usize,
     id_o: usize,
 ) -> TripleStore {
+    let mut output = TripleStore::new();
+
     let property_1_pairs = ts.elem().get(id_1 as usize);
     let property_2_pairs = ts.elem().get(id_2 as usize);
     if property_1_pairs == None || property_2_pairs == None {
-        return TripleStore::new();
+        return output;
     }
     let property_1_pairs = property_1_pairs.unwrap();
     let property_2_pairs = property_2_pairs.unwrap();
-    let mut output = TripleStore::new();
-    let mut values: [u64; 6] = [0; 6];
-    values[1] = id_1;
-    values[4] = id_2;
-    for property_1_pair in property_1_pairs.so() {
-        values[0] = property_1_pair[0];
-        values[2] = property_1_pair[1];
-        for property_2_pair in property_2_pairs.os() {
-            values[3] = property_2_pair[1];
-            values[5] = property_2_pair[0];
-            if values[5] == values[0] {
-                output.add_triple([
-                    values[id_s],
-                    NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
-                    values[id_o],
-                ]);
-            } else if values[5] > values[0] {
-                break;
-            }
-        }
+    
+    let my_iter = property_1_pairs
+        .so()
+        .iter()
+        .flat_map(|property_1_pair| {
+            property_2_pairs
+                .os()
+                .iter()
+                .map(move |property_2_pair|
+                    [
+                        property_1_pair[0],
+                        id_1,
+                        property_1_pair[1],
+                        property_2_pair[1],
+                        id_2,
+                        property_2_pair[0],
+                    ]
+                )
+                .take_while(|values| values[5] <= values[0])
+                .filter_map(|values| {
+                    if values[5] == values[0] {
+                        Some([
+                            values[id_s],
+                            NodeDictionary::idx_to_prop_idx(values[id_p] as usize),
+                            values[id_o],
+                        ])
+                    } else {
+                        None
+                    }
+                })
+            });
+    for t in my_iter {
+        output.add_triple(t)
     }
     output
 }
