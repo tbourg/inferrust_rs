@@ -1,5 +1,7 @@
 use crate::inferray::{NodeDictionary, TripleStore};
 
+use rayon::prelude::*;
+
 // /**
 //  * Same-as special Rule
 //  *
@@ -19,17 +21,17 @@ use crate::inferray::{NodeDictionary, TripleStore};
 //  *         Dec. 13
 //  */
 #[cfg_attr(debug_assertions, flamer::flame)]
-fn apply_same_as_rule(ts: &TripleStore) -> Vec<[u64; 3]> {
+fn apply_same_as_rule(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::owlsameAs as u64,
     ));
     if pairs1 == None {
-        return output;
+        return Box::new(output.into_iter());
     }
     let pairs1 = pairs1.unwrap().so();
     if pairs1.is_empty() {
-        output
+        Box::new(output.into_iter())
     } else {
         for pair1 in pairs1 {
             output.push([pair1[1], NodeDictionary::owlsameAs as u64, pair1[0]]);
@@ -74,11 +76,11 @@ fn apply_same_as_rule(ts: &TripleStore) -> Vec<[u64; 3]> {
                 }
             }
         }
-        output
+        Box::new(output.into_iter())
     }
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SAME_AS(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn SAME_AS(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     apply_same_as_rule(ts)
 }

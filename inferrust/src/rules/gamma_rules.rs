@@ -1,5 +1,7 @@
 use crate::inferray::{NodeDictionary, TripleStore};
 
+use rayon::prelude::*;
+
 #[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_gamma_rule(
     ts: &TripleStore,
@@ -7,11 +9,11 @@ fn apply_gamma_rule(
     output_prop: u64,
     subject: bool,
     raw_idx: bool,
-) -> Vec<[u64; 3]> {
+) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let mut output = vec![];
     let pairs1 = ts.elem().get(head_prop);
     if pairs1 == None {
-        return output;
+        return Box::new(output.into_iter());
     }
     let pairs1 = pairs1.unwrap().so();
     for pair1 in pairs1 {
@@ -28,11 +30,11 @@ fn apply_gamma_rule(
             }
         }
     }
-    output
+    Box::new(output.into_iter())
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_DOM(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn PRP_DOM(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     apply_gamma_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64),
@@ -43,7 +45,7 @@ pub fn PRP_DOM(ts: &TripleStore) -> Vec<[u64; 3]> {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_RNG(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn PRP_RNG(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     apply_gamma_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64),
@@ -54,7 +56,7 @@ pub fn PRP_RNG(ts: &TripleStore) -> Vec<[u64; 3]> {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_SPO1(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn PRP_SPO1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     apply_gamma_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64),
@@ -65,13 +67,13 @@ pub fn PRP_SPO1(ts: &TripleStore) -> Vec<[u64; 3]> {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_SYMP(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn PRP_SYMP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let mut output = vec![];
     let expected_ip = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
     let expected_io = NodeDictionary::owlsymmetricProperty as u64;
     let pairs1 = ts.elem().get(expected_ip);
     if pairs1 == None {
-        return output;
+        return Box::new(output.into_iter());
     }
     let pairs1 = pairs1.unwrap().os(); // os sorted copy
     for pair1 in &*pairs1 {
@@ -89,20 +91,20 @@ pub fn PRP_SYMP(ts: &TripleStore) -> Vec<[u64; 3]> {
             break;
         }
     }
-    output
+    Box::new(output.into_iter())
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn EQ_TRANS(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn EQ_TRANS(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+    let mut output = vec![];
     let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::owlsameAs as u64,
     ));
     if pairs == None {
-        return vec![];
+        return Box::new(output.into_iter());
     }
     let pairs1 = pairs.unwrap();
     let pairs2 = pairs.unwrap();
-    let mut output = vec![];
     for pair1 in pairs1.so() {
         for pair2 in pairs2.so() {
             if pair1[1] == pair2[0] {
@@ -116,5 +118,5 @@ pub fn EQ_TRANS(ts: &TripleStore) -> Vec<[u64; 3]> {
             }
         }
     }
-    output
+    Box::new(output.into_iter())
 }

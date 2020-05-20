@@ -20,6 +20,8 @@ use crate::inferray::TripleStore;
 
 use std::cmp::Ordering;
 
+use rayon::prelude::*;
+
 // :human rdfs:subclassof :mammal ||| :bart :type :human
 //  0           1            2           3    4      5
 //                        -->
@@ -34,7 +36,7 @@ pub fn apply_alpha_rule(
     id_s: usize,
     id_p: usize,
     id_o: usize,
-) -> Vec<[u64; 3]> {
+) -> Box<dyn Iterator<Item = [u64; 3]>> {
     fn same_s_new_o(output: &mut Vec<[u64; 3]>, o: u64, number: usize) {
         let old_size = output.len();
         let p = output[0][1];
@@ -42,14 +44,14 @@ pub fn apply_alpha_rule(
             output.push([output[i][0], p, o]);
         }
     }
+    let mut output = vec![];
     let property_1_pairs = ts.elem().get(id_1 as usize);
     let property_2_pairs = ts.elem().get(id_2 as usize);
     if property_1_pairs == None || property_2_pairs == None {
-        return vec![];
+        return Box::new(output.into_iter());
     }
     let property_1_pairs = property_1_pairs.unwrap();
     let property_2_pairs = property_2_pairs.unwrap();
-    let mut output = vec![];
     let mut counter = 0;
     let mut previous = 0;
     let mut last_number = 0;
@@ -113,18 +115,18 @@ pub fn apply_alpha_rule(
         }
         previous = values[0];
     }
-    output
+    Box::new(output.into_iter())
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn CAX_SCO(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn CAX_SCO(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn CAX_EQC1(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn CAX_EQC1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
@@ -133,28 +135,28 @@ pub fn CAX_EQC1(ts: &TripleStore) -> Vec<[u64; 3]> {
 /// CAX-EQC2 is implied cause a = b -> b = a
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DOM1(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn SCM_DOM1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DOM2(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn SCM_DOM2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_RNG1(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn SCM_RNG1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_RNG2(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn SCM_RNG2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2)

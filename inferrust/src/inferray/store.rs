@@ -119,8 +119,8 @@ impl TripleStore {
         self.add_triple_raw(is, ip_to_store, io);
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn add_all(&mut self, other: Vec<Vec<[u64; 3]>>) {
-        for t in other.iter().flat_map(|e| e.iter()) {
+    pub fn add_all(&mut self, other: Vec<[u64; 3]>) {
+        for t in other.iter() {
             self.add_triple(*t);
         }
     }
