@@ -18,6 +18,10 @@ fn main() {
             profiles.iter_mut().for_each(|profile| {
                 for _ in 0..5 {
                     for par in &[false, true] {
+                        rayon::ThreadPoolBuilder::new()
+                            .num_threads(if *par { 4 } else { 1 })
+                            .build()
+                            .unwrap();
                         let bf = std::io::BufReader::new(
                             std::fs::File::open(file.as_ref().unwrap().path()).unwrap(),
                         );
@@ -27,7 +31,7 @@ fn main() {
                         let len = i_graph.size();
                         // println!("graph size: {}", i_graph.size());
                         let t1 = precise_time_ns();
-                        i_graph.process(profile, *par);
+                        i_graph.process(profile);
                         let t2 = precise_time_ns();
                         let load_time = (t1 - t0) as f64 / 1e9;
                         let process_time = (t2 - t1) as f64 / 1e9;
