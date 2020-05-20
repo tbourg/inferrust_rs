@@ -6,10 +6,6 @@ use time::precise_time_ns;
 use std::fs;
 
 fn main() {
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(4)
-        .build_global()
-        .unwrap();
     let mut profiles = [
         RuleProfile::RDFS(),
         RuleProfile::RhoDF(),
@@ -19,21 +15,19 @@ fn main() {
         .unwrap()
         .for_each(|file| {
             // println!("file: {:#?}", &file);
-            let rep = fs::read_to_string(file.as_ref().unwrap().path()).unwrap();
             profiles.iter_mut().for_each(|profile| {
                 for _ in 0..5 {
                     for par in &[false, true] {
+                        let bf = std::io::BufReader::new(
+                            std::fs::File::open(file.as_ref().unwrap().path()).unwrap(),
+                        );
                         let t0 = precise_time_ns();
-                        let ts = sophia::parser::nt::parse_str(&rep);
+                        let ts = sophia::parser::nt::parse_bufread(bf);
                         let mut i_graph = InfGraph::from(ts);
                         let len = i_graph.size();
                         // println!("graph size: {}", i_graph.size());
                         let t1 = precise_time_ns();
-                        if *par {
-                            i_graph.process_par(profile);
-                        } else {
-                            i_graph.process(profile);
-                        }
+                        i_graph.process(profile, *par);
                         let t2 = precise_time_ns();
                         let load_time = (t1 - t0) as f64 / 1e9;
                         let process_time = (t2 - t1) as f64 / 1e9;

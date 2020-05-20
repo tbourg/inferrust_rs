@@ -8,38 +8,24 @@ pub type Rule = fn(&TripleStore) -> Vec<[u64; 3]>;
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
-    /// Process this ruleset in a single thread
-    fn process(&mut self, graph: &mut InfGraph);
     /// Process this ruleset, possibly using multiple threads
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    fn process_par(&mut self, graph: &mut InfGraph) {
-        self.process(graph);
-    }
+    fn process(&mut self, graph: &mut InfGraph, par: bool);
     fn is_empty(&self) -> bool;
 }
 
 impl RuleSet for Vec<Box<Rule>> {
     #[cfg_attr(debug_assertions, flamer::flame)]
-    fn process(&mut self, graph: &mut InfGraph) {
+    fn process(&mut self, graph: &mut InfGraph, par: bool) {
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(if par { 4 } else { 1 })
+            .build_global()
+            .unwrap();
         if self.is_empty() {
             return;
         }
         let mut outputs = TripleStore::default();
         let ts = graph.dict().ts();
-        outputs.add_all(self.iter().map(|rule| rule(ts)).collect());
-        outputs.sort();
-        let ts = TripleStore::join(graph.dict().ts(), &outputs);
-        graph.dict_mut().set_ts(ts);
-    }
-
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    fn process_par(&mut self, graph: &mut InfGraph) {
-        if self.is_empty() {
-            return;
-        }
-        let mut outputs = TripleStore::default();
-        let ts = graph.dict().ts();
-        outputs.add_all(self.par_iter_mut().map(|rule| rule(ts)).collect());
+        outputs.add_all(self.par_iter().map(|rule| rule(ts)).collect());
         outputs.sort();
         let ts = TripleStore::join(graph.dict().ts(), &outputs);
         graph.dict_mut().set_ts(ts);
@@ -57,12 +43,8 @@ pub struct StaticRuleSet {
 
 impl RuleSet for StaticRuleSet {
     #[cfg_attr(debug_assertions, flamer::flame)]
-    fn process(&mut self, graph: &mut InfGraph) {
-        self.rules.process(graph)
-    }
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    fn process_par(&mut self, graph: &mut InfGraph) {
-        self.rules.process_par(graph)
+    fn process(&mut self, graph: &mut InfGraph, par: bool) {
+        self.rules.process(graph, par)
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn is_empty(&self) -> bool {
@@ -76,10 +58,11 @@ pub struct FixPointRuleSet {
 
 impl FixPointRuleSet {
     #[cfg_attr(debug_assertions, flamer::flame)]
-    fn fixpoint<F: FnMut(&mut StaticRuleSet, &mut InfGraph)>(
+    fn fixpoint<F: FnMut(&mut StaticRuleSet, &mut InfGraph, bool)>(
         &mut self,
         graph: &mut InfGraph,
         mut process: F,
+        par: bool,
     ) {
         if self.rules.is_empty() {
             return;
@@ -88,7 +71,7 @@ impl FixPointRuleSet {
         let mut prev_size = size + 1;
         while prev_size != size {
             prev_size = size;
-            process(&mut self.rules, graph);
+            process(&mut self.rules, graph, par);
             size = graph.size();
         }
     }
@@ -96,12 +79,8 @@ impl FixPointRuleSet {
 
 impl RuleSet for FixPointRuleSet {
     #[cfg_attr(debug_assertions, flamer::flame)]
-    fn process(&mut self, graph: &mut InfGraph) {
-        self.fixpoint(graph, <StaticRuleSet as RuleSet>::process)
-    }
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    fn process_par(&mut self, graph: &mut InfGraph) {
-        self.fixpoint(graph, <StaticRuleSet as RuleSet>::process_par)
+    fn process(&mut self, graph: &mut InfGraph, par: bool) {
+        self.fixpoint(graph, <StaticRuleSet as RuleSet>::process, par)
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
     fn is_empty(&self) -> bool {

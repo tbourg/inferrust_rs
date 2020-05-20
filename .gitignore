@@ -7,6 +7,7 @@ Cargo.lock
 */res/*
 */examples/*
 !*/res/bsbm/
+*/res/bsbm/10k.nt
 !*/examples/bsbm.rs
 !*/examples/flame.rs
 !*/examples/sort.rs

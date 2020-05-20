@@ -354,30 +354,14 @@ impl InfGraph {
         self.dictionary.ts_mut().size()
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn process(&mut self, profile: &mut RuleProfile) {
+    pub fn process(&mut self, profile: &mut RuleProfile, par: bool) {
         self.dictionary.ts_mut().sort();
         self.close(&mut profile.cl_profile);
-        profile.before_rules.process(self);
+        profile.before_rules.process(self, par);
         if profile.axiomatic_triples {
             self.init_axiomatic_triples();
         }
-        profile.rules.process(self);
-        match &profile.after_rules {
-            Some(rule) => {
-                rule(self);
-            }
-            None => (),
-        }
-    }
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn process_par(&mut self, profile: &mut RuleProfile) {
-        self.dictionary.ts_mut().sort();
-        self.close(&mut profile.cl_profile);
-        profile.before_rules.process_par(self);
-        if profile.axiomatic_triples {
-            self.init_axiomatic_triples();
-        }
-        profile.rules.process_par(self);
+        profile.rules.process(self, par);
         match &profile.after_rules {
             Some(rule) => {
                 rule(self);
