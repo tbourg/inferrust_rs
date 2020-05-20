@@ -4,7 +4,7 @@ use crate::rules::*;
 use rayon::prelude::*;
 
 /// A type alias  to unify all the rules of the reasoner
-pub type Rule = fn(&TripleStore) -> Vec<[u64; 3]>;
+pub type Rule = fn(&TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>>;
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
@@ -18,14 +18,18 @@ impl RuleSet for Vec<Box<Rule>> {
     fn process(&mut self, graph: &mut InfGraph, par: bool) {
         rayon::ThreadPoolBuilder::new()
             .num_threads(if par { 4 } else { 1 })
-            .build_global()
+            .build()
             .unwrap();
         if self.is_empty() {
             return;
         }
         let mut outputs = TripleStore::default();
         let ts = graph.dict().ts();
-        outputs.add_all(self.par_iter().map(|rule| rule(ts)).collect());
+        outputs.add_all(
+            self.par_iter()
+                .flat_map(|rule| rule(ts).collect::<Vec<_>>().into_par_iter())
+                .collect(),
+        );
         outputs.sort();
         let ts = TripleStore::join(graph.dict().ts(), &outputs);
         graph.dict_mut().set_ts(ts);
@@ -309,13 +313,13 @@ impl RuleProfile {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_FP(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn PRP_FP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let mut output = vec![];
     let pairs_mut = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs_mut == None {
-        return output;
+        return Box::new(output.into_iter());
     }
     let pairs: &Vec<[u64; 2]> = pairs_mut.unwrap().os(); // os copy
     let expected_o = NodeDictionary::owlfunctionalProperty as u64;
@@ -349,17 +353,17 @@ pub fn PRP_FP(ts: &TripleStore) -> Vec<[u64; 3]> {
             }
         }
     }
-    output
+    Box::new(output.into_iter())
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_IFP(ts: &TripleStore) -> Vec<[u64; 3]> {
+pub fn PRP_IFP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
     let mut output = vec![];
     let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
     ));
     if pairs == None {
-        return output;
+        return Box::new(output.into_iter());
     }
     let pairs = pairs.unwrap().os(); // os copy
     let expected_o = NodeDictionary::owlinverseFunctionalProperty as u64;
@@ -393,7 +397,7 @@ pub fn PRP_IFP(ts: &TripleStore) -> Vec<[u64; 3]> {
             }
         }
     }
-    output
+    Box::new(output.into_iter())
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
