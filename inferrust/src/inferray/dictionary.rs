@@ -93,7 +93,6 @@ impl NodeDictionary {
     const res_start: u64 = Self::START_INDEX as u64 + 15;
     const prop_start: u32 = Self::START_INDEX - 55;
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn new(ts: TripleStore) -> Self {
         let mut me = Self {
             factory: ArcTermFactory::new(),
@@ -107,25 +106,21 @@ impl NodeDictionary {
         me
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     #[inline]
     pub fn ts(&self) -> &TripleStore {
         &self.ts
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     #[inline]
     pub fn ts_mut(&mut self) -> &mut TripleStore {
         &mut self.ts
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     #[inline]
     pub fn set_ts(&mut self, ts: TripleStore) {
         self.ts = ts;
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
         let term: RefTerm = term.clone_into();
         match self.indexes.get(&term) {
@@ -143,7 +138,6 @@ impl NodeDictionary {
         }
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> u32 {
         let term: RefTerm = term.clone_into();
         match self.indexes.get(&term).cloned() {
@@ -163,20 +157,19 @@ impl NodeDictionary {
     }
 
     #[inline]
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     fn add_with<TD: TermData>(&mut self, term: &Term<TD>, id: u64) {
         let idx = self.add(term);
         debug_assert_eq!(idx, id);
     }
 
     #[inline]
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     fn add_property_with<TD: TermData>(&mut self, term: &Term<TD>, id: u32) {
         let idx = self.add_property(term);
         debug_assert_eq!(idx, id);
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn remap_res_to_prop(&mut self, old_idx: u64) -> u32 {
         self.removed_val.push(old_idx);
         let arcterm = &self.resources[(old_idx - Self::START_INDEX as u64 - 1) as usize];
@@ -188,7 +181,6 @@ impl NodeDictionary {
         new_idx
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn get_term(&self, index: u64) -> &ArcTerm {
         if index < Self::START_INDEX as u64 {
             &self.properties[Self::START_INDEX as usize - index as usize - 1]
@@ -197,7 +189,6 @@ impl NodeDictionary {
         }
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn get_index<T>(&self, t: &Term<T>) -> Option<u64>
     where
         T: TermData,
@@ -206,27 +197,22 @@ impl NodeDictionary {
         self.indexes.get(&t).cloned()
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn was_removed(&self, res: u64) -> bool {
         self.removed_val.contains(&res)
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn get_res_ctr(&self) -> u64 {
         self.resources.len() as u64 + Self::START_INDEX as u64
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn prop_idx_to_idx(prop_idx: u64) -> usize {
         Self::START_INDEX as usize - prop_idx as usize - 1
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn idx_to_prop_idx(idx: usize) -> u64 {
         Self::START_INDEX as u64 - idx as u64 - 1
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn init_const(&mut self) {
         // ---------------RDFS
         self.add_with(&rdfs::Resource, Self::rdfsResource);
@@ -332,7 +318,6 @@ impl NodeDictionary {
 /// will not outlive the source term.
 /// We use this for keys in TermIndexMapU::t2i, when the owning term is in TermIndexMapU::i2t.
 #[inline]
-#[cfg_attr(debug_assertions, flamer::flame)]
 unsafe fn fake_static<S, T>(t: &T) -> StaticTerm
 where
     S: TermData,

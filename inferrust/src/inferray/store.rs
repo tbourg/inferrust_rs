@@ -24,7 +24,7 @@ pub struct Chunk {
 impl Chunk {
     // # Pre-condition
     // so must be sorted.
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     fn new(so: Vec<[u64; 2]>) -> Chunk {
         #[cfg(debug_assertions)]
         {
@@ -39,7 +39,6 @@ impl Chunk {
         }
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn so_sort(&mut self) -> usize {
         if self.so_dirty {
             self.so_dirty = false;
@@ -50,13 +49,12 @@ impl Chunk {
         }
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn so(&self) -> &Vec<[u64; 2]> {
         #[cfg(debug_assertions)]
         debug_assert!(!self.so_dirty);
         &self.so
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn os(&self) -> &Vec<[u64; 2]> {
         #[cfg(debug_assertions)]
         debug_assert!(!self.so_dirty);
@@ -69,7 +67,6 @@ impl Chunk {
         })
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn res_to_prop(&mut self, res: u64, prop: u64) {
         for pair in self.so.iter_mut() {
             for val in pair.iter_mut() {
@@ -80,13 +77,11 @@ impl Chunk {
         }
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn add_so(&mut self, so: [u64; 2]) {
         self.so_dirty = true;
         self.so.push(so);
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn add_sos(&mut self, sos: &[[u64; 2]]) {
         self.so_dirty = true;
         self.so.extend(sos);
@@ -94,24 +89,21 @@ impl Chunk {
 }
 
 impl TripleStore {
-    #[cfg_attr(debug_assertions, flamer::flame)]
     #[inline]
     pub fn elem(&self) -> &Vec<Chunk> {
         &self.elem
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     #[inline]
     pub fn elem_mut(&mut self) -> &mut Vec<Chunk> {
         &mut self.elem
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     #[inline]
     pub fn set_elem(&mut self, elem: Vec<Chunk>) {
         self.elem = elem;
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn add_triple(&mut self, triple: [u64; 3]) {
         let [is, ip, io] = triple;
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
@@ -120,7 +112,7 @@ impl TripleStore {
         }
         self.add_triple_raw(is, ip_to_store, io);
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn add_all(&mut self, others: Vec<RuleResult>) {
         for other in others.into_iter() {
             for t in other {
@@ -131,12 +123,12 @@ impl TripleStore {
     /// # Pre-condition
     /// `self.elem` must have an element at index `ip`
     #[inline]
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn add_triple_raw(&mut self, is: u64, ip: usize, io: u64) {
         self.size += 1;
         self.elem[ip].add_so([is, io]);
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn add_triples(&mut self, ip: u64, sos: &[[u64; 2]]) {
         let ip_to_store = NodeDictionary::prop_idx_to_idx(ip);
         if ip_to_store >= self.elem.len() {
@@ -147,28 +139,17 @@ impl TripleStore {
     /// # Pre-condition
     /// `self.elem` must have an element at index `ip`
     #[inline]
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn add_triples_raw(&mut self, ip: usize, sos: &[[u64; 2]]) {
         self.size += sos.len();
         self.elem[ip].add_sos(sos);
     }
-    #[cfg(not(debug_assertions))]
     pub fn sort(&mut self) {
         if self.elem.is_empty() {
             return;
         }
         self.size = self.elem.par_iter_mut().map(|chunk| chunk.so_sort()).sum();
     }
-    #[cfg(debug_assertions)]
-    #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn sort(&mut self) {
-        if self.elem.is_empty() {
-            return;
-        }
-        self.size = self.elem.iter_mut().map(|chunk| chunk.so_sort()).sum();
-    }
-
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn res_to_prop(&mut self, res: u64, prop: u32) {
         for chunk in &mut self.elem {
             chunk.res_to_prop(res, prop.into());
@@ -176,12 +157,10 @@ impl TripleStore {
         /////////
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn size(&mut self) -> usize {
         self.size
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn join(a: &Self, b: &Self) -> Self {
         let len = std::cmp::max(a.elem.len(), b.elem.len());
         let mut chunks: Vec<Chunk> = Vec::new();
@@ -283,13 +262,11 @@ impl TripleStore {
 }
 
 /// Sort the pairs and remove duplicates
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     if pairs.is_empty() {
         return 0;
     }
-    #[cfg(debug_assertions)]
-    flame::start("init");
     let (min, max) = pairs
         .iter()
         .map(|pair| pair[0])
@@ -300,8 +277,6 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     let mut hist: Vec<usize> = vec![0; width];
     let mut hist2: Vec<usize> = Vec::with_capacity(width);
     let mut cumul: Vec<usize> = vec![0; width];
-    #[cfg(debug_assertions)]
-    flame::end("init");
     build_hist(pairs, min, 0, &mut hist);
     mem::replace(&mut hist2, hist.to_vec());
     build_cumul(&hist, &mut cumul);
@@ -342,7 +317,7 @@ pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
 }
 
 #[inline]
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 fn build_hist(pairs: &[[u64; 2]], min: u64, pair_elem: usize, hist: &mut [usize]) {
     for pair in pairs {
         hist[(pair[pair_elem] - min) as usize] += 1;
@@ -350,7 +325,7 @@ fn build_hist(pairs: &[[u64; 2]], min: u64, pair_elem: usize, hist: &mut [usize]
 }
 
 #[inline]
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
     for i in 1..hist.len() {
         cumul[i] = cumul[i - 1] + hist[i - 1];
@@ -358,10 +333,8 @@ fn build_cumul(hist: &[usize], cumul: &mut [usize]) {
 }
 
 /// Reverse the pairs and sort them
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
-    #[cfg(debug_assertions)]
-    flame::start("init_os");
     let (min, max) = pairs
         .iter()
         .map(|pair| pair[1])
@@ -372,8 +345,6 @@ fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
     let mut hist: Vec<usize> = vec![0; width];
     let mut hist2: Vec<usize> = Vec::with_capacity(width);
     let mut cumul: Vec<usize> = vec![0; width];
-    #[cfg(debug_assertions)]
-    flame::end("init_os");
     build_hist(pairs, min, 1, &mut hist);
     mem::replace(&mut hist2, hist.to_vec());
     build_cumul(&hist, &mut cumul);
@@ -408,7 +379,7 @@ fn bucket_sort_pairs_os(pairs: &mut Vec<[u64; 2]>) {
 }
 
 #[test]
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 fn test_sort() {
     let mut pairs = vec![[2, 1], [1, 3]];
     bucket_sort_pairs(&mut pairs);
@@ -429,7 +400,7 @@ fn test_sort() {
 }
 
 #[test]
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 fn test_join() {
     let a = TripleStore {
         elem: vec![Chunk::default()],

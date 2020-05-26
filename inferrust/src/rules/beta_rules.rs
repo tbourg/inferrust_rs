@@ -15,7 +15,6 @@ use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 use crate::rules::*;
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> RuleResult {
     let mut output = vec![];
     let pairs = ts.elem().get(rule_p);
@@ -53,7 +52,6 @@ fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> RuleResul
     Box::new(output.into_iter())
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_inverse_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> RuleResult {
     let mut output = vec![];
     let pairs = ts.elem().get(rule_p);
@@ -80,28 +78,25 @@ fn apply_inverse_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> R
 /// Head:
 /// - c1 owl:equivalentClass c2
 /// - c2 owl:equivalentClass c1
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 pub fn SCM_SCO_EQC2(ts: &TripleStore) -> RuleResult {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64);
     apply_beta_rule(ts, id_1, id_2)
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SCM_SPO_EQP2(ts: &TripleStore) -> RuleResult {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentProperty as u64);
     apply_beta_rule(ts, id_1, id_2)
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SCM_EQC1(ts: &TripleStore) -> RuleResult {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64);
     apply_inverse_beta_rule(ts, id_1, id_2)
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn SCM_EQP1(ts: &TripleStore) -> RuleResult {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentProperty as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64);

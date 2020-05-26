@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 /// Pre-condition: vec is an array of pairs sorted on the first elem of each pair
 /// then on the second
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 pub fn binary_search_pair(vec: &[[u64; 2]], pair: [u64; 2]) -> bool {
     let mut start = 0;
     let mut end = vec.len() - 1;
@@ -30,7 +30,7 @@ pub fn binary_search_pair(vec: &[[u64; 2]], pair: [u64; 2]) -> bool {
 }
 
 /// Pre-condition: vec is sorted on the first elem of each pair
-#[cfg_attr(debug_assertions, flamer::flame)]
+
 pub fn first(vec: &[[u64; 2]], x: u64, low: usize, high: usize, n: usize, key_pos: usize) -> usize {
     if high >= low {
         let mid = low + (high - low) / 2;

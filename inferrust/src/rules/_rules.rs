@@ -15,7 +15,6 @@ pub trait RuleSet {
 }
 
 impl RuleSet for Vec<Box<Rule>> {
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process(&mut self, graph: &mut InfGraph) {
         if self.is_empty() {
             return;
@@ -28,7 +27,6 @@ impl RuleSet for Vec<Box<Rule>> {
         graph.dict_mut().set_ts(ts);
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn is_empty(&self) -> bool {
         self.is_empty()
     }
@@ -39,11 +37,10 @@ pub struct StaticRuleSet {
 }
 
 impl RuleSet for StaticRuleSet {
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process(&mut self, graph: &mut InfGraph) {
         self.rules.process(graph)
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     fn is_empty(&self) -> bool {
         self.rules.is_empty()
     }
@@ -54,7 +51,6 @@ pub struct FixPointRuleSet {
 }
 
 impl FixPointRuleSet {
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn fixpoint<F: FnMut(&mut StaticRuleSet, &mut InfGraph)>(
         &mut self,
         graph: &mut InfGraph,
@@ -74,11 +70,10 @@ impl FixPointRuleSet {
 }
 
 impl RuleSet for FixPointRuleSet {
-    #[cfg_attr(debug_assertions, flamer::flame)]
     fn process(&mut self, graph: &mut InfGraph) {
         self.fixpoint(graph, <StaticRuleSet as RuleSet>::process)
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     fn is_empty(&self) -> bool {
         self.rules.is_empty()
     }
@@ -101,7 +96,6 @@ pub struct RuleProfile {
 }
 
 impl RuleProfile {
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn RDFS() -> Self {
         let rules: Vec<Box<Rule>> = vec![
             // Alpha class
@@ -144,7 +138,7 @@ impl RuleProfile {
             name: "RDFS".to_string(),
         }
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn Test() -> Self {
         let rules: Vec<Box<Rule>> = vec![
             // Alpha class
@@ -175,7 +169,7 @@ impl RuleProfile {
             name: "Test".to_string(),
         }
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn RDFSDefault() -> Self {
         Self {
             axiomatic_triples: false,
@@ -183,7 +177,7 @@ impl RuleProfile {
             ..Self::RDFS()
         }
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn RhoDF() -> Self {
         let before_rules: Vec<Box<Rule>> = vec![
             // Zeta class (trivial rules)
@@ -219,7 +213,7 @@ impl RuleProfile {
             name: "RHODF".to_string(),
         }
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn Closure() -> Self {
         Self {
             cl_profile: ClosureProfile {
@@ -241,7 +235,7 @@ impl RuleProfile {
             name: "Closure".to_string(),
         }
     }
-    #[cfg_attr(debug_assertions, flamer::flame)]
+
     pub fn RDFSPlus() -> Self {
         let before_rules: Vec<Box<Rule>> = vec![
             // Zeta class (trivial rules)
@@ -298,13 +292,11 @@ impl RuleProfile {
         }
     }
 
-    #[cfg_attr(debug_assertions, flamer::flame)]
     pub fn name(&self) -> &str {
         &self.name
     }
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_FP(ts: &TripleStore) -> RuleResult {
     let mut output = vec![];
     let pairs_mut = ts.elem().get(NodeDictionary::prop_idx_to_idx(
@@ -348,7 +340,6 @@ pub fn PRP_FP(ts: &TripleStore) -> RuleResult {
     Box::new(output.into_iter())
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_IFP(ts: &TripleStore) -> RuleResult {
     let mut output = vec![];
     let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
@@ -392,7 +383,6 @@ pub fn PRP_IFP(ts: &TripleStore) -> RuleResult {
     Box::new(output.into_iter())
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn finalize(graph: &mut InfGraph) {
     let type_index = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
     let res = NodeDictionary::rdfsResource;

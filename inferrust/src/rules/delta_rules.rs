@@ -2,7 +2,6 @@ use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
 use crate::rules::*;
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> RuleResult {
     let mut output = vec![];
     if let Some(pairs) = ts.elem().get(prop_idx) {
@@ -36,7 +35,6 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> RuleResu
     Box::new(output.into_iter())
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_INV_1_2(ts: &TripleStore) -> RuleResult {
     apply_delta_rule(
         ts,
@@ -45,7 +43,6 @@ pub fn PRP_INV_1_2(ts: &TripleStore) -> RuleResult {
     )
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_EQP_1_2(ts: &TripleStore) -> RuleResult {
     apply_delta_rule(
         ts,

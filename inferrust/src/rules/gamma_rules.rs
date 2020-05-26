@@ -1,7 +1,6 @@
 use crate::inferray::{NodeDictionary, TripleStore};
 use crate::rules::*;
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_gamma_rule(
     ts: &TripleStore,
     head_prop: usize,
@@ -32,7 +31,6 @@ fn apply_gamma_rule(
     Box::new(output.into_iter())
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_DOM(ts: &TripleStore) -> RuleResult {
     apply_gamma_rule(
         ts,
@@ -43,7 +41,6 @@ pub fn PRP_DOM(ts: &TripleStore) -> RuleResult {
     )
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_RNG(ts: &TripleStore) -> RuleResult {
     apply_gamma_rule(
         ts,
@@ -54,7 +51,6 @@ pub fn PRP_RNG(ts: &TripleStore) -> RuleResult {
     )
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_SPO1(ts: &TripleStore) -> RuleResult {
     apply_gamma_rule(
         ts,
@@ -65,7 +61,6 @@ pub fn PRP_SPO1(ts: &TripleStore) -> RuleResult {
     )
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn PRP_SYMP(ts: &TripleStore) -> RuleResult {
     let mut output = vec![];
     let expected_ip = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64);
@@ -93,7 +88,6 @@ pub fn PRP_SYMP(ts: &TripleStore) -> RuleResult {
     Box::new(output.into_iter())
 }
 
-#[cfg_attr(debug_assertions, flamer::flame)]
 pub fn EQ_TRANS(ts: &TripleStore) -> RuleResult {
     let mut output = vec![];
     let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
