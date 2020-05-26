@@ -6,6 +6,8 @@ use std::mem;
 
 use super::NodeDictionary;
 
+use crate::rules::*;
+
 #[derive(Default, PartialEq, Debug, Clone)]
 pub struct TripleStore {
     elem: Vec<Chunk>,
@@ -119,7 +121,7 @@ impl TripleStore {
         self.add_triple_raw(is, ip_to_store, io);
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn add_all(&mut self, others: Vec<Box<dyn Iterator<Item = [u64; 3]> + Sync + Send>>) {
+    pub fn add_all(&mut self, others: Vec<RuleResult>) {
         for other in others.into_iter() {
             for t in other {
                 self.add_triple(t);

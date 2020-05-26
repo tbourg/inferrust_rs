@@ -1,14 +1,9 @@
 use crate::inferray::NodeDictionary;
 use crate::inferray::TripleStore;
-
-use rayon::prelude::*;
+use crate::rules::*;
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-fn apply_delta_rule(
-    ts: &TripleStore,
-    prop_idx: usize,
-    invert: bool,
-) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> RuleResult {
     let mut output = vec![];
     if let Some(pairs) = ts.elem().get(prop_idx) {
         for pair in pairs.so() {
@@ -42,7 +37,7 @@ fn apply_delta_rule(
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_INV_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn PRP_INV_1_2(ts: &TripleStore) -> RuleResult {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlinverseOf as u64),
@@ -51,7 +46,7 @@ pub fn PRP_INV_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_EQP_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn PRP_EQP_1_2(ts: &TripleStore) -> RuleResult {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentProperty as u64),

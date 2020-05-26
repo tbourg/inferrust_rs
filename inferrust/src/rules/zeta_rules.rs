@@ -1,6 +1,5 @@
 use crate::inferray::{NodeDictionary, TripleStore};
-
-use rayon::prelude::*;
+use crate::rules::*;
 
 #[cfg_attr(debug_assertions, flamer::flame)]
 fn apply_zeta_rule(
@@ -9,7 +8,7 @@ fn apply_zeta_rule(
     output_p: u64,
     output_o: u64,
     object_is_subject: bool,
-) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+) -> RuleResult {
     let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
@@ -37,14 +36,14 @@ fn apply_zeta_rule(
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS6(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn RDFS6(ts: &TripleStore) -> RuleResult {
     let input_o = NodeDictionary::rdfProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS8(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn RDFS8(ts: &TripleStore) -> RuleResult {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdftype as u64;
     let output_o = NodeDictionary::rdfsResource;
@@ -52,14 +51,14 @@ pub fn RDFS8(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Sen
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS10(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn RDFS10(ts: &TripleStore) -> RuleResult {
     let input_o = NodeDictionary::rdfsClass;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
     apply_zeta_rule(ts, input_o, output_p, 0, true)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS12(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn RDFS12(ts: &TripleStore) -> RuleResult {
     let input_o = NodeDictionary::rdfsContainerMembershipProperty as u64;
     let output_p = NodeDictionary::rdfssubPropertyOf as u64;
     let output_o = NodeDictionary::rdfsMember as u64;
@@ -67,7 +66,7 @@ pub fn RDFS12(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Se
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS13(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn RDFS13(ts: &TripleStore) -> RuleResult {
     let input_o = NodeDictionary::rdfsDatatype;
     let output_p = NodeDictionary::rdfssubClassOf as u64;
     let output_o = NodeDictionary::rdfsLiteral;
@@ -75,7 +74,7 @@ pub fn RDFS13(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Se
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DP_OP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn SCM_DP_OP(ts: &TripleStore) -> RuleResult {
     let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
@@ -111,7 +110,7 @@ pub fn SCM_DP_OP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync +
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_CLS(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn SCM_CLS(ts: &TripleStore) -> RuleResult {
     let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
@@ -151,7 +150,7 @@ pub fn SCM_CLS(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + S
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn RDFS4(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
+pub fn RDFS4(ts: &TripleStore) -> RuleResult {
     let mut output = vec![];
     let mut resources_idx = Vec::new();
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
