@@ -46,7 +46,7 @@ pub fn apply_alpha_rule(
     let property_1_pairs = ts.elem().get(id_1 as usize);
     let property_2_pairs = ts.elem().get(id_2 as usize);
     if property_1_pairs == None || property_2_pairs == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let property_1_pairs = property_1_pairs.unwrap();
     let property_2_pairs = property_2_pairs.unwrap();
@@ -113,7 +113,7 @@ pub fn apply_alpha_rule(
         }
         previous = values[0];
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn CAX_SCO(ts: &TripleStore) -> RuleResult {

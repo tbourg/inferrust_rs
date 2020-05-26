@@ -32,7 +32,7 @@ fn apply_delta_rule(ts: &TripleStore, prop_idx: usize, invert: bool) -> RuleResu
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn PRP_INV_1_2(ts: &TripleStore) -> RuleResult {

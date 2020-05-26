@@ -19,7 +19,7 @@ fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> RuleResul
     let mut output = vec![];
     let pairs = ts.elem().get(rule_p);
     if pairs == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs = pairs.unwrap();
     let rule_p = NodeDictionary::idx_to_prop_idx(rule_p);
@@ -49,14 +49,14 @@ fn apply_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> RuleResul
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 fn apply_inverse_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> RuleResult {
     let mut output = vec![];
     let pairs = ts.elem().get(rule_p);
     if pairs == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let rule_p = NodeDictionary::idx_to_prop_idx(rule_p);
     let infer_p = NodeDictionary::idx_to_prop_idx(infer_p);
@@ -66,7 +66,7 @@ fn apply_inverse_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> R
         output.push([pair1[1], infer_p, pair1[0]]);
         output.push([pair1[0], rule_p, pair1[1]]);
     }
-    Box::new(output.into_iter())
+    output
 }
 
 /// The SCM-EQC2 rule from the RDFS+ ruleset

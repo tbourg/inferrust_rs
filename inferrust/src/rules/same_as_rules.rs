@@ -25,11 +25,11 @@ fn apply_same_as_rule(ts: &TripleStore) -> RuleResult {
         NodeDictionary::owlsameAs as u64,
     ));
     if pairs1 == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs1.unwrap().so();
     if pairs1.is_empty() {
-        Box::new(output.into_iter())
+        output
     } else {
         for pair1 in pairs1 {
             output.push([pair1[1], NodeDictionary::owlsameAs as u64, pair1[0]]);
@@ -74,7 +74,7 @@ fn apply_same_as_rule(ts: &TripleStore) -> RuleResult {
                 }
             }
         }
-        Box::new(output.into_iter())
+        output
     }
 }
 

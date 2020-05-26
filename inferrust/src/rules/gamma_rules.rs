@@ -11,7 +11,7 @@ fn apply_gamma_rule(
     let mut output = vec![];
     let pairs1 = ts.elem().get(head_prop);
     if pairs1 == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs1.unwrap().so();
     for pair1 in pairs1 {
@@ -28,7 +28,7 @@ fn apply_gamma_rule(
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn PRP_DOM(ts: &TripleStore) -> RuleResult {
@@ -67,7 +67,7 @@ pub fn PRP_SYMP(ts: &TripleStore) -> RuleResult {
     let expected_io = NodeDictionary::owlsymmetricProperty as u64;
     let pairs1 = ts.elem().get(expected_ip);
     if pairs1 == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs1.unwrap().os(); // os sorted copy
     for pair1 in &*pairs1 {
@@ -85,7 +85,7 @@ pub fn PRP_SYMP(ts: &TripleStore) -> RuleResult {
             break;
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn EQ_TRANS(ts: &TripleStore) -> RuleResult {
@@ -94,7 +94,7 @@ pub fn EQ_TRANS(ts: &TripleStore) -> RuleResult {
         NodeDictionary::owlsameAs as u64,
     ));
     if pairs == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs.unwrap();
     let pairs2 = pairs.unwrap();
@@ -111,5 +111,5 @@ pub fn EQ_TRANS(ts: &TripleStore) -> RuleResult {
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }

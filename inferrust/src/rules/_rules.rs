@@ -4,7 +4,7 @@ use crate::rules::*;
 use rayon::prelude::*;
 
 /// Type aliases to unify all the rules of the reasoner
-pub type RuleResult = Box<dyn Iterator<Item = [u64; 3]> + Sync + Send>;
+pub type RuleResult = Vec<[u64; 3]>;
 pub type Rule = fn(&TripleStore) -> RuleResult;
 
 /// A set of Rule, which can be aplly on a InfGraph
@@ -303,7 +303,7 @@ pub fn PRP_FP(ts: &TripleStore) -> RuleResult {
         NodeDictionary::rdftype as u64,
     ));
     if pairs_mut == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs: &Vec<[u64; 2]> = pairs_mut.unwrap().os(); // os copy
     let expected_o = NodeDictionary::owlfunctionalProperty as u64;
@@ -337,7 +337,7 @@ pub fn PRP_FP(ts: &TripleStore) -> RuleResult {
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn PRP_IFP(ts: &TripleStore) -> RuleResult {
@@ -346,7 +346,7 @@ pub fn PRP_IFP(ts: &TripleStore) -> RuleResult {
         NodeDictionary::rdftype as u64,
     ));
     if pairs == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs = pairs.unwrap().os(); // os copy
     let expected_o = NodeDictionary::owlinverseFunctionalProperty as u64;
@@ -380,7 +380,7 @@ pub fn PRP_IFP(ts: &TripleStore) -> RuleResult {
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn finalize(graph: &mut InfGraph) {

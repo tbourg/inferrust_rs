@@ -13,11 +13,11 @@ fn apply_zeta_rule(
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs1.unwrap().os();
     if pairs1.is_empty() {
-        return Box::new(output.into_iter());
+        return output;
     }
     for pair1 in &*pairs1 {
         if pair1[0] > input_o {
@@ -31,7 +31,7 @@ fn apply_zeta_rule(
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn RDFS6(ts: &TripleStore) -> RuleResult {
@@ -73,11 +73,11 @@ pub fn SCM_DP_OP(ts: &TripleStore) -> RuleResult {
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs1.unwrap().os();
     if pairs1.is_empty() {
-        return Box::new(output.into_iter());
+        return output;
     }
     for pair1 in pairs1 {
         for object in [
@@ -99,7 +99,7 @@ pub fn SCM_DP_OP(ts: &TripleStore) -> RuleResult {
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn SCM_CLS(ts: &TripleStore) -> RuleResult {
@@ -108,11 +108,11 @@ pub fn SCM_CLS(ts: &TripleStore) -> RuleResult {
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs1.unwrap().os();
     if pairs1.is_empty() {
-        return Box::new(output.into_iter());
+        return output;
     }
     let object = NodeDictionary::owlclass;
     for pair1 in pairs1 {
@@ -138,7 +138,7 @@ pub fn SCM_CLS(ts: &TripleStore) -> RuleResult {
             ]);
         }
     }
-    Box::new(output.into_iter())
+    output
 }
 
 pub fn RDFS4(ts: &TripleStore) -> RuleResult {
@@ -148,11 +148,11 @@ pub fn RDFS4(ts: &TripleStore) -> RuleResult {
         NodeDictionary::rdftype as u64,
     ));
     if pairs1 == None {
-        return Box::new(output.into_iter());
+        return output;
     }
     let pairs1 = pairs1.unwrap().os();
     if pairs1.is_empty() {
-        return Box::new(output.into_iter());
+        return output;
     }
     let object = NodeDictionary::rdfsResource;
     for pair1 in pairs1 {
@@ -170,5 +170,5 @@ pub fn RDFS4(ts: &TripleStore) -> RuleResult {
             }
         }
     }
-    Box::new(output.into_iter())
+    output
 }
