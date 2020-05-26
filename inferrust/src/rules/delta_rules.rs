@@ -8,7 +8,7 @@ fn apply_delta_rule(
     ts: &TripleStore,
     prop_idx: usize,
     invert: bool,
-) -> Box<dyn Iterator<Item = [u64; 3]>> {
+) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let mut output = vec![];
     if let Some(pairs) = ts.elem().get(prop_idx) {
         for pair in pairs.so() {
@@ -42,7 +42,7 @@ fn apply_delta_rule(
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_INV_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn PRP_INV_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlinverseOf as u64),
@@ -51,7 +51,7 @@ pub fn PRP_INV_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_EQP_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn PRP_EQP_1_2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     apply_delta_rule(
         ts,
         NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentProperty as u64),

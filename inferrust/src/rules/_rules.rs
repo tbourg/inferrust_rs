@@ -4,7 +4,7 @@ use crate::rules::*;
 use rayon::prelude::*;
 
 /// A type alias  to unify all the rules of the reasoner
-pub type Rule = fn(&TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>>;
+pub type Rule = fn(&TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send>;
 
 /// A set of Rule, which can be aplly on a InfGraph
 pub trait RuleSet {
@@ -21,11 +21,7 @@ impl RuleSet for Vec<Box<Rule>> {
         }
         let mut outputs = TripleStore::default();
         let ts = graph.dict().ts();
-        outputs.add_all(
-            self.par_iter()
-                .flat_map(|rule| rule(ts).collect::<Vec<_>>().into_par_iter())
-                .collect(),
-        );
+        outputs.add_all(self.par_iter().map(|rule| rule(ts)).collect());
         outputs.sort();
         let ts = TripleStore::join(graph.dict().ts(), &outputs);
         graph.dict_mut().set_ts(ts);
@@ -308,7 +304,7 @@ impl RuleProfile {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_FP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn PRP_FP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let mut output = vec![];
     let pairs_mut = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,
@@ -352,7 +348,7 @@ pub fn PRP_FP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn PRP_IFP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn PRP_IFP(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let mut output = vec![];
     let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::rdftype as u64,

@@ -119,9 +119,11 @@ impl TripleStore {
         self.add_triple_raw(is, ip_to_store, io);
     }
     #[cfg_attr(debug_assertions, flamer::flame)]
-    pub fn add_all(&mut self, other: Vec<[u64; 3]>) {
-        for t in other.iter() {
-            self.add_triple(*t);
+    pub fn add_all(&mut self, others: Vec<Box<dyn Iterator<Item = [u64; 3]> + Sync + Send>>) {
+        for other in others.into_iter() {
+            for t in other {
+                self.add_triple(t);
+            }
         }
     }
     /// # Pre-condition

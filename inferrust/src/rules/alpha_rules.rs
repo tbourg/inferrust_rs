@@ -36,7 +36,7 @@ pub fn apply_alpha_rule(
     id_s: usize,
     id_p: usize,
     id_o: usize,
-) -> Box<dyn Iterator<Item = [u64; 3]>> {
+) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     fn same_s_new_o(output: &mut Vec<[u64; 3]>, o: u64, number: usize) {
         let old_size = output.len();
         let p = output[0][1];
@@ -119,14 +119,14 @@ pub fn apply_alpha_rule(
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn CAX_SCO(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn CAX_SCO(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn CAX_EQC1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn CAX_EQC1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdftype as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
@@ -135,28 +135,28 @@ pub fn CAX_EQC1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
 /// CAX-EQC2 is implied cause a = b -> b = a
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DOM1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn SCM_DOM1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_DOM2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn SCM_DOM2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsdomain as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_RNG1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn SCM_RNG1(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SCM_RNG2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn SCM_RNG2(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfsrange as u64) as u64;
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubPropertyOf as u64) as u64;
     apply_alpha_rule(ts, id_1, id_2, 3, 1, 2)

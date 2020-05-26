@@ -21,7 +21,7 @@ use rayon::prelude::*;
 //  *         Dec. 13
 //  */
 #[cfg_attr(debug_assertions, flamer::flame)]
-fn apply_same_as_rule(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+fn apply_same_as_rule(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     let mut output = vec![];
     let pairs1 = ts.elem().get(NodeDictionary::prop_idx_to_idx(
         NodeDictionary::owlsameAs as u64,
@@ -81,6 +81,6 @@ fn apply_same_as_rule(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
 }
 
 #[cfg_attr(debug_assertions, flamer::flame)]
-pub fn SAME_AS(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]>> {
+pub fn SAME_AS(ts: &TripleStore) -> Box<dyn Iterator<Item = [u64; 3]> + Sync + Send> {
     apply_same_as_rule(ts)
 }
