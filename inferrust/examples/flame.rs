@@ -25,5 +25,4 @@ fn main() {
         load_time,
         process_time,
     );
-    flame::dump_html(fs::File::create("flamegraph.html").unwrap()).unwrap();
 }
