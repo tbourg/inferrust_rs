@@ -14,6 +14,17 @@ fn main() {
     fs::read_dir("inferrust/res/bsbm")
         .unwrap()
         .for_each(|file| {
+            let profile = &mut RuleProfile::RDFSPlus();
+            let bf = std::io::BufReader::new(
+                std::fs::File::open(file.as_ref().unwrap().path()).unwrap(),
+            );
+            let ts = sophia::parser::nt::parse_bufread(bf);
+            let mut i_graph = InfGraph::from(ts);
+            i_graph.process(profile);
+        });
+    fs::read_dir("inferrust/res/bsbm")
+        .unwrap()
+        .for_each(|file| {
             // println!("file: {:#?}", &file);
             profiles.iter_mut().for_each(|profile| {
                 for _ in 0..5 {
@@ -22,10 +33,10 @@ fn main() {
                             .num_threads(if *par { 4 } else { 1 })
                             .build()
                             .unwrap();
+                        let t0 = precise_time_ns();
                         let bf = std::io::BufReader::new(
                             std::fs::File::open(file.as_ref().unwrap().path()).unwrap(),
                         );
-                        let t0 = precise_time_ns();
                         let ts = sophia::parser::nt::parse_bufread(bf);
                         let mut i_graph = InfGraph::from(ts);
                         let len = i_graph.size();
