@@ -726,16 +726,17 @@ where
     TS: TripleSource,
 {
     fn from(mut ts: TS) -> Self {
-        let store = TripleStore::default();
-        let dictionary = NodeDictionary::new(store);
+        let mut store = TripleStore::default();
+        let dictionary = NodeDictionary::new();
         let mut me = Self { dictionary };
 
         ts.for_each_triple(|t| {
             let rep = me.encode_triple(&t);
 
-            me.dictionary.ts_mut().add_triple(rep);
+            store.add_triple(rep);
         })
         .expect("Streaming error");
+        me.dictionary.set_ts(store);
 
         me
     }
