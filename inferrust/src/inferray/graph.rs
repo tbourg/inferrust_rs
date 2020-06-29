@@ -5,7 +5,9 @@ use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
 use sophia::triple::{stream::TripleSource, Triple};
 
 use std::convert::Infallible;
+use std::sync::mpsc;
 use std::sync::Arc;
+use std::thread;
 
 use crate::closure::*;
 use crate::inferray::NodeDictionary;
@@ -726,18 +728,32 @@ where
     TS: TripleSource,
 {
     fn from(mut ts: TS) -> Self {
+        let (send_ts, recv_ts) = mpsc::channel();
+        let (send_rep, recv_rep) = mpsc::channel();
+
         let mut store = TripleStore::default();
         let dictionary = NodeDictionary::new();
         let mut me = Self { dictionary };
-
+        thread::spawn(move || {
+            let mut rep_it = recv_rep.iter();
+            loop {
+                let rep_opt = rep_it.next();
+                if rep_opt.is_none() {
+                    break;
+                }
+                let rep = rep_opt.unwrap();
+                store.add_triple(rep);
+            }
+            send_ts.send(store).unwrap();
+        });
         ts.for_each_triple(|t| {
             let rep = me.encode_triple(&t);
-
-            store.add_triple(rep);
+            send_rep.send(rep).unwrap();
         })
         .expect("Streaming error");
+        drop(send_rep);
+        let store = recv_ts.recv().unwrap();
         me.dictionary.set_ts(store);
-
         me
     }
 }
