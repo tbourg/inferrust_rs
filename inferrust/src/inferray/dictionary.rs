@@ -14,8 +14,8 @@ pub struct NodeDictionary {
     resources: Vec<ArcTerm>,
     properties: Vec<ArcTerm>,
     indexes: HashMap<StaticTerm, u64>,
-    removed_val: Vec<u64>,
-    ts: TripleStore,
+    removed_val: Vec<[u64; 2]>,
+    ts: Option<TripleStore>,
 }
 
 impl NodeDictionary {
@@ -93,14 +93,14 @@ impl NodeDictionary {
     const res_start: u64 = Self::START_INDEX as u64 + 15;
     const prop_start: u32 = Self::START_INDEX - 55;
 
-    pub fn new(ts: TripleStore) -> Self {
+    pub fn new() -> Self {
         let mut me = Self {
             factory: ArcTermFactory::new(),
             resources: Vec::with_capacity((Self::res_start - Self::START_INDEX as u64) as usize),
             properties: Vec::with_capacity((Self::START_INDEX - Self::prop_start) as usize),
             indexes: HashMap::new(),
             removed_val: vec![],
-            ts,
+            ts: None,
         };
         me.init_const();
         me
@@ -108,17 +108,20 @@ impl NodeDictionary {
 
     #[inline]
     pub fn ts(&self) -> &TripleStore {
-        &self.ts
+        debug_assert_ne!(self.ts, None);
+        self.ts.as_ref().unwrap()
     }
-
     #[inline]
     pub fn ts_mut(&mut self) -> &mut TripleStore {
-        &mut self.ts
+        debug_assert_ne!(self.ts, None);
+        self.ts.as_mut().unwrap()
     }
-
     #[inline]
-    pub fn set_ts(&mut self, ts: TripleStore) {
-        self.ts = ts;
+    pub fn set_ts(&mut self, mut ts: TripleStore) {
+        self.removed_val.iter().for_each(|[o, n]| {
+            ts.res_to_prop(*o, *n as u32);
+        });
+        self.ts = Some(ts);
     }
 
     pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
@@ -171,13 +174,13 @@ impl NodeDictionary {
     }
 
     fn remap_res_to_prop(&mut self, old_idx: u64) -> u32 {
-        self.removed_val.push(old_idx);
+        println!("rtp");
         let arcterm = &self.resources[(old_idx - Self::START_INDEX as u64 - 1) as usize];
         let refterm = unsafe { fake_static(arcterm) };
         self.properties.push(arcterm.clone());
         let new_idx = Self::START_INDEX as u32 - self.properties.len() as u32;
         self.indexes.insert(refterm, new_idx as u64);
-        self.ts.res_to_prop(old_idx, new_idx);
+        self.removed_val.push([old_idx, new_idx as u64]);
         new_idx
     }
 
@@ -198,7 +201,7 @@ impl NodeDictionary {
     }
 
     pub fn was_removed(&self, res: u64) -> bool {
-        self.removed_val.contains(&res)
+        self.removed_val.iter().any(|[o, _]| *o == res)
     }
 
     pub fn get_res_ctr(&self) -> u64 {
