@@ -23,50 +23,46 @@ pub fn compute_lists(ts: &TripleStore) -> Lists {
     if rests == None {
         return to_ret;
     }
-    let rests = rests.unwrap().so();
-    let mut visited = vec![];
-    let mut idx = 0;
-    while idx < firsts.len() {
-        let [id, _] = firsts[idx];
-        if !visited.contains(&id) {
-            let (ids, elems) = get_elems_by_id(firsts, rests, id);
-            visited.extend(ids);
-            to_ret.push(List { id, elems });
+    let rests_rev = rests.unwrap().os();
+    let end = NodeDictionary::rdfnil;
+    for [rest, id] in rests_rev {
+        if *rest > end {
+            break;
         }
-        idx += 1;
+        if *rest == end {
+            let (head, elems) = get_elems_by_last_id(firsts, rests_rev, *id);
+            to_ret.push(List { id: head, elems });
+        }
     }
     to_ret.sort_by_key(|e| e.id);
     to_ret
 }
 
-fn get_elems_by_id(
+fn get_elems_by_last_id(
     firsts: &Vec<[u64; 2]>,
-    rests: &Vec<[u64; 2]>,
+    rests_rev: &Vec<[u64; 2]>,
     mut id: u64,
-) -> (Vec<u64>, Vec<u64>) {
-    let mut ids = vec![];
+) -> (u64, Vec<u64>) {
     let mut elems = vec![];
-    let end = NodeDictionary::rdfnil;
-    let mut has_next = true;
-    while has_next {
-        if id == end {
-            has_next = false;
+    loop {
+        let elem = get_elem_by_id(firsts, id);
+        elems.push(elem);
+        if let Some(prev) = get_prev_id(rests_rev, id) {
+            id = prev;
         } else {
-            ids.push(id);
-            let elem = get_elem_by_id(firsts, id);
-            elems.push(elem);
-            id = get_next_id(rests, id);
+            break;
         }
     }
-    (ids, elems)
+    elems.reverse();
+    (id, elems)
 }
 
 fn get_elem_by_id(firsts: &Vec<[u64; 2]>, id: u64) -> u64 {
     dbg!(get_second_elem(firsts, id)).unwrap_or_else(|| panic!("inconsistent list is declared"))
 }
 
-fn get_next_id(rests: &Vec<[u64; 2]>, id: u64) -> u64 {
-    get_second_elem(rests, id).unwrap_or_else(|| panic!("inconsistent list is declared"))
+fn get_prev_id(rests_rev: &Vec<[u64; 2]>, id: u64) -> Option<u64> {
+    get_second_elem(rests_rev, id)
 }
 
 use std::cmp::Ordering;
