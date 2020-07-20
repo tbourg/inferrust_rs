@@ -4,29 +4,7 @@ use std::cmp::Ordering;
 /// then on the second
 
 pub fn binary_search_pair(vec: &[[u64; 2]], pair: [u64; 2]) -> bool {
-    let mut start = 0;
-    let mut end = vec.len() - 1;
-    while start <= end {
-        let mid = start + (end - start) / 2;
-        if (start == mid || end == mid) && vec[mid] != pair {
-            return false;
-        }
-        if vec[mid] == pair {
-            return true;
-        }
-        match vec[mid][0].cmp(&pair[0]) {
-            Ordering::Greater => end = mid,
-            Ordering::Equal => {
-                if vec[mid][1] > pair[1] {
-                    end = mid;
-                } else {
-                    start = mid;
-                }
-            }
-            Ordering::Less => start = mid,
-        }
-    }
-    false
+    vec.binary_search(&pair).is_ok()
 }
 
 /// Pre-condition: vec is sorted on the first elem of each pair
