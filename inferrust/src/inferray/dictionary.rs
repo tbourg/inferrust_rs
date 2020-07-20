@@ -4,6 +4,7 @@ use sophia::ns::*;
 use sophia::term::factory::{ArcTermFactory, TermFactory};
 use sophia::term::TTerm;
 use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
+use sophia::triple::Triple;
 
 use std::borrow::Borrow;
 use std::collections::HashMap;
@@ -373,4 +374,23 @@ where
     T: Borrow<Term<S>>,
 {
     t.borrow().clone_map(|txt| &*(txt as *const str))
+}
+
+// Should return -1 if both s and o are res,
+// 1 if s is prop and o is res,
+// and 3 if both s and o are prop
+fn contains_prop_in_s_or_o(property_index: u32) -> i8 {
+    let prop_in_s = vec![NodeDictionary::rdfsdomain, NodeDictionary::rdfsrange];
+    let prop_in_s_and_o = vec![
+        NodeDictionary::owlequivalentProperty,
+        NodeDictionary::owlinverseOf,
+        NodeDictionary::rdfssubPropertyOf,
+    ];
+    if prop_in_s_and_o.contains(&property_index) {
+        3
+    } else if prop_in_s.contains(&property_index) {
+        1
+    } else {
+        -1
+    }
 }

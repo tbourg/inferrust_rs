@@ -3,8 +3,6 @@ use crate::inferray::TripleStore;
 use crate::rules::*;
 use crate::utils::*;
 
-use std::cmp::Ordering;
-
 #[derive(PartialEq)]
 enum Match {
     Any,

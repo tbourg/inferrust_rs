@@ -1,12 +1,10 @@
 use sophia::graph::GTripleSource;
 use sophia::graph::Graph;
-use sophia::term::{ArcTerm, TTerm, Term, TermData};
-use sophia::triple::stream::TripleSource;
+use sophia::term::{ArcTerm, TTerm};
 use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
 use sophia::triple::{stream::TripleSource, Triple};
 
 use std::convert::Infallible;
-use std::sync::Arc;
 
 use crate::closure::*;
 use crate::inferray::NodeDictionary;
