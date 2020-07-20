@@ -2,6 +2,7 @@
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
 use sophia::term::factory::{ArcTermFactory, TermFactory};
+use sophia::term::TTerm;
 use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
 
 use std::borrow::Borrow;
@@ -124,8 +125,45 @@ impl NodeDictionary {
         self.ts = Some(ts);
     }
 
-    pub fn add<TD: TermData>(&mut self, term: &Term<TD>) -> u64 {
-        let term: RefTerm = term.clone_into();
+    pub fn encode_triple<T>(&mut self, t: &T) -> [u64; 3]
+    where
+        T: Triple,
+        // T::Term: ?Sized,
+    {
+        let mut s: u64 = 0;
+        let mut o: u64 = 0;
+        let p: u32;
+        let ts = t.s();
+        let to = t.o();
+        let tp = t.p();
+        // Property will always be property
+        p = self.add_property(tp);
+        let prop_in_s_or_o = contains_prop_in_s_or_o(p);
+        if prop_in_s_or_o != -1 {
+            match prop_in_s_or_o {
+                1 => {
+                    s = self.add_property(ts).into();
+                    o = self.add(to);
+                }
+                3 => {
+                    s = self.add_property(ts).into();
+                    o = self.add_property(to).into();
+                }
+                _ => (),
+            }
+        } else {
+            // Add a regular triple
+            s = self.add(ts);
+            o = self.add(to);
+        }
+        [s, p as u64, o]
+    }
+
+    pub fn add<T>(&mut self, term: &T) -> u64
+    where
+        T: TTerm + ?Sized,
+    {
+        let term: RefTerm = RefTerm::from(term);
         match self.indexes.get(&term) {
             Some(idx) => *idx,
             None => {
@@ -141,8 +179,11 @@ impl NodeDictionary {
         }
     }
 
-    pub fn add_property<TD: TermData>(&mut self, term: &Term<TD>) -> u32 {
-        let term: RefTerm = term.clone_into();
+    pub fn add_property<T>(&mut self, term: &T) -> u32
+    where
+        T: TTerm + ?Sized,
+    {
+        let term: RefTerm = RefTerm::from(term);
         match self.indexes.get(&term).cloned() {
             Some(idx) if idx < Self::START_INDEX as u64 => idx as u32,
             Some(idx) => self.remap_res_to_prop(idx),
@@ -161,14 +202,19 @@ impl NodeDictionary {
 
     #[inline]
 
-    fn add_with<TD: TermData>(&mut self, term: &Term<TD>, id: u64) {
+    fn add_with<T>(&mut self, term: &T, id: u64)
+    where
+        T: TTerm + ?Sized,
+    {
         let idx = self.add(term);
         debug_assert_eq!(idx, id);
     }
-
     #[inline]
 
-    fn add_property_with<TD: TermData>(&mut self, term: &Term<TD>, id: u32) {
+    fn add_property_with<T>(&mut self, term: &T, id: u32)
+    where
+        T: TTerm + ?Sized,
+    {
         let idx = self.add_property(term);
         debug_assert_eq!(idx, id);
     }
@@ -192,12 +238,12 @@ impl NodeDictionary {
         }
     }
 
-    pub fn get_index<T>(&self, t: &Term<T>) -> Option<u64>
+    #[inline]
+    pub fn get_index<T>(&self, t: &T) -> Option<u64>
     where
-        T: TermData,
+        T: TTerm + ?Sized,
     {
-        let t: RefTerm = t.clone_into();
-        self.indexes.get(&t).cloned()
+        self.indexes.get(&RefTerm::from(t)).cloned()
     }
 
     pub fn was_removed(&self, res: u64) -> bool {

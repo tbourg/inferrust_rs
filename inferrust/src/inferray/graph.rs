@@ -1,6 +1,7 @@
 use sophia::graph::GTripleSource;
 use sophia::graph::Graph;
-use sophia::term::{Term, TermData};
+use sophia::term::{ArcTerm, TTerm, Term, TermData};
+use sophia::triple::stream::TripleSource;
 use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
 use sophia::triple::{stream::TripleSource, Triple};
 
@@ -18,7 +19,7 @@ pub struct InfGraph {
 }
 
 impl Graph for InfGraph {
-    type Triple = ByTermRefs<Arc<str>>;
+    type Triple = ByTermRefs<ArcTerm>;
     type Error = Infallible;
 
     fn triples(&self) -> GTripleSource<Self> {
@@ -45,9 +46,9 @@ impl Graph for InfGraph {
         )
     }
 
-    fn triples_with_s<'s, T>(&'s self, s: &'s Term<T>) -> GTripleSource<'s, Self>
+    fn triples_with_s<'s, T>(&'s self, s: &'s T) -> GTripleSource<'s, Self>
     where
-        T: TermData,
+        T: TTerm + ?Sized,
     {
         if let Some(si) = self.dictionary.get_index(s) {
             let s = self.dictionary.get_term(si);
@@ -82,9 +83,9 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_p<'s, T>(&'s self, p: &'s Term<T>) -> GTripleSource<'s, Self>
+    fn triples_with_p<'s, T>(&'s self, p: &'s T) -> GTripleSource<'s, Self>
     where
-        T: TermData,
+        T: TTerm + ?Sized,
     {
         if let Some(ip) = self.dictionary.get_index(p) {
             let idx = NodeDictionary::prop_idx_to_idx(ip);
@@ -106,9 +107,9 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_o<'s, T>(&'s self, o: &'s Term<T>) -> GTripleSource<'s, Self>
+    fn triples_with_o<'s, T>(&'s self, o: &'s T) -> GTripleSource<'s, Self>
     where
-        T: TermData,
+        T: TTerm + ?Sized,
     {
         if let Some(oi) = self.dictionary.get_index(o) {
             let o = self.dictionary.get_term(oi);
@@ -143,14 +144,10 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_sp<'s, T, U>(
-        &'s self,
-        s: &'s Term<T>,
-        p: &'s Term<U>,
-    ) -> GTripleSource<'s, Self>
+    fn triples_with_sp<'s, T, U>(&'s self, s: &'s T, p: &'s U) -> GTripleSource<'s, Self>
     where
-        T: TermData,
-        U: TermData,
+        T: TTerm + ?Sized,
+        U: TTerm + ?Sized,
     {
         if let (Some(si), Some(pi)) = (self.dictionary.get_index(s), self.dictionary.get_index(p)) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
@@ -180,14 +177,10 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_so<'s, T, U>(
-        &'s self,
-        s: &'s Term<T>,
-        o: &'s Term<U>,
-    ) -> GTripleSource<'s, Self>
+    fn triples_with_so<'s, T, U>(&'s self, s: &'s T, o: &'s U) -> GTripleSource<'s, Self>
     where
-        T: TermData,
-        U: TermData,
+        T: TTerm + ?Sized,
+        U: TTerm + ?Sized,
     {
         if let (Some(si), Some(oi)) = (self.dictionary.get_index(s), self.dictionary.get_index(o)) {
             let s = self.dictionary.get_term(si);
@@ -215,14 +208,10 @@ impl Graph for InfGraph {
         }
     }
 
-    fn triples_with_po<'s, T, U>(
-        &'s self,
-        p: &'s Term<T>,
-        o: &'s Term<U>,
-    ) -> GTripleSource<'s, Self>
+    fn triples_with_po<'s, T, U>(&'s self, p: &'s T, o: &'s U) -> GTripleSource<'s, Self>
     where
-        T: TermData,
-        U: TermData,
+        T: TTerm + ?Sized,
+        U: TTerm + ?Sized,
     {
         if let (Some(pi), Some(oi)) = (self.dictionary.get_index(p), self.dictionary.get_index(o)) {
             let idx = NodeDictionary::prop_idx_to_idx(pi);
@@ -254,14 +243,14 @@ impl Graph for InfGraph {
 
     fn triples_with_spo<'s, T, U, V>(
         &'s self,
-        s: &'s Term<T>,
-        p: &'s Term<U>,
-        o: &'s Term<V>,
+        s: &'s T,
+        p: &'s U,
+        o: &'s V,
     ) -> GTripleSource<'s, Self>
     where
-        T: TermData,
-        U: TermData,
-        V: TermData,
+        T: TTerm + ?Sized,
+        U: TTerm + ?Sized,
+        V: TTerm + ?Sized,
     {
         if let (Some(si), Some(pi), Some(oi)) = (
             self.dictionary.get_index(s),
