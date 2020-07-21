@@ -127,13 +127,16 @@ pub fn PRP_TRP(ts: &TripleStore) -> RuleResult {
             }
             let pairs2 = pairs.unwrap().so();
             let pairs3 = pairs.unwrap().os();
-            let counter = 0;
+            let mut counter = 0;
             for i in 0..pairs2.len() {
                 let [s1, o1] = pairs2[i];
                 for j in counter..pairs3.len() {
                     let [o2, s2] = pairs3[j];
-                    if o1 == s2 {
-                        output.push([s1, prop, o2]);
+                    if s1 == o2 {
+                        output.push([s2, prop, o1]);
+                    } else if o2 > s1 {
+                        counter = j;
+                        break;
                     }
                 }
             }
