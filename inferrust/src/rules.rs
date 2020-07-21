@@ -4,6 +4,9 @@
 mod _rules;
 pub use self::_rules::*;
 
+mod profiles;
+pub use self::profiles::*;
+
 mod alpha_rules;
 pub use self::alpha_rules::*;
 
@@ -22,5 +25,5 @@ pub use self::same_as_rules::*;
 mod zeta_rules;
 pub use self::zeta_rules::*;
 
-mod list_rules;
-pub use self::list_rules::*;
+mod others;
+pub use self::others::*;

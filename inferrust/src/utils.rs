@@ -1,14 +1,10 @@
-use std::cmp::Ordering;
-
 /// Pre-condition: vec is an array of pairs sorted on the first elem of each pair
 /// then on the second
-
 pub fn binary_search_pair(vec: &[[u64; 2]], pair: [u64; 2]) -> bool {
     vec.binary_search(&pair).is_ok()
 }
 
 /// Pre-condition: vec is sorted on the first elem of each pair
-
 pub fn first(vec: &[[u64; 2]], x: u64, low: usize, high: usize, n: usize, key_pos: usize) -> usize {
     if high >= low {
         let mid = low + (high - low) / 2;

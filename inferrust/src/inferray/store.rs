@@ -5,14 +5,12 @@ use std::cmp::Ordering;
 use std::mem;
 
 use super::NodeDictionary;
-use crate::inferray::list::*;
 use crate::rules::*;
 
 #[derive(Default, PartialEq, Debug, Clone)]
 pub struct TripleStore {
     elem: Vec<Chunk>,
     size: usize,
-    lists: Option<Lists>,
 }
 
 #[derive(Default, PartialEq, Debug, Clone)]
@@ -94,10 +92,6 @@ impl TripleStore {
     pub fn elem(&self) -> &Vec<Chunk> {
         &self.elem
     }
-    #[inline]
-    pub fn lists(&self) -> Option<&Lists> {
-        self.lists.as_ref()
-    }
 
     #[inline]
     pub fn elem_mut(&mut self) -> &mut Vec<Chunk> {
@@ -107,21 +101,6 @@ impl TripleStore {
     #[inline]
     pub fn set_elem(&mut self, elem: Vec<Chunk>) {
         self.elem = elem;
-    }
-    #[inline]
-    pub fn list(&self, id: u64) -> Option<&List> {
-        self.lists
-            .as_ref()
-            .unwrap()
-            .iter()
-            .filter(|l| l.id == id)
-            .next()
-    }
-
-    #[inline]
-    pub fn build_lists(&mut self) {
-        let lists = compute_lists(&self);
-        self.lists = if lists.len() == 0 { None } else { Some(lists) };
     }
 
     pub fn add_triple(&mut self, triple: [u64; 3]) {
@@ -277,21 +256,11 @@ impl TripleStore {
                 chunks.push(Chunk::new(new_so));
             }
         }
-        let lists = if let Some(l) = a.lists.as_ref() {
-            Some(l.clone())
-        } else {
-            None
-        };
-        Self {
-            elem: chunks,
-            size,
-            lists,
-        }
+        Self { elem: chunks, size }
     }
 }
 
 /// Sort the pairs and remove duplicates
-
 pub fn bucket_sort_pairs(pairs: &mut Vec<[u64; 2]>) -> usize {
     if pairs.is_empty() {
         return 0;
@@ -434,97 +403,79 @@ fn test_join() {
     let a = TripleStore {
         elem: vec![Chunk::default()],
         size: 0,
-        lists: None,
     };
     let b = TripleStore {
         elem: vec![Chunk::default()],
         size: 0,
-        lists: None,
     };
     let expected = TripleStore {
         elem: vec![Chunk::default()],
         size: 0,
-        lists: None,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     let b = TripleStore {
         elem: vec![Chunk::default()],
         size: 0,
-        lists: None,
     };
     let expected = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
         elem: vec![Chunk::default()],
         size: 0,
-        lists: None,
     };
     let b = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     let expected = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     let b = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     let expected = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
         size: 2,
-        lists: None,
     };
     let b = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     let expected = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
         size: 2,
-        lists: None,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
     let a = TripleStore {
         elem: vec![Chunk::new(vec![[1, 2]])],
         size: 2,
-        lists: None,
     };
     let b = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1]])],
         size: 1,
-        lists: None,
     };
     let expected = TripleStore {
         elem: vec![Chunk::new(vec![[1, 1], [1, 2]])],
         size: 2,
-        lists: None,
     };
     assert_eq!(TripleStore::join(&a, &b), expected);
 }
