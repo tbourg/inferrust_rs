@@ -709,18 +709,14 @@ impl InfGraph {
     }
 }
 
-impl From<&str> for InfGraph {
-    fn from(path: &str) -> Self {
+impl<TS> From<TS> for InfGraph
+where
+    TS: TripleSource,
+{
+    fn from(mut ts: TS) -> Self {
         let mut store = TripleStore::default();
         let dictionary = NodeDictionary::new();
         let mut me = Self { dictionary };
-
-        let mut ts =
-        //  if path.ends_with(".nt") {
-            Box::new(sophia::parser::nt::parse_bufread(std::io::BufReader::new(
-                std::fs::File::open(path).unwrap(),
-            )));
-        // };
         ts.for_each_triple(|t| {
             let rep = me.encode_triple(&t);
 
