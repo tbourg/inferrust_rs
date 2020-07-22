@@ -69,16 +69,6 @@ fn apply_inverse_beta_rule(ts: &TripleStore, rule_p: usize, infer_p: usize) -> R
     output
 }
 
-/// The SCM-EQC2 rule from the RDFS+ ruleset
-///
-/// Body:
-/// - c1 rdfs:subClassOf c2
-/// - c2 rdfs:subClassOf c1
-///
-/// Head:
-/// - c1 owl:equivalentClass c2
-/// - c2 owl:equivalentClass c1
-
 pub fn SCM_SCO_EQC2(ts: &TripleStore) -> RuleResult {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64);
     let id_2 = NodeDictionary::prop_idx_to_idx(NodeDictionary::owlequivalentClass as u64);

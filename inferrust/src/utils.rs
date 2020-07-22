@@ -1,3 +1,5 @@
+//! Bunch of utility functions
+
 /// Pre-condition: vec is an array of pairs sorted on the first elem of each pair
 /// then on the second
 pub fn binary_search_pair(vec: &[[u64; 2]], pair: [u64; 2]) -> bool {

@@ -21,13 +21,7 @@ use crate::inferray::TripleStore;
 use crate::rules::*;
 use std::cmp::Ordering;
 
-// :human rdfs:subclassof :mammal ||| :bart :type :human
-//  0           1            2           3    4      5
-//                        -->
-//          3             4              2
-//        :bart         :type         :mammal
-
-pub fn apply_alpha_rule(
+fn apply_alpha_rule(
     ts: &TripleStore,
     id_1: u64,
     id_2: u64,
@@ -128,7 +122,7 @@ pub fn CAX_EQC1(ts: &TripleStore) -> RuleResult {
     apply_alpha_rule(ts, id_1, id_2, 3, 4, 2)
 }
 
-/// CAX-EQC2 is implied cause a = b -> b = a
+// CAX-EQC2 is implied cause a = b -> b = a
 
 pub fn SCM_DOM1(ts: &TripleStore) -> RuleResult {
     let id_1 = NodeDictionary::prop_idx_to_idx(NodeDictionary::rdfssubClassOf as u64) as u64;

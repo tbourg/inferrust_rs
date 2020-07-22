@@ -38,7 +38,7 @@
 //! Champin, P.-A. (2020) ‘Sophia: A Linked Data and Semantic Web toolkit for Rust’, in Wilde, E. and Amundsen, M. (eds).
 //! The Web Conference 2020: Developers Track, Taipei, TW.
 //! Available at: https://www2020devtrack.github.io/site/schedule.
-//!
+
 #[cfg(debug_assertion)]
 extern crate flame;
 #[cfg(debug_assertion)]

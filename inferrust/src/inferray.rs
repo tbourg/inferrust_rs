@@ -1,3 +1,5 @@
+//! In-memory structures to store the RDF graph
+
 mod dictionary;
 pub use self::dictionary::*;
 

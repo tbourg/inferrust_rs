@@ -3,10 +3,11 @@ use crate::inferray::*;
 use rayon::prelude::*;
 
 /// Type aliases to unify all the rules of the reasoner
-pub type RuleResult = Vec<[u64; 3]>;
 pub type Rule = fn(&TripleStore) -> RuleResult;
+/// Type aliases for the result of a rule (actually a vector)
+pub type RuleResult = Vec<[u64; 3]>;
 
-/// A set of Rule, which can be aplly on a InfGraph
+/// A set of Rule, which can be applied on a InfGraph
 pub trait RuleSet {
     /// Process this ruleset, possibly using multiple threads
     fn process(&mut self, graph: &mut InfGraph);
@@ -45,6 +46,7 @@ impl RuleSet for StaticRuleSet {
     }
 }
 
+/// A specific ruleset (run rules until fixpoint is reached)
 pub struct FixPointRuleSet {
     pub rules: StaticRuleSet,
 }
