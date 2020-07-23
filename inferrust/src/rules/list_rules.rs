@@ -1,5 +1,4 @@
-use crate::inferray::NodeDictionary;
-use crate::inferray::TripleStore;
+use crate::inferray::*;
 use crate::rules::*;
 use crate::utils::*;
 
@@ -93,4 +92,51 @@ pub fn CLS_OO(ts: &TripleStore) -> RuleResult {
         NodeDictionary::prop_idx_to_idx(NodeDictionary::oneOf as u64),
         Match::None,
     )
+}
+
+fn process_cls_false(ts: &TripleStore, member_idx: usize) -> RuleResult {
+    let mut output = vec![];
+    let rdf_type = ts.elem().get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::rdftype as u64,
+    ));
+    if rdf_type == None {
+        return output;
+    }
+    let rdf_type_rev = rdf_type.unwrap().os();
+    let same_as = ts.elem().get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::owlsameAs as u64,
+    ));
+    if same_as == None {
+        return output;
+    }
+    let same_as = same_as.unwrap().so();
+    let diff = NodeDictionary::owlallDifferent as u64;
+    if rdf_type_rev[0][0] > diff || rdf_type_rev[rdf_type_rev.len() - 1][0] < diff {
+        return output;
+    }
+    for [o_t, s_t] in rdf_type_rev {
+        if *o_t > diff {
+            break;
+        } else if *o_t == diff {
+            if let Some(pairs_members) = ts.elem().get(member_idx) {
+                for [s_m, o_m] in pairs_members.so() {
+                    if *s_m > *s_t {
+                        break;
+                    } else if *s_m == *s_t {
+                        let members = &ts.list(*o_m).unwrap().elems;
+                        let len = members.len();
+                        for i in 0..len {
+                            for j in i + 1..len {
+                                if binary_search_pair(same_as, [members[i], members[j]]) {
+                                    output.push(INVALID);
+                                    return output;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    output
 }

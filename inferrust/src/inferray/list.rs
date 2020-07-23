@@ -1,4 +1,11 @@
 use crate::inferray::{NodeDictionary, TripleStore};
+use crate::utils::*;
+
+pub const INVALID: [u64; 3] = [
+    NodeDictionary::owlthing as u64,
+    NodeDictionary::rdfssubClassOf as u64,
+    NodeDictionary::nothing as u64,
+];
 
 #[derive(Default, PartialEq, Debug, Clone)]
 pub struct List {
@@ -63,24 +70,4 @@ fn get_elem_by_id(firsts: &Vec<[u64; 2]>, id: u64) -> u64 {
 
 fn get_prev_id(rests_rev: &Vec<[u64; 2]>, id: u64) -> Option<u64> {
     get_second_elem(rests_rev, id)
-}
-
-use std::cmp::Ordering;
-
-/// Pre-condition: vec is an array of pairs sorted on the first elem of each pair
-/// then on the second
-pub fn get_second_elem(vec: &[[u64; 2]], first: u64) -> Option<u64> {
-    dbg!(vec, first);
-    let start = 0;
-    let end = vec.len() - 1;
-    let mid = start + (end - start) / 2;
-    dbg!(start, end, mid);
-    if start == end && vec[mid][0] != first {
-        return None;
-    }
-    match vec[mid][0].cmp(&first) {
-        Ordering::Greater => get_second_elem(&vec[..mid], first),
-        Ordering::Equal => Some(vec[mid][1]),
-        Ordering::Less => get_second_elem(&vec[(mid + 1)..], first),
-    }
 }
