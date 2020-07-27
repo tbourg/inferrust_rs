@@ -37,8 +37,9 @@ pub fn compute_lists(ts: &TripleStore) -> Lists {
             break;
         }
         if *rest == end {
-            let (head, elems) = get_elems_by_last_id(firsts, rests_rev, *id);
-            to_ret.push(List { id: head, elems });
+            if let Some((head, elems)) = get_elems_by_last_id(firsts, rests_rev, *id) {
+                to_ret.push(List { id: head, elems });
+            }
         }
     }
     to_ret.sort_by_key(|e| e.id);
@@ -49,23 +50,29 @@ fn get_elems_by_last_id(
     firsts: &Vec<[u64; 2]>,
     rests_rev: &Vec<[u64; 2]>,
     mut id: u64,
-) -> (u64, Vec<u64>) {
+) -> Option<(u64, Vec<u64>)> {
     let mut elems = vec![];
+    let mut ids = vec![];
+    ids.push(id);
     loop {
         let elem = get_elem_by_id(firsts, id);
         elems.push(elem);
         if let Some(prev) = get_prev_id(rests_rev, id) {
+            if ids.contains(&prev) {
+                return None;
+            }
             id = prev;
+            ids.push(id);
         } else {
             break;
         }
     }
     elems.reverse();
-    (id, elems)
+    Some((id, elems))
 }
 
 fn get_elem_by_id(firsts: &Vec<[u64; 2]>, id: u64) -> u64 {
-    dbg!(get_second_elem(firsts, id)).unwrap_or_else(|| panic!("inconsistent list is declared"))
+    get_second_elem(firsts, id).unwrap_or_else(|| panic!("inconsistent list is declared"))
 }
 
 fn get_prev_id(rests_rev: &Vec<[u64; 2]>, id: u64) -> Option<u64> {

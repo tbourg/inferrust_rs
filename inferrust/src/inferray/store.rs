@@ -136,6 +136,7 @@ impl TripleStore {
     pub fn add_all(&mut self, others: Vec<RuleResult>) {
         for other in others.into_iter() {
             for t in other {
+                dbg!(&t);
                 self.add_triple(t);
             }
         }

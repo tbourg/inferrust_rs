@@ -121,6 +121,7 @@ impl NodeDictionary {
     #[inline]
     pub fn set_ts(&mut self, mut ts: TripleStore) {
         self.removed_val.iter().for_each(|[o, n]| {
+            dbg!(o, n);
             ts.res_to_prop(*o, *n as u32);
         });
         self.ts = Some(ts);
@@ -129,7 +130,6 @@ impl NodeDictionary {
     pub fn encode_triple<T>(&mut self, t: &T) -> [u64; 3]
     where
         T: Triple,
-        // T::Term: ?Sized,
     {
         let mut s: u64 = 0;
         let mut o: u64 = 0;
@@ -139,7 +139,7 @@ impl NodeDictionary {
         let tp = t.p();
         // Property will always be property
         p = self.add_property(tp);
-        let prop_in_s_or_o = contains_prop_in_s_or_o(p);
+        let prop_in_s_or_o = Self::contains_prop_in_s_or_o(p);
         if prop_in_s_or_o != -1 {
             match prop_in_s_or_o {
                 1 => {
@@ -156,6 +156,9 @@ impl NodeDictionary {
             // Add a regular triple
             s = self.add(ts);
             o = self.add(to);
+        }
+        if p == Self::propertyChainAxiom {
+            dbg!(s, p, o);
         }
         [s, p as u64, o]
     }
@@ -361,6 +364,24 @@ impl NodeDictionary {
         self.add_property_with(&owl::targetValue, Self::targetValue);
         self.add_property_with(&owl::maxQualifiedCardinality, Self::maxQualifiedCardinality);
     }
+    // Should return -1 if both s and o are res,
+    // 1 if s is prop and o is res,
+    // and 3 if both s and o are prop
+    fn contains_prop_in_s_or_o(property_index: u32) -> i8 {
+        let prop_in_s = vec![Self::rdfsdomain, Self::rdfsrange, Self::propertyChainAxiom];
+        let prop_in_s_and_o = vec![
+            Self::owlequivalentProperty,
+            Self::owlinverseOf,
+            Self::rdfssubPropertyOf,
+        ];
+        if prop_in_s_and_o.contains(&property_index) {
+            3
+        } else if prop_in_s.contains(&property_index) {
+            1
+        } else {
+            -1
+        }
+    }
 }
 
 /// Unsafely converts a term into a StaticTerm.
@@ -374,23 +395,4 @@ where
     T: Borrow<Term<S>>,
 {
     t.borrow().clone_map(|txt| &*(txt as *const str))
-}
-
-// Should return -1 if both s and o are res,
-// 1 if s is prop and o is res,
-// and 3 if both s and o are prop
-fn contains_prop_in_s_or_o(property_index: u32) -> i8 {
-    let prop_in_s = vec![NodeDictionary::rdfsdomain, NodeDictionary::rdfsrange];
-    let prop_in_s_and_o = vec![
-        NodeDictionary::owlequivalentProperty,
-        NodeDictionary::owlinverseOf,
-        NodeDictionary::rdfssubPropertyOf,
-    ];
-    if prop_in_s_and_o.contains(&property_index) {
-        3
-    } else if prop_in_s.contains(&property_index) {
-        1
-    } else {
-        -1
-    }
 }

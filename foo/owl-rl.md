@@ -1,16 +1,20 @@
 | | If | Then | |
 | -- | -- | -- | -- |
 eq-ref | T(?s,?p,?o) | T(?s,owl:sameAs,?s) <br> T(?p,owl:sameAs,?p) <br> T(?o,owl:sameAs,?o) 
-cls-svf1|T(?x,owl:someValuesFrom,?y) <br> T(?x,owl:onProperty,?p) <br> T(?u,?p,?v) <br> T(?v,rdf:type,?y)|T(?u,rdf:type,?x)
 cls-svf2|T(?x,owl:someValuesFrom,owl:Thing) <br> T(?x,owl:onProperty,?p) <br> T(?u,?p,?v)|T(?u,rdf:type,?x)
-cls-avf|T(?x,owl:allValuesFrom,?y) <br> T(?x,owl:onProperty,?p) <br> T(?u,rdf:type,?x) <br> T(?u,?p,?v)|T(?v,rdf:type,?y)
-cls-hv1|T(?x,owl:hasValue,?y) <br> T(?x,owl:onProperty,?p) <br> T(?u,rdf:type,?x)|T(?u,?p,?y)
 cls-hv2|T(?x,owl:hasValue,?y) <br> T(?x,owl:onProperty,?p) <br> T(?u,?p,?y)|T(?u,rdf:type,?x)
-scm-hv|T(?c1,owl:hasValue,?i) <br> T(?c1,owl:onProperty,?p1) <br> T(?c2,owl:hasValue,?i) <br> T(?c2,owl:onProperty,?p2) <br> T(?p1,rdfs:subPropertyOf,?p2)|T(?c1,rdfs:subClassOf,?c2)
+cls-hv1|T(?x,owl:hasValue,?y) <br> T(?x,owl:onProperty,?p) <br> T(?u,rdf:type,?x)|T(?u,?p,?y)
+cls-svf1|T(?x,owl:someValuesFrom,?y) <br> T(?x,owl:onProperty,?p) <br> T(?u,?p,?v) <br> T(?v,rdf:type,?y)|T(?u,rdf:type,?x)
+cls-avf|T(?x,owl:allValuesFrom,?y) <br> T(?x,owl:onProperty,?p) <br> T(?u,rdf:type,?x) <br> T(?u,?p,?v)|T(?v,rdf:type,?y)
 scm-svf1|T(?c1,owl:someValuesFrom,?y1) <br> T(?c1,owl:onProperty,?p) <br> T(?c2,owl:someValuesFrom,?y2) <br> T(?c2,owl:onProperty,?p) <br> T(?y1,rdfs:subClassOf,?y2)|T(?c1,rdfs:subClassOf,?c2)
-scm-svf2|T(?c1,owl:someValuesFrom,?y) <br> T(?c1,owl:onProperty,?p1) <br> T(?c2,owl:someValuesFrom,?y) <br> T(?c2,owl:onProperty,?p2) <br> T(?p1,rdfs:subPropertyOf,?p2)|T(?c1,rdfs:subClassOf,?c2)
 scm-avf1|T(?c1,owl:allValuesFrom,?y1) <br> T(?c1,owl:onProperty,?p) <br> T(?c2,owl:allValuesFrom,?y2) <br> T(?c2,owl:onProperty,?p) <br> T(?y1,rdfs:subClassOf,?y2)|T(?c1,rdfs:subClassOf,?c2)
+scm-hv|T(?c1,owl:hasValue,?i) <br> T(?c1,owl:onProperty,?p1) <br> T(?c2,owl:hasValue,?i) <br> T(?c2,owl:onProperty,?p2) <br> T(?p1,rdfs:subPropertyOf,?p2)|T(?c1,rdfs:subClassOf,?c2)
+scm-svf2|T(?c1,owl:someValuesFrom,?y) <br> T(?c1,owl:onProperty,?p1) <br> T(?c2,owl:someValuesFrom,?y) <br> T(?c2,owl:onProperty,?p2) <br> T(?p1,rdfs:subPropertyOf,?p2)|T(?c1,rdfs:subClassOf,?c2)
 scm-avf2|T(?c1,owl:allValuesFrom,?y) <br> T(?c1,owl:onProperty,?p1) <br> T(?c2,owl:allValuesFrom,?y) <br> T(?c2,owl:onProperty,?p2) <br> T(?p1,rdfs:subPropertyOf,?p2)|T(?c2,rdfs:subClassOf,?c1)
+dt-type1| |T(dt,rdf:type,rdfs:Datatype)|for each datatype dt supported in OWL2 RL
+dt-type2| |T(lt,rdf:type,dt)|for each literal lt and each datatype dt supported in OWL2 RL <br> such that the data value of lt is contained in the valuespace of dt
+dt-eq| |T(lt1,owl:sameAs,lt2)|for all literals lt1 and lt2 with the same datavalue
+dt-diff| |T(lt1,owl:differentFrom,lt2)|for all literals lt1 and lt2 with different datavalues
 
 ## Datatype
 | | If | Then | | 
@@ -28,10 +32,6 @@ cls-maxqc4|T(?x,owl:maxQualifiedCardinality,"1"^^xsd:nonNegativeInteger) <br> T(
 prp-ap| |T(ap,rdf:type,owl:AnnotationProperty)|foreach built-in annotation property of OWL2 RL
 cls-thing| |T(owl:Thing,rdf:type,owl:Class)
 cls-nothing1| |T(owl:Nothing,rdf:type,owl:Class)
-dt-type1| |T(dt,rdf:type,rdfs:Datatype)|for each datatype dt supported in OWL2 RL
-dt-type2| |T(lt,rdf:type,dt)|for each literal lt and each datatype dt supported in OWL2 RL <br> such that the data value of lt is contained in the valuespace of dt
-dt-eq| |T(lt1,owl:sameAs,lt2)|for all literals lt1 and lt2 with the same datavalue
-dt-diff| |T(lt1,owl:differentFrom,lt2)|for all literals lt1 and lt2 with different datavalues
 
 ## Invalid
 | | If | Then | | 

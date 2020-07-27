@@ -140,7 +140,7 @@ impl RuleProfile {
     }
 
     pub fn Test() -> Self {
-        let rules: Vec<Box<Rule>> = vec![Box::new(CLS_INT1)];
+        let rules: Vec<Box<Rule>> = vec![Box::new(CLS_INT1), Box::new(PRP_SPO2)];
         Self {
             cl_profile: ClosureProfile {
                 on_sa: true,

@@ -32,11 +32,12 @@ pub fn first(vec: &[[u64; 2]], x: u64, low: usize, high: usize, n: usize, key_po
 /// Pre-condition: vec is an array of pairs sorted on the first elem of each pair
 /// then on the second
 pub fn get_second_elem(vec: &[[u64; 2]], first: u64) -> Option<u64> {
-    dbg!(vec, first);
+    if vec.is_empty() {
+        return None;
+    }
     let start = 0;
     let end = vec.len() - 1;
     let mid = start + (end - start) / 2;
-    dbg!(start, end, mid);
     if start == end && vec[mid][0] != first {
         return None;
     }

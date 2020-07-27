@@ -46,7 +46,7 @@ fn process_cls(ts: &TripleStore, property_idx: usize, opt: Match) -> RuleResult 
                         let mut ok = true;
                         if opt == Match::All {
                             for elem in list.elems.iter() {
-                                if !binary_search_pair(rdftype, [*y, *elem]) {
+                                if !binary_search_pair(rdftype, [*elem, *y]) {
                                     ok = false;
                                 }
                             }
@@ -135,6 +135,48 @@ fn process_cls_false(ts: &TripleStore, member_idx: usize) -> RuleResult {
                         }
                     }
                 }
+            }
+        }
+    }
+    output
+}
+
+pub fn PRP_SPO2(ts: &TripleStore) -> RuleResult {
+    fn intern(ts: &TripleStore, step: u64, chain: &[u64]) -> Vec<u64> {
+        if chain.is_empty() {
+            return vec![step];
+        }
+        let pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(chain[0]));
+        if pairs.is_none() {
+            return vec![];
+        }
+        let pairs = pairs.unwrap().so();
+        pairs
+            .iter()
+            .filter(|[s, o]| *s == step)
+            .flat_map(|[s, o]| intern(ts, *o, &chain[1..]))
+            .collect()
+    };
+    let mut output = vec![];
+    let properties = ts.elem().get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::propertyChainAxiom as u64,
+    ));
+    if properties == None {
+        return output;
+    }
+    let properties = properties.unwrap().so();
+    for [property, list] in properties {
+        let chain = &ts.list(*list).expect("nope").elems;
+        let first_p = chain[0];
+        let first_pairs = ts.elem().get(NodeDictionary::prop_idx_to_idx(first_p));
+        if first_pairs == None {
+            break;
+        }
+        let first_pairs = first_pairs.unwrap().so();
+        for [s, o] in first_pairs {
+            let ends = intern(ts, *o, &chain[1..]);
+            for end in ends.into_iter() {
+                output.push([*s, *property, end]);
             }
         }
     }
