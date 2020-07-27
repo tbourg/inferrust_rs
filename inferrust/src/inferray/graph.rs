@@ -1,8 +1,8 @@
 use sophia::graph::GTripleSource;
 use sophia::graph::Graph;
 use sophia::term::{ArcTerm, TTerm};
+use sophia::triple::stream::TripleSource;
 use sophia::triple::streaming_mode::{ByTermRefs, StreamedTriple};
-use sophia::triple::{stream::TripleSource, Triple};
 
 use std::convert::Infallible;
 
@@ -276,39 +276,6 @@ impl Graph for InfGraph {
 }
 
 impl InfGraph {
-    fn encode_triple<T>(&mut self, t: &T) -> [u64; 3]
-    where
-        T: Triple,
-    {
-        let mut s: u64 = 0;
-        let mut o: u64 = 0;
-        let p: u32;
-        let ts = t.s();
-        let to = t.o();
-        let tp = t.p();
-        // Property will always be property
-        p = self.dictionary.add_property(tp);
-        let prop_in_s_or_o = contains_prop_in_s_or_o(p);
-        if prop_in_s_or_o != -1 {
-            match prop_in_s_or_o {
-                1 => {
-                    s = self.dictionary.add_property(ts).into();
-                    o = self.dictionary.add(to);
-                }
-                3 => {
-                    s = self.dictionary.add_property(ts).into();
-                    o = self.dictionary.add_property(to).into();
-                }
-                _ => (),
-            }
-        } else {
-            // Add a regular triple
-            s = self.dictionary.add(ts);
-            o = self.dictionary.add(to);
-        }
-        [s, p as u64, o]
-    }
-
     #[inline]
     pub fn dict(&self) -> &NodeDictionary {
         &self.dictionary
@@ -717,7 +684,7 @@ where
         let dictionary = NodeDictionary::new();
         let mut me = Self { dictionary };
         ts.for_each_triple(|t| {
-            let rep = me.encode_triple(&t);
+            let rep = me.dictionary.encode_triple(&t);
 
             store.add_triple(rep);
         })
@@ -725,24 +692,5 @@ where
 
         me.dictionary.set_ts(store);
         me
-    }
-}
-
-// Should return -1 if both s and o are res,
-// 1 if s is prop and o is res,
-// and 3 if both s and o are prop
-fn contains_prop_in_s_or_o(property_index: u32) -> i8 {
-    let prop_in_s = vec![NodeDictionary::rdfsdomain, NodeDictionary::rdfsrange];
-    let prop_in_s_and_o = vec![
-        NodeDictionary::owlequivalentProperty,
-        NodeDictionary::owlinverseOf,
-        NodeDictionary::rdfssubPropertyOf,
-    ];
-    if prop_in_s_and_o.contains(&property_index) {
-        3
-    } else if prop_in_s.contains(&property_index) {
-        1
-    } else {
-        -1
     }
 }
