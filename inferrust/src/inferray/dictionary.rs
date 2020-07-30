@@ -2,7 +2,7 @@
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
 use sophia::term::factory::{ArcTermFactory, TermFactory};
-use sophia::term::TTerm;
+use sophia::term::{iri::Iri, literal::Literal, TTerm};
 use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
 use sophia::triple::Triple;
 
@@ -92,8 +92,11 @@ impl NodeDictionary {
     pub const owltargetIndividual: u32 = Self::START_INDEX - 53;
     pub const targetValue: u32 = Self::START_INDEX - 54;
     pub const maxQualifiedCardinality: u32 = Self::START_INDEX - 55;
-    const res_start: u64 = Self::START_INDEX as u64 + 15;
-    const prop_start: u32 = Self::START_INDEX - 55;
+    pub const allDisjointProperties: u32 = Self::START_INDEX - 56;
+    pub const ZERO: u64 = Self::START_INDEX as u64 + 16;
+    pub const ONE: u64 = Self::START_INDEX as u64 + 17;
+    const res_start: u64 = Self::START_INDEX as u64 + 17;
+    const prop_start: u32 = Self::START_INDEX - 56;
 
     pub fn new() -> Self {
         let mut me = Self {
@@ -363,6 +366,29 @@ impl NodeDictionary {
         self.add_property_with(&owl::targetIndividual, Self::owltargetIndividual);
         self.add_property_with(&owl::targetValue, Self::targetValue);
         self.add_property_with(&owl::maxQualifiedCardinality, Self::maxQualifiedCardinality);
+        self.add_property_with(
+            &sophia::ns::Namespace::new(owl::PREFIX)
+                .unwrap()
+                .get("allDisjointProperties")
+                .unwrap(),
+            Self::allDisjointProperties,
+        );
+
+        // numeric const
+        self.add_with(
+            &Literal::<String>::new_dt::<_, String>(
+                "0",
+                Iri::new_unchecked(xsd::nonNegativeInteger.value()),
+            ),
+            Self::ZERO,
+        );
+        self.add_with(
+            &Literal::<String>::new_dt::<_, String>(
+                "1",
+                Iri::new_unchecked(xsd::nonNegativeInteger.value()),
+            ),
+            Self::ONE,
+        );
     }
     // Should return -1 if both s and o are res,
     // 1 if s is prop and o is res,
