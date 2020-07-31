@@ -172,6 +172,45 @@ pub fn CAX_ADC(ts: &TripleStore) -> RuleResult {
                 } else if *s_m == *s_t {
                     let members = &ts.list(*o_m).unwrap().elems;
                     let len = members.len();
+                    // TO DO
+                }
+            }
+        }
+    }
+    output
+}
+
+pub fn PRP_ADP(ts: &TripleStore) -> RuleResult {
+    let mut output = vec![];
+    let rdf_type = ts.elem().get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::rdftype as u64,
+    ));
+    if rdf_type == None {
+        return output;
+    }
+    let rdf_type_rev = rdf_type.unwrap().os();
+    let rdf_type = rdf_type.unwrap().so();
+    let diff = NodeDictionary::allDisjointProperties as u64;
+    if rdf_type_rev[0][0] > diff || rdf_type_rev[rdf_type_rev.len() - 1][0] < diff {
+        return output;
+    }
+    let pairs_members = ts.elem().get(NodeDictionary::prop_idx_to_idx(
+        NodeDictionary::members as u64,
+    ));
+    if pairs_members == None {
+        return output;
+    }
+    let pairs_members = pairs_members.unwrap().so();
+    for [o_t, s_t] in rdf_type_rev {
+        if *o_t > diff {
+            break;
+        } else if *o_t == diff {
+            for [s_m, o_m] in pairs_members {
+                if *s_m > *s_t {
+                    break;
+                } else if *s_m == *s_t {
+                    let members = &ts.list(*o_m).unwrap().elems;
+                    let len = members.len();
                     for i in 0..len {
                         for [o, s] in rdf_type_rev {
                             let member_i = members[i];

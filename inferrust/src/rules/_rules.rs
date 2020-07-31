@@ -284,6 +284,69 @@ impl RuleProfile {
         }
     }
 
+    pub fn OWL_RL() -> Self {
+        let before_rules: Vec<Box<Rule>> = vec![];
+        let rules: Vec<Box<Rule>> = vec![
+            Box::new(EQ_TRANS),
+            Box::new(SAME_AS),
+            Box::new(EQ_DIFF1),
+            Box::new(EQ_DIFF2),
+            Box::new(EQ_DIFF3),
+            Box::new(PRP_DOM),
+            Box::new(PRP_RNG),
+            Box::new(PRP_FP),
+            Box::new(PRP_IFP),
+            Box::new(PRP_IRP),
+            Box::new(PRP_SYMP),
+            Box::new(PRP_ASYP),
+            Box::new(PRP_TRP),
+            Box::new(PRP_SPO1),
+            Box::new(PRP_SPO2),
+            Box::new(PRP_EQP_1_2),
+            Box::new(PRP_INV_1_2),
+            Box::new(PRP_KEY),
+            Box::new(PRP_NPA1),
+            Box::new(PRP_NPA2),
+            Box::new(CLS_NOTHING2),
+            Box::new(CLS_INT1),
+            Box::new(CLS_UNI),
+            Box::new(CLS_COM),
+            Box::new(CLS_OO),
+            Box::new(CAX_SCO),
+            Box::new(CAX_EQC1),
+            Box::new(CAX_ADC),
+            Box::new(SCM_CLS),
+            Box::new(SCM_EQC1),
+            Box::new(SCM_SCO_EQC2),
+            Box::new(SCM_DP_OP),
+            Box::new(SCM_EQP1),
+            Box::new(SCM_SPO_EQP2),
+            Box::new(SCM_DOM1),
+            Box::new(SCM_DOM2),
+            Box::new(SCM_RNG1),
+            Box::new(SCM_RNG2),
+        ];
+        Self {
+            cl_profile: ClosureProfile {
+                on_sa: true,
+                on_sco: true,
+                on_spo: true,
+                on_trp: true,
+            },
+            axiomatic_triples: false,
+            before_rules: StaticRuleSet {
+                rules: Box::new(before_rules),
+            },
+            rules: FixPointRuleSet {
+                rules: StaticRuleSet {
+                    rules: Box::new(rules),
+                },
+            },
+            after_rules: None,
+            name: "OWL2-RL".to_string(),
+        }
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

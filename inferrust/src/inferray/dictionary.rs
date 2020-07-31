@@ -2,8 +2,7 @@
 #![allow(non_upper_case_globals)]
 use sophia::ns::*;
 use sophia::term::factory::{ArcTermFactory, TermFactory};
-use sophia::term::{iri::Iri, literal::Literal, TTerm};
-use sophia::term::{ArcTerm, RefTerm, StaticTerm, Term, TermData};
+use sophia::term::{literal::Literal, ArcTerm, RefTerm, StaticTerm, TTerm, Term, TermData};
 use sophia::triple::Triple;
 
 use std::borrow::Borrow;
@@ -72,7 +71,7 @@ impl NodeDictionary {
     pub const owlassertionProperty: u32 = Self::START_INDEX - 34;
     pub const owlclass: u64 = Self::START_INDEX as u64 + 15;
     pub const owlcomplementOf: u32 = Self::START_INDEX - 35;
-    pub const owldisjoinWith: u32 = Self::START_INDEX - 36;
+    pub const owldisjointWith: u32 = Self::START_INDEX - 36;
     pub const owldistinctmembers: u32 = Self::START_INDEX - 37;
     pub const owlfunctionalProperty: u32 = Self::START_INDEX - 38;
     pub const intersectionOf: u32 = Self::START_INDEX - 39;
@@ -343,7 +342,7 @@ impl NodeDictionary {
         self.add_property_with(&owl::assertionProperty, Self::owlassertionProperty);
         self.add_with(&owl::Class, Self::owlclass);
         self.add_property_with(&owl::complementOf, Self::owlcomplementOf);
-        self.add_property_with(&owl::disjointWith, Self::owldisjoinWith);
+        self.add_property_with(&owl::disjointWith, Self::owldisjointWith);
         self.add_property_with(&owl::distinctMembers, Self::owldistinctmembers);
         self.add_property_with(&owl::FunctionalProperty, Self::owlfunctionalProperty);
         self.add_property_with(&owl::intersectionOf, Self::intersectionOf);
@@ -376,17 +375,11 @@ impl NodeDictionary {
 
         // numeric const
         self.add_with(
-            &Literal::<String>::new_dt::<_, String>(
-                "0",
-                Iri::new_unchecked(xsd::nonNegativeInteger.value()),
-            ),
+            &Literal::<&str>::new_dt::<_, &str>("0", xsd::nonNegativeInteger.into()),
             Self::ZERO,
         );
         self.add_with(
-            &Literal::<String>::new_dt::<_, String>(
-                "1",
-                Iri::new_unchecked(xsd::nonNegativeInteger.value()),
-            ),
+            &Literal::<&str>::new_dt::<_, &str>("1", xsd::nonNegativeInteger.into()),
             Self::ONE,
         );
     }
